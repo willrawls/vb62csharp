@@ -66,89 +66,87 @@ namespace VB2C
             }
 
             // open file
-            StreamWriter writer;
-            var stream = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            var reader = new StreamReader(stream);
-
-            reader.BaseStream.Seek(0, SeekOrigin.Begin);
-            var line = reader.ReadLine() ?? string.Empty;
-            // verify type of file based on first line - form, module, class
-
-            // get first word from first line
-            var position = 0;
-            var temp = GetWord(line, ref position);
-            switch (temp.ToUpper())
+            using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
-                // module first line
-                // 'Attribute VB_Name = "ModuleName"'
-                case ModuleFirstLine:
-                    mFileType = VbFileType.VbFileModule;
-                    break;
+                using (var reader = new StreamReader(stream))
+                {
+                    reader.BaseStream.Seek(0, SeekOrigin.Begin);
+                    var line = reader.ReadLine() ?? string.Empty;
+                    // verify type of file based on first line - form, module, class
 
-                // form or class first line
-                // 'VERSION 5.00' or 'VERSION 1.0 CLASS'
-                case "VERSION":
-                    position++;
-                    version = GetWord(line, ref position);
+                    // get first word from first line
+                    var position = 0;
+                    var temp = GetWord(line, ref position);
+                    switch (temp.ToUpper())
+                    {
+                        // module first line
+                        // 'Attribute VB_Name = "ModuleName"'
+                        case ModuleFirstLine:
+                            mFileType = VbFileType.VbFileModule;
+                            break;
 
-                    mFileType = line.Contains(ClassFirstLine)
-                        ? VbFileType.VbFileClass
-                        : VbFileType.VbFileForm;
-                    break;
+                        // form or class first line
+                        // 'VERSION 5.00' or 'VERSION 1.0 CLASS'
+                        case "VERSION":
+                            position++;
+                            version = GetWord(line, ref position);
 
-                default:
-                    mFileType = VbFileType.VbFileUnknown;
-                    break;
+                            mFileType = line.Contains(ClassFirstLine)
+                                ? VbFileType.VbFileClass
+                                : VbFileType.VbFileForm;
+                            break;
+
+                        default:
+                            mFileType = VbFileType.VbFileUnknown;
+                            break;
+                    }
+
+                    // if file is still unknown
+                    if (mFileType == VbFileType.VbFileUnknown)
+                    {
+                        ActionResult = "Unknown file type";
+                        return false;
+                    }
+
+                    mSourceModule = new Module
+                    {
+                        Version = version ?? "1.0",
+                        FileName = filename
+                    };
+
+                    // now parse specifics of each type
+                    switch (extension.ToUpper())
+                    {
+                        case "FRM":
+                            mSourceModule.Type = "form";
+                            result = ParseForm(reader);
+                            break;
+
+                        case "BAS":
+                            mSourceModule.Type = "module";
+                            result = ParseModule(reader);
+                            break;
+
+                        case "CLS":
+                            mSourceModule.Type = "class";
+                            result = ParseClass(reader);
+                            break;
+                    }
+
+                    // parse remain - variables, functions, procedures
+                    result = ParseProcedures(reader);
+
+                    stream.Close();
+                    reader.Close();
+                }
             }
-
-            // if file is still unknown
-            if (mFileType == VbFileType.VbFileUnknown)
-            {
-                ActionResult = "Unknown file type";
-                return false;
-            }
-
-            mSourceModule = new Module
-            {
-                Version = version ?? "1.0",
-                FileName = filename
-            };
-
-            // now parse specifics of each type
-            switch (extension.ToUpper())
-            {
-                case "FRM":
-                    mSourceModule.Type = "form";
-                    result = ParseForm(reader);
-                    break;
-
-                case "BAS":
-                    mSourceModule.Type = "module";
-                    result = ParseModule(reader);
-                    break;
-
-                case "CLS":
-                    mSourceModule.Type = "class";
-                    result = ParseClass(reader);
-                    break;
-            }
-
-            // parse remain - variables, functions, procedures
-            result = ParseProcedures(reader);
-
-            stream.Close();
-            reader.Close();
 
             // generate output file
             Code = GetCode(outputPath);
 
             // save result
             var outFileName = outputPath + mTargetModule.FileName;
-            stream = new FileStream(outFileName, FileMode.OpenOrCreate);
-
-            writer = new StreamWriter(stream);
-            writer.Write(Code);
-            writer.Close();
+            File.WriteAllText(outFileName, Code);
 
             // generate resx file if source form contain any images
             if ((mTargetModule.ImagesUsed))
@@ -163,9 +161,9 @@ namespace VB2C
         // OutPath for pictures
         private string GetCode(string OutPath)
         {
-            var oResult = new StringBuilder();
+            string Temp;
 
-            var Temp = String.Empty;
+            var oResult = new StringBuilder();
 
             // convert source to target
             mTargetModule = new Module();
@@ -328,7 +326,7 @@ namespace VB2C
                     }
 
                     // if control is container for other controls
-                    Temp = String.Empty;
+                    Temp = string.Empty;
                     foreach (Control oControl1 in mTargetModule.ControlList)
                     {
                         // all controls ownered by current control
@@ -337,7 +335,7 @@ namespace VB2C
                             Temp = Temp + Indent6 + Indent6 + "this." + oControl1.Name + ",\r\n";
                         }
                     }
-                    if (Temp != String.Empty)
+                    if (Temp != string.Empty)
                     {
                         // exception for menu controls
                         if (oControl.Type == "MainMenu" || oControl.Type == "MenuItem")
@@ -454,7 +452,7 @@ namespace VB2C
                         // name
                         oResult.Append(Indent6 + oEnumItem.Name);
 
-                        if (oEnumItem.Value != String.Empty)
+                        if (oEnumItem.Value != string.Empty)
                         {
                             oResult.Append(" = " + oEnumItem.Value);
                         }
@@ -599,7 +597,7 @@ namespace VB2C
             if (oProperty.Name == "Icon" || oProperty.Name == "Image" || oProperty.Name == "BackgroundImage")
             {
                 // generate resx file and write there image extracted from VB6 frx file
-                var ResourceName = String.Empty;
+                var ResourceName = string.Empty;
 
                 //.BackgroundImage = ((System.Drawing.Bitmap)(resources.GetObject("$this.BackgroundImage")));
                 //.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -688,7 +686,7 @@ namespace VB2C
         {
             var Position = 0;
             string Line = null;
-            var TempString = String.Empty;
+            var TempString = string.Empty;
 
             //VERSION 1.0 CLASS
             //BEGIN
@@ -738,7 +736,7 @@ namespace VB2C
         //End Enum
         private void ParseEnumItem(EnumItem oEnumItem, string Line)
         {
-            var TempString = String.Empty;
+            var TempString = string.Empty;
             var iPosition = 0;
 
             Line = Line.Trim();
@@ -933,7 +931,7 @@ namespace VB2C
 
         private bool ParseModule(StreamReader Reader)
         {
-            var Line = String.Empty;
+            var Line = string.Empty;
             var Position = 0;
 
             // name of module
@@ -959,7 +957,7 @@ namespace VB2C
             var Position = 0;
             var Start = 0;
             var Status = false;
-            var TempString = String.Empty;
+            var TempString = string.Empty;
 
             // parameters delimited by comma
             while (!bFinish)
@@ -1024,7 +1022,7 @@ namespace VB2C
         // ByVal lValue As Long, ByVal sValue As string
         private void ParseProcedureName(Procedure oProcedure, string Line)
         {
-            var TempString = String.Empty;
+            var TempString = string.Empty;
             var iPosition = 0;
             var Start = 0;
             var Status = false;
@@ -1139,7 +1137,7 @@ namespace VB2C
                 Line = Reader.ReadLine();
                 iPosition = 0;
 
-                if (Line != null && Line != String.Empty)
+                if (Line != null && Line != string.Empty)
                 {
                     // check if next line is same command, join it together ?
                     while (Line.Substring(Line.Length - 1, 1) == "_")
@@ -1197,7 +1195,7 @@ namespace VB2C
 
                                 oProcedure = new Procedure();
                                 oProcedure.Comment = sComments;
-                                sComments = String.Empty;
+                                sComments = string.Empty;
                                 ParseProcedureName(oProcedure, Line);
 
                                 bProcedure = true;
@@ -1235,7 +1233,7 @@ namespace VB2C
                         // variable declaration
                         oVariable = new Variable();
                         oVariable.Comment = sComments;
-                        sComments = String.Empty;
+                        sComments = string.Empty;
                         ParseVariableDeclaration(oVariable, Line);
                         bVariable = true;
                         break;
@@ -1255,7 +1253,7 @@ namespace VB2C
                             // first word is name, second =, thirt value if is preset
                             oEnumItem = new EnumItem();
                             oEnumItem.Comment = sComments;
-                            sComments = String.Empty;
+                            sComments = string.Empty;
                             ParseEnumItem(oEnumItem, Line);
                             // add item
                             oEnum.ItemList.Add(oEnumItem);
@@ -1326,7 +1324,7 @@ namespace VB2C
 
         private void ParsePropertyName(Property oProperty, string Line)
         {
-            var TempString = String.Empty;
+            var TempString = string.Empty;
             var iPosition = 0;
             var Start = 0;
             var Status = false;
@@ -1395,7 +1393,7 @@ namespace VB2C
 
         private void ParseVariableDeclaration(Variable oVariable, string Line)
         {
-            var TempString = String.Empty;
+            var TempString = string.Empty;
             var iPosition = 0;
             var Status = false;
 
@@ -1438,10 +1436,10 @@ namespace VB2C
 
         private bool WriteImage(Module SourceModule, string ResourceName, string Value, string OutPath)
         {
-            var Temp = String.Empty;
+            var Temp = string.Empty;
             var Offset = 0;
-            var FrxFile = String.Empty;
-            var sResxName = String.Empty;
+            var FrxFile = string.Empty;
+            var sResxName = string.Empty;
             var Position = 0;
 
             Position = Value.IndexOf(":", 0);

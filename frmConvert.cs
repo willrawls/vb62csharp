@@ -58,11 +58,11 @@ namespace VB2C
 
         private void cmdConvert_Click(object sender, EventArgs e)
         {
-            if (mFileName.Trim() != String.Empty)
+            if (mFileName.Trim() != string.Empty)
             {
                 // parse file
                 var ConvertObject = new ConvertCode();
-                if (txtOutPath.Text.Trim() == String.Empty)
+                if (txtOutPath.Text.Trim() == string.Empty)
                 {
                     MessageBox.Show("Fill out path !", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;

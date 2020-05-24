@@ -21,21 +21,30 @@ namespace VB2C
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        private static void Main()
+        private static void Main(string[] args)
         {
             // get current directory
-            string[] CommandLineArgs;
-            CommandLineArgs = Environment.GetCommandLineArgs();
             // index 0 contain path and name of exe file
-            var sBinPath = Path.GetDirectoryName(CommandLineArgs[0].ToLower());
+            var sBinPath = Path.GetDirectoryName(args[0]);
+
+            var showGUI = false;
+            if (args.Length > 1)
+                showGUI = args[1].ToLower().Replace("-", "") == "gui";
 
             // create configuration object
             Config = new XmlConfig(sBinPath + Path.DirectorySeparatorChar + ConfigFile);
 
-            // create main screen
-            MainForm = new FrmConvert();
-            MainForm.Show();
-            Application.Run(MainForm);
+            if (showGUI)
+            {
+                // create main screen
+                MainForm = new FrmConvert();
+                MainForm.Show();
+                Application.Run(MainForm);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 
@@ -128,7 +137,7 @@ namespace VB2C
                 // lines
                 foreach (string Line in SourceProperty.LineList)
                 {
-                    if (Line.Trim() != String.Empty)
+                    if (Line.Trim() != string.Empty)
                     {
                         TargetProperty.LineList.Add(Line);
                     }
@@ -171,7 +180,7 @@ namespace VB2C
 
         public static bool ParseControls(Module oModule, ArrayList SourceControlList, ArrayList TargetControlList)
         {
-            var Type = String.Empty;
+            var Type = string.Empty;
 
             foreach (Control oSourceControl in SourceControlList)
             {
@@ -417,7 +426,7 @@ namespace VB2C
                     Temp = Line.Trim();
                     if (Temp.Length > 0)
                     {
-                        var TempLine = String.Empty;
+                        var TempLine = string.Empty;
                         // vbNullString = String.Empty
                         if (Temp.IndexOf("vbNullString", 0) > -1)
                         {
@@ -528,7 +537,7 @@ namespace VB2C
                             Temp = TempLine;
                         }
 
-                        if (TempLine == String.Empty)
+                        if (TempLine == string.Empty)
                         {
                             TargetProcedure.LineList.Add(Temp);
                         }
@@ -539,7 +548,7 @@ namespace VB2C
                     }
                     else
                     {
-                        TargetProcedure.LineList.Add(String.Empty);
+                        TargetProcedure.LineList.Add(string.Empty);
                     }
                 }
 
@@ -1157,8 +1166,8 @@ namespace VB2C
             foreach (XmlElement element in nodeList)
             {
                 oItem = new ControlListItem();
-                oItem.Vb6Name = String.Empty;
-                oItem.CsharpName = String.Empty;
+                oItem.Vb6Name = string.Empty;
+                oItem.CsharpName = string.Empty;
                 oItem.Unsupported = false;
                 oItem.InvisibleAtRuntime = false;
                 foreach (XmlElement childElement in element)
@@ -1197,14 +1206,14 @@ namespace VB2C
 
         private static void ConvertFont(ControlProperty SourceProperty, ControlProperty TargetProperty)
         {
-            var FontName = String.Empty;
+            var FontName = string.Empty;
             var FontSize = 0;
             var FontCharSet = 0;
             var FontBold = false;
             var FontUnderline = false;
             var FontItalic = false;
             var FontStrikethrough = false;
-            var Temp = String.Empty;
+            var Temp = string.Empty;
             //      BeginProperty Font
             //         Name            =   "Arial"
             //         Size            =   8.25
@@ -1268,27 +1277,27 @@ namespace VB2C
             TargetProperty.Value = "new System.Drawing.Font(" + FontName + ",";
             TargetProperty.Value = TargetProperty.Value + FontSize.ToString() + "F,";
 
-            Temp = String.Empty;
+            Temp = string.Empty;
             if (FontBold)
             {
                 Temp = "System.Drawing.FontStyle.Bold";
             }
             if (FontItalic)
             {
-                if (Temp != String.Empty) { Temp = Temp + " | "; }
+                if (Temp != string.Empty) { Temp = Temp + " | "; }
                 Temp = Temp + "System.Drawing.FontStyle.Italic";
             }
             if (FontUnderline)
             {
-                if (Temp != String.Empty) { Temp = Temp + " | "; }
+                if (Temp != string.Empty) { Temp = Temp + " | "; }
                 Temp = Temp + "System.Drawing.FontStyle.Underline";
             }
             if (FontStrikethrough)
             {
-                if (Temp != String.Empty) { Temp = Temp + " | "; }
+                if (Temp != string.Empty) { Temp = Temp + " | "; }
                 Temp = Temp + "System.Drawing.FontStyle.Strikeout";
             }
-            if (Temp == String.Empty)
+            if (Temp == string.Empty)
             {
                 TargetProperty.Value = TargetProperty.Value + " System.Drawing.FontStyle.Regular,";
             }
