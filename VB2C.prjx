@@ -1,0 +1,39 @@
+<Project name="VB2C" description="" newfilesearch="None" enableviewstate="True" version="1.1" projecttype="C#">
+  <Contents>
+    <File name=".\AssemblyInfo.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Tools.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Control.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Module.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\ControlProperty.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Property.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Variable.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Procedure.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Parameter.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\EnumItem.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\Enum.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\frmConvert.resx" subtype="Code" buildaction="EmbedAsResource" dependson="" data="" />
+    <File name=".\frmConvert.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\ConvertCode.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\XMLINIFile.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+    <File name=".\ControlListItem.cs" subtype="Code" buildaction="Compile" dependson="" data="" />
+  </Contents>
+  <References />
+  <DeploymentInformation target="" script="" strategy="File" />
+  <Configuration runwithwarnings="False" name="Release">
+    <CodeGeneration runtime="MsNet" compiler="Csc" warninglevel="4" includedebuginformation="False" optimize="True" unsafecodeallowed="False" generateoverflowchecks="False" mainclass="" target="WinExe" definesymbols="TRACE" generatexmldocumentation="False" win32Icon="..\..\..\Tellsoft\Visto#\Project\ResourceManager\OMEGA.ICO" />
+    <Execution commandlineparameters="" consolepause="True" />
+    <Output directory=".\Release\" assembly="VB2C" />
+  </Configuration>
+  <Configurations active="Release">
+    <Configuration runwithwarnings="False" name="Debug">
+      <CodeGeneration runtime="MsNet" compiler="Csc" warninglevel="4" includedebuginformation="True" optimize="False" unsafecodeallowed="False" generateoverflowchecks="False" mainclass="" target="WinExe" definesymbols="DEBUG;TRACE" generatexmldocumentation="False" win32Icon="..\..\..\Tellsoft\Visto#\Project\ResourceManager\OMEGA.ICO" />
+      <Execution commandlineparameters="" consolepause="True" />
+      <Output directory=".\Debug\" assembly="VB2C" />
+    </Configuration>
+    <Configuration runwithwarnings="False" name="Release">
+      <CodeGeneration runtime="MsNet" compiler="Csc" warninglevel="4" includedebuginformation="False" optimize="True" unsafecodeallowed="False" generateoverflowchecks="False" mainclass="" target="WinExe" definesymbols="TRACE" generatexmldocumentation="False" win32Icon="..\..\..\Tellsoft\Visto#\Project\ResourceManager\OMEGA.ICO" />
+      <Execution commandlineparameters="" consolepause="True" />
+      <Output directory=".\Release\" assembly="VB2C" />
+    </Configuration>
+  </Configurations>
+</Project>
