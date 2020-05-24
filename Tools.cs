@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
+using MetX.Library;
 
 namespace VB2C
 {
@@ -113,14 +114,16 @@ namespace VB2C
 
         public static bool ParseClassProperties(Module SourceModule, Module TargetModule)
         {
-            Property TargetProperty;
-
             foreach (Property SourceProperty in SourceModule.PropertyList)
             {
-                TargetProperty = new Property();
+                var TargetProperty = new Property
+                {
+                    Name = SourceProperty.Name, 
+                    Comment = SourceProperty.Comment,
+                    Scope = SourceProperty.Scope,
+                    Type = VariableTypeConvert(SourceProperty.Type),
+                };
 
-                TargetProperty.Name = SourceProperty.Name;
-                TargetProperty.Comment = SourceProperty.Comment;
                 switch (SourceProperty.Direction)
                 {
                     case "Get":
@@ -132,16 +135,10 @@ namespace VB2C
                         TargetProperty.Direction = "set";
                         break;
                 }
-                TargetProperty.Scope = SourceProperty.Scope;
-                TargetProperty.Type = VariableTypeConvert(SourceProperty.Type);
                 // lines
                 foreach (string Line in SourceProperty.LineList)
-                {
                     if (Line.Trim() != string.Empty)
-                    {
                         TargetProperty.LineList.Add(Line);
-                    }
-                }
 
                 TargetModule.PropertyList.Add(TargetProperty);
             }
@@ -233,49 +230,47 @@ namespace VB2C
             return true;
         }
 
-        public static bool ParseModule(Module SourceModule, Module TargetModule)
+        public static bool ParseModule(Module SourceModule, Module targetModule)
         {
             ControlListLoad();
 
             // module name
-            TargetModule.Name = SourceModule.Name;
+            targetModule.Name = SourceModule.Name;
             // file name
-            TargetModule.FileName = Path.GetFileNameWithoutExtension(SourceModule.FileName) + ".cs";
+            targetModule.FileName = Path.GetFileNameWithoutExtension(SourceModule.FileName) + ".cs";
             // type
-            TargetModule.Type = SourceModule.Type;
+            targetModule.Type = SourceModule.Type;
             // version
-            TargetModule.Version = SourceModule.Version;
+            targetModule.Version = SourceModule.Version;
             // process own properties - forms
-            ParseModuleProperties(TargetModule, SourceModule.FormPropertyList, TargetModule.FormPropertyList);
+            ParseModuleProperties(targetModule, SourceModule.FormPropertyList, targetModule.FormPropertyList);
             // process controls - form
-            ParseControls(TargetModule, SourceModule.ControlList, TargetModule.ControlList);
+            ParseControls(targetModule, SourceModule.ControlList, targetModule.ControlList);
 
             // special exception for menu
-            if (TargetModule.MenuUsed)
+            if (targetModule.MenuUsed)
             {
                 // add main menu control
-                var oControl = new Control();
-                oControl.Name = "MainMenu";
-                oControl.Owner = TargetModule.Name;
-                oControl.Type = "MainMenu";
-                oControl.Valid = true;
-                oControl.InvisibleAtRuntime = true;
-                TargetModule.ControlList.Insert(0, oControl);
-                foreach (Control oMenuControl in TargetModule.ControlList)
+                var oControl = new Control
                 {
-                    if ((oMenuControl.Type == "MenuItem") && (oMenuControl.Owner == TargetModule.Name))
-                    {
+                    Name = "MainMenu",
+                    Owner = targetModule.Name,
+                    Type = "MainMenu",
+                    Valid = true,
+                    InvisibleAtRuntime = true
+                };
+                targetModule.ControlList.Insert(0, oControl);
+                foreach (Control oMenuControl in targetModule.ControlList)
+                    if ((oMenuControl.Type == "MenuItem") && (oMenuControl.Owner == targetModule.Name))
                         // rewrite previous owner
                         oMenuControl.Owner = oControl.Name;
-                    }
-                }
             }
 
             var TempControlList = new ArrayList();
             var TabControlIndex = 0;
 
             // check for TabDlg.SSTab
-            foreach (Control oTargetControl in TargetModule.ControlList)
+            foreach (Control oTargetControl in targetModule.ControlList)
             {
                 if ((oTargetControl.Type == "TabControl") && (oTargetControl.Valid))
                 {
@@ -343,7 +338,7 @@ namespace VB2C
                                 TabName = GetControlIndexName(TabName);
                                 // search for "oTargetProperty.Value" control
                                 // and replace owner of this control to current tab
-                                foreach (Control oNewOwner in TargetModule.ControlList)
+                                foreach (Control oNewOwner in targetModule.ControlList)
                                 {
                                     if ((oNewOwner.Name == TabName) && (!oNewOwner.InvisibleAtRuntime))
                                     {
@@ -363,19 +358,19 @@ namespace VB2C
                 var Position = 0;
                 foreach (Control oControl in TempControlList)
                 {
-                    TargetModule.ControlList.Insert(TabControlIndex + Position, oControl);
+                    targetModule.ControlList.Insert(TabControlIndex + Position, oControl);
                     Position++;
                 }
             }
 
             // process enums
-            ParseEnums(SourceModule, TargetModule);
+            ParseEnums(SourceModule, targetModule);
             // process variables
-            ParseVariables(SourceModule.VariableList, TargetModule.VariableList);
+            ParseVariables(SourceModule.VariableList, targetModule.VariableList);
             // process properties
-            ParseClassProperties(SourceModule, TargetModule);
+            ParseClassProperties(SourceModule, targetModule);
             // process procedures
-            ParseProcedures(SourceModule, TargetModule);
+            ParseProcedures(SourceModule, targetModule);
 
             return true;
         }
@@ -384,12 +379,10 @@ namespace VB2C
                                               ArrayList SourcePropertyList,
                                               ArrayList TargetPropertyList)
         {
-            ControlProperty TargetProperty = null;
-
             // each property
             foreach (ControlProperty SourceProperty in SourcePropertyList)
             {
-                TargetProperty = new ControlProperty();
+                var TargetProperty = new ControlProperty();
                 if (ParseProperties(oModule.Type, SourceProperty, TargetProperty, SourcePropertyList))
                 {
                     if (TargetProperty.Name == "BackgroundImage" || TargetProperty.Name == "Icon")
@@ -405,25 +398,23 @@ namespace VB2C
         public static bool ParseProcedures(Module SourceModule, Module TargetModule)
         {
             const string indent6 = "      ";
-            Procedure TargetProcedure;
-            string Temp;
 
             foreach (Procedure SourceProcedure in SourceModule.ProcedureList)
             {
-                TargetProcedure = new Procedure();
-
-                TargetProcedure.Name = SourceProcedure.Name;
-                TargetProcedure.Scope = SourceProcedure.Scope;
-                TargetProcedure.Comment = SourceProcedure.Comment;
-                TargetProcedure.Type = SourceProcedure.Type;
-                TargetProcedure.ReturnType = VariableTypeConvert(SourceProcedure.ReturnType);
-
-                TargetProcedure.ParameterList = SourceProcedure.ParameterList;
-
+                var TargetProcedure = new Procedure
+                {
+                    Name = SourceProcedure.Name,
+                    Scope = SourceProcedure.Scope,
+                    Comment = SourceProcedure.Comment,
+                    Type = SourceProcedure.Type,
+                    ReturnType = VariableTypeConvert(SourceProcedure.ReturnType),
+                    ParameterList = SourceProcedure.ParameterList
+                };
+                
                 // lines
                 foreach (string Line in SourceProcedure.LineList)
                 {
-                    Temp = Line.Trim();
+                    var Temp = Line.Trim();
                     if (Temp.Length > 0)
                     {
                         var TempLine = string.Empty;
@@ -436,7 +427,10 @@ namespace VB2C
                         // Nothing = null
                         if (Temp.IndexOf("Nothing", 0) > -1)
                         {
-                            TempLine = Temp.Replace("Nothing", "null");
+                            TempLine = Temp
+                                .Replace("Set ", "")
+                                .Replace("Nothing", "null");
+                            TempLine += ";";
                             Temp = TempLine;
                         }
                         // Set
@@ -446,7 +440,7 @@ namespace VB2C
                             Temp = TempLine;
                         }
                         // remark
-                        if (Temp[0] == (char)39) // '
+                        if (Temp[0] == '\'') // '
                         {
                             TempLine = Temp.Replace("'", "//");
                             Temp = TempLine;
@@ -531,19 +525,29 @@ namespace VB2C
                         }
 
                         // New
+                        if (Line.Contains("If ") 
+                            && Line.Contains("Then") 
+                            && Line.TokensAfter(1, "Then").Trim().Length > 0)
+                        {
+                            TempLine = Temp.Replace("New", "new");
+                            Temp = TempLine;
+                        }
+
+                        // New
                         if (Temp.IndexOf("New", 0) > -1)
                         {
                             TempLine = Temp.Replace("New", "new");
                             Temp = TempLine;
                         }
 
-                        if (TempLine == string.Empty)
+                        if (Temp.IndexOf("On Error Resume Next", 0) > -1)
                         {
-                            TargetProcedure.LineList.Add(Temp);
+                            TargetProcedure.LineList.Add("~~AtBottom: catch(Exception e) { }");
+                            Temp = TempLine = "try\r\n{\r\n";
                         }
                         else
                         {
-                            TargetProcedure.LineList.Add(TempLine);
+                            TargetProcedure.LineList.Add(TempLine == string.Empty ? Temp : TempLine);
                         }
                     }
                     else
@@ -562,10 +566,7 @@ namespace VB2C
                                         ControlProperty TargetProperty,
                                         ArrayList SourcePropertyList)
         {
-            var ValidProperty = false;
-
-            ValidProperty = true;
-
+            var ValidProperty = true;
             TargetProperty.Valid = true;
 
             switch (SourceProperty.Name)
@@ -580,7 +581,6 @@ namespace VB2C
                 case "WhatsThisHelpID":
                 case "Mask":              // maskedit
                 case "PromptChar":        // maskedit
-
                     ValidProperty = false;
                     break;
 
@@ -1125,12 +1125,10 @@ namespace VB2C
 
         public static bool ParseVariables(ArrayList SourceVariableList, ArrayList TargetVariableList)
         {
-            Variable TargetVariable = null;
-
             // each property
             foreach (Variable SourceVariable in SourceVariableList)
             {
-                TargetVariable = new Variable();
+                var TargetVariable = new Variable();
                 if (ParseVariable(SourceVariable, TargetVariable))
                 {
                     TargetVariableList.Add(TargetVariable);

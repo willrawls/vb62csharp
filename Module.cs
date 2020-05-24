@@ -23,6 +23,8 @@ namespace VB2C
         public ArrayList VariableList { get; set; }
         public string Version { get; set; }
 
+        public string Comment { get; set; }
+
         public Module()
         {
             FormPropertyList = new ArrayList();

@@ -186,12 +186,15 @@ namespace VB2C
             }
 
             oResult.Append("\r\n");
-            oResult.Append("namespace ProjectName\r\n");
+            oResult.Append($"namespace {ProjectNamespace}\r\n");
             // start namepsace region
             oResult.Append("{\r\n");
-            oResult.Append(Indent2 + "/// <summary>\r\n");
-            oResult.Append(Indent2 + "/// Summary description for " + mSourceModule.Name + ".\r\n");
-            oResult.Append(Indent2 + "/// </summary>\r\n");
+            if (!string.IsNullOrEmpty(mSourceModule.Comment))
+            {
+                oResult.Append(Indent2 + "/// <summary>\r\n");
+                oResult.Append(Indent2 + "///   " + mSourceModule.Comment + ".\r\n");
+                oResult.Append(Indent2 + "/// </summary>\r\n");
+            }
 
             switch (mTargetModule.Type)
             {
@@ -590,6 +593,8 @@ namespace VB2C
             return oResult.ToString();
         }
 
+        public string ProjectNamespace { get; set; } = "MetX.SliceAndDice";
+
         private void GetPropertyRow(StringBuilder oResult, string Type,
                                     string Name, ControlProperty oProperty, string OutPath)
         {
@@ -724,6 +729,14 @@ namespace VB2C
 
                         case "VB_Exposed":
                             return true;
+
+                        case "VB_Description":
+                            Position++;
+                            TempString = GetWord(Line, ref Position);
+                            Position++;
+                            mSourceModule.Comment = GetWord(Line, ref Position).Replace("\"", string.Empty);
+                            break;
+
                     }
                 }
             }
@@ -736,7 +749,6 @@ namespace VB2C
         //End Enum
         private void ParseEnumItem(EnumItem oEnumItem, string Line)
         {
-            var TempString = string.Empty;
             var iPosition = 0;
 
             Line = Line.Trim();
@@ -744,7 +756,7 @@ namespace VB2C
             oEnumItem.Name = GetWord(Line, ref iPosition);
             iPosition++;
             // next word =
-            TempString = GetWord(Line, ref iPosition);
+            GetWord(Line, ref iPosition);
             iPosition++;
             // optional
             oEnumItem.Value = GetWord(Line, ref iPosition);
