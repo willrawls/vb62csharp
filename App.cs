@@ -12,13 +12,13 @@ namespace MetX.VB6ToCSharp
         public static FrmConvert MainForm;
 
         // configuration constants
-        private const string ConfigFile = "vb2c.xml";
+        public const string ConfigFile = "vb2c.xml";
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        private static void Main(string[] args)
+        public static void Main(string[] args)
         {
             // get current directory
             // index 0 contain path and name of exe file

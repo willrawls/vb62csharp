@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 
 namespace MetX.VB6ToCSharp
 {
@@ -7,58 +8,58 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class Module
     {
-        public ArrayList ControlList { get; set; }
-        public ArrayList EnumList { get; set; }
+        public List<Control> ControlList { get; set; }
+        public List<Enum> EnumList { get; set; }
         public string FileName { get; set; }
-        public ArrayList FormPropertyList { get; }
-        public ArrayList ImageList { get; set; }
+        public List<ControlProperty> FormPropertyList { get; }
+        public List<string> ImageList { get; set; }
         public bool ImagesUsed { get; set; } = false;
         public bool MenuUsed { get; set; } = false;
         public string Name { get; set; }
 
-        public ArrayList ProcedureList { get; set; }
-        public ArrayList PropertyList { get; set; }
+        public List<Procedure> ProcedureList { get; set; }
+        public List<Property> PropertyList { get; set; }
         public string Type { get; set; }
 
-        public ArrayList VariableList { get; set; }
+        public List<Variable> VariableList { get; set; }
         public string Version { get; set; }
 
         public string Comment { get; set; }
 
         public Module()
         {
-            FormPropertyList = new ArrayList();
-            ControlList = new ArrayList();
-            ImageList = new ArrayList();
-            VariableList = new ArrayList();
-            PropertyList = new ArrayList();
-            ProcedureList = new ArrayList();
-            EnumList = new ArrayList();
+            FormPropertyList = new List<ControlProperty>();
+            ControlList = new List<Control>();
+            ImageList = new List<string>();
+            VariableList = new List<Variable>();
+            PropertyList = new List<Property>();
+            ProcedureList = new List<Procedure>();
+            EnumList = new List<Enum>();
         }
 
-        public void ControlAdd(Control oControl)
+        public void ControlAdd(Control control)
         {
-            ControlList.Add(oControl);
+            ControlList.Add(control);
         }
 
-        public void FormPropertyAdd(ControlProperty oProperty)
+        public void FormPropertyAdd(ControlProperty property)
         {
-            FormPropertyList.Add(oProperty);
+            FormPropertyList.Add(property);
         }
 
-        public void ProcedureAdd(Procedure oProcedure)
+        public void ProcedureAdd(Procedure procedure)
         {
-            ProcedureList.Add(oProcedure);
+            ProcedureList.Add(procedure);
         }
 
-        public void PropertyAdd(Property oProperty)
+        public void PropertyAdd(Property property)
         {
-            PropertyList.Add(oProperty);
+            PropertyList.Add(property);
         }
 
-        public void VariableAdd(Variable oVariable)
+        public void VariableAdd(Variable variable)
         {
-            VariableList.Add(oVariable);
+            VariableList.Add(variable);
         }
     }
 }

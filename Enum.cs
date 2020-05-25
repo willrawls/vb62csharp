@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 
 namespace MetX.VB6ToCSharp
 {
@@ -7,7 +8,7 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class Enum
     {
-        public ArrayList ItemList { get; set; }
+        public List<EnumItem> ItemList { get; set; }
 
         public string Name { get; set; }
 
@@ -15,7 +16,7 @@ namespace MetX.VB6ToCSharp
 
         public Enum()
         {
-            ItemList = new ArrayList();
+            ItemList = new List<EnumItem>();
         }
     }
 }

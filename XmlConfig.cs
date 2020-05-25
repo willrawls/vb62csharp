@@ -4,8 +4,8 @@ namespace MetX.VB6ToCSharp
 {
     public class XmlConfig
     {
-        private readonly XmlDocument doc = new XmlDocument();
-        private readonly bool doesExist;
+        public readonly XmlDocument doc = new XmlDocument();
+        public readonly bool doesExist;
 
         public string FileName { get; }
 
@@ -136,7 +136,7 @@ namespace MetX.VB6ToCSharp
         //
         // **********************************************************************************
 
-        private string GetKeyValue(string aSection, string aKey, string aDefaultValue)
+        public string GetKeyValue(string aSection, string aKey, string aDefaultValue)
         {
             XmlNode node;
             node = (doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
@@ -144,7 +144,7 @@ namespace MetX.VB6ToCSharp
             return node.InnerText;
         }
 
-        private bool SetKeyValue(string aSection, string aKey, string aValue)
+        public bool SetKeyValue(string aSection, string aKey, string aValue)
         {
             XmlNode node1;
             XmlNode node2;

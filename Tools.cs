@@ -1,17 +1,18 @@
+using MetX.Library;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
     // parse VB6 properties and values to C#
     internal sealed class Tools
     {
-        private static Hashtable _mControlList;
+        public static Hashtable _mControlList;
 
         public static void GetFrxImage(string imageFile, int imageOffset, out byte[] imageString)
         {
@@ -55,7 +56,7 @@ namespace MetX.VB6ToCSharp
             {
                 var targetProperty = new Property
                 {
-                    Name = sourceProperty.Name, 
+                    Name = sourceProperty.Name,
                     Comment = sourceProperty.Comment,
                     Scope = sourceProperty.Scope,
                     Type = VariableTypeConvert(sourceProperty.Type),
@@ -82,24 +83,22 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseControlProperties(Module oModule, Control oControl,
-                                                ArrayList sourcePropertyList,
-                                                ArrayList targetPropertyList)
+        public static bool ParseControlProperties(Module oModule, Control control,
+                                                List<ControlProperty> sourcePropertyList,
+                                                List<ControlProperty> targetPropertyList)
         {
-            ControlProperty targetProperty = null;
-
             // each property
             foreach (ControlProperty sourceProperty in sourcePropertyList)
             {
                 if (sourceProperty.Name == "Index")
                 {
                     // Index           =   3
-                    oControl.Name = oControl.Name + sourceProperty.Value;
+                    control.Name = control.Name + sourceProperty.Value;
                 }
                 else
                 {
-                    targetProperty = new ControlProperty();
-                    if (ParseProperties(oControl.Type, sourceProperty, targetProperty, sourcePropertyList))
+                    var targetProperty = new ControlProperty();
+                    if (ParseProperties(control.Type, sourceProperty, targetProperty, sourcePropertyList))
                     {
                         if (targetProperty.Name == "Image")
                         {
@@ -112,28 +111,29 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseControls(Module oModule, ArrayList sourceControlList, ArrayList targetControlList)
+        public static bool ParseControls(Module oModule, List<Control> sourceControlList, List<Control> targetControlList)
         {
             var type = string.Empty;
 
-            foreach (Control oSourceControl in sourceControlList)
+            foreach (Control sourceControl in sourceControlList)
             {
-                var oTargetControl = new Control();
-
-                oTargetControl.Name = oSourceControl.Name;
-                oTargetControl.Owner = oSourceControl.Owner;
-                oTargetControl.Container = oSourceControl.Container;
-                oTargetControl.Valid = true;
+                var targetControl = new Control
+                {
+                    Name = sourceControl.Name,
+                    Owner = sourceControl.Owner,
+                    Container = sourceControl.Container,
+                    Valid = true
+                };
 
                 // compare upper case type
-                if (_mControlList.ContainsKey(oSourceControl.Type.ToUpper()))
+                if (_mControlList.ContainsKey(sourceControl.Type.ToUpper()))
                 {
-                    var oItem = (ControlListItem)_mControlList[oSourceControl.Type.ToUpper()];
+                    var oItem = (ControlListItem)_mControlList[sourceControl.Type.ToUpper()];
 
                     if (oItem.Unsupported)
                     {
                         type = "Unsuported";
-                        oTargetControl.Valid = false;
+                        targetControl.Valid = false;
                     }
                     else
                     {
@@ -143,17 +143,17 @@ namespace MetX.VB6ToCSharp
                             oModule.MenuUsed = true;
                         }
                     }
-                    oTargetControl.InvisibleAtRuntime = oItem.InvisibleAtRuntime;
+                    targetControl.InvisibleAtRuntime = oItem.InvisibleAtRuntime;
                 }
                 else
                 {
-                    type = oSourceControl.Type;
+                    type = sourceControl.Type;
                 }
 
-                oTargetControl.Type = type;
-                ParseControlProperties(oModule, oTargetControl, oSourceControl.PropertyList, oTargetControl.PropertyList);
+                targetControl.Type = type;
+                ParseControlProperties(oModule, targetControl, sourceControl.PropertyList, targetControl.PropertyList);
 
-                targetControlList.Add(oTargetControl);
+                targetControlList.Add(targetControl);
             }
             return true;
         }
@@ -188,7 +188,7 @@ namespace MetX.VB6ToCSharp
             if (targetModule.MenuUsed)
             {
                 // add main menu control
-                var oControl = new Control
+                var control = new Control
                 {
                     Name = "MainMenu",
                     Owner = targetModule.Name,
@@ -196,90 +196,78 @@ namespace MetX.VB6ToCSharp
                     Valid = true,
                     InvisibleAtRuntime = true
                 };
-                targetModule.ControlList.Insert(0, oControl);
+                targetModule.ControlList.Insert(0, control);
                 foreach (Control oMenuControl in targetModule.ControlList)
                     if ((oMenuControl.Type == "MenuItem") && (oMenuControl.Owner == targetModule.Name))
                         // rewrite previous owner
-                        oMenuControl.Owner = oControl.Name;
+                        oMenuControl.Owner = control.Name;
             }
 
-            var tempControlList = new ArrayList();
+            var tempControlList = new List<Control>();
             var tabControlIndex = 0;
 
             // check for TabDlg.SSTab
-            foreach (Control oTargetControl in targetModule.ControlList)
+            foreach (Control targetControl in targetModule.ControlList)
             {
-                if ((oTargetControl.Type == "TabControl") && (oTargetControl.Valid))
+                Control tabPage = null;
+                var index = 0;
+                if ((targetControl.Type == "TabControl") && (targetControl.Valid))
                 {
-                    // for each source table is necessary
-                    //          this.tabControl1 = new System.Windows.Forms.TabControl();
-                    //          this.tabPage1 = new System.Windows.Forms.TabPage();
-
-                    var index = 0;
-                    Control oTabPage = null;
                     // each property
-                    foreach (ControlProperty oTargetProperty in oTargetControl.PropertyList)
+                    foreach (ControlProperty targetProperty in targetControl.PropertyList)
                     {
-                        // TabCaption = create new tab
-                        //      this.SSTab1.(TabCaption(0)) = "Tab 0";
+                        Console.WriteLine(targetProperty.Name);
 
-                        Console.WriteLine(oTargetProperty.Name);
-
-                        if (oTargetProperty.Name.IndexOf("TabCaption(" + index.ToString() + ")", 0) > -1)
+                        if (targetProperty.Name.Contains($"TabCaption({index})"))
                         {
                             // new tab
-                            oTabPage = new Control();
-                            oTabPage.Type = "TabPage";
-                            oTabPage.Name = "tabPage" + index.ToString();
-                            oTabPage.Owner = oTargetControl.Name;
-                            oTabPage.Container = true;
-                            oTabPage.Valid = true;
-                            oTabPage.InvisibleAtRuntime = false;
-
-                            // add some necessary properties
-                            var targetProperty = new ControlProperty();
-                            targetProperty.Name = "Location";
-                            targetProperty.Value = "new System.Drawing.Point(4, 22)";
-                            targetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(targetProperty);
-
-                            targetProperty = new ControlProperty();
-                            targetProperty.Name = "Size";
-                            targetProperty.Value = "new System.Drawing.Size(477, 374)";
-                            targetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(targetProperty);
-
-                            targetProperty = new ControlProperty();
-                            targetProperty.Name = "Text";
-                            targetProperty.Value = oTargetProperty.Value;
-                            targetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(targetProperty);
-
-                            targetProperty = new ControlProperty();
-                            targetProperty.Name = "TabIndex";
-                            targetProperty.Value = index.ToString();
-                            targetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(targetProperty);
-
-                            tempControlList.Add(oTabPage);
+                            tempControlList.Add(new Control
+                            {
+                                Type = "TabPage",
+                                Name = "tabPage" + index.ToString(),
+                                Owner = targetControl.Name,
+                                Container = true,
+                                Valid = true,
+                                InvisibleAtRuntime = false,
+                                // add some necessary properties
+                                PropertyList = new List<ControlProperty>
+                                {
+                                    new ControlProperty
+                                    {
+                                        Name = "Location", Value = "new System.Drawing.Point(4, 22)", Valid = true
+                                    },
+                                    new ControlProperty
+                                    {
+                                        Name = "Size", Value = "new System.Drawing.Size(477, 374)", Valid = true
+                                    },
+                                    new ControlProperty
+                                    {
+                                        Name = "Text", Value = targetProperty.Value, Valid = true
+                                    },
+                                    new ControlProperty
+                                    {
+                                        Name = "TabIndex", Value = index.ToString(), Valid = true
+                                    }
+                                }
+                            });
                             index++;
                         }
 
                         // Control = change owner of control to current tab
                         //      this.SSTab1.(Tab(0).Control(0) = "ImageControl";
-                        if (oTargetProperty.Name.IndexOf(".Control(", 0) > -1)
+                        if (targetProperty.Name.Contains(".Control("))
                         {
-                            if (oTargetProperty.Name.IndexOf("Enable", 0) == -1)
+                            if (!targetProperty.Name.Contains("Enable"))
                             {
-                                var tabName = oTargetProperty.Value.Substring(1, oTargetProperty.Value.Length - 2);
+                                var tabName = targetProperty.Value.Substring(1, targetProperty.Value.Length - 2);
                                 tabName = GetControlIndexName(tabName);
-                                // search for "oTargetProperty.Value" control
+                                // search for "targetProperty.Value" control
                                 // and replace owner of this control to current tab
                                 foreach (Control oNewOwner in targetModule.ControlList)
                                 {
                                     if ((oNewOwner.Name == tabName) && (!oNewOwner.InvisibleAtRuntime))
                                     {
-                                        oNewOwner.Owner = oTabPage.Name;
+                                        oNewOwner.Owner = tabPage.Name;
                                     }
                                 }
                             }
@@ -293,9 +281,9 @@ namespace MetX.VB6ToCSharp
             {
                 // right order of tabs
                 var position = 0;
-                foreach (Control oControl in tempControlList)
+                foreach (Control control in tempControlList)
                 {
-                    targetModule.ControlList.Insert(tabControlIndex + position, oControl);
+                    targetModule.ControlList.Insert(tabControlIndex + position, control);
                     position++;
                 }
             }
@@ -313,8 +301,8 @@ namespace MetX.VB6ToCSharp
         }
 
         public static bool ParseModuleProperties(Module oModule,
-                                              ArrayList sourcePropertyList,
-                                              ArrayList targetPropertyList)
+                                              List<ControlProperty> sourcePropertyList,
+                                              List<ControlProperty> targetPropertyList)
         {
             // each property
             foreach (ControlProperty sourceProperty in sourcePropertyList)
@@ -347,154 +335,14 @@ namespace MetX.VB6ToCSharp
                     ReturnType = VariableTypeConvert(sourceProcedure.ReturnType),
                     ParameterList = sourceProcedure.ParameterList
                 };
-                
+
                 // lines
-                foreach (string originalLine in sourceProcedure.LineList.ToArray().Select(x => x.Trim()))
+                foreach (string originalLine in sourceProcedure.LineList)
                 {
-                    var line = originalLine.Trim();
-                    if (line.Length > 0)
-                    {
-                        var translatedLine = string.Empty;
-                        // vbNullString = string.empty
-                        if (line.IndexOf("vbNullString", 0) > -1)
-                        {
-                            translatedLine = line.Replace("vbNullString", "string.Empty");
-                        }
-                        // Nothing = null
-                        if (line.IndexOf("Nothing", 0) > -1)
-                        {
-                            translatedLine = line
-                                .Replace("Set ", "")
-                                .Replace("Nothing", "null");
-                            translatedLine += ";";
-                            line = translatedLine;
-                        }
-                        // Set
-                        if (line.IndexOf("Set ", 0) > -1)
-                        {
-                            translatedLine = line.Replace("Set ", " ");
-                            line = translatedLine;
-                        }
-                        // remark
-                        if (line[0] == '\'') // '
-                        {
-                            translatedLine = line.Replace("'", "//");
-                            line = translatedLine;
-                        }
-                        // & to +
-                        if (line.IndexOf("&", 0) > -1)
-                        {
-                            translatedLine = line.Replace("&", "+");
-                            line = translatedLine;
-                        }
-                        // Select Case
-                        if (line.IndexOf("Select Case", 0) > -1)
-                        {
-                            translatedLine = line.Replace("Select Case", "switch");
-                            line = translatedLine;
-                        }
-                        // End Select
-                        if (line.IndexOf("End Select", 0) > -1)
-                        {
-                            translatedLine = line.Replace("End Select", "}");
-                            line = translatedLine;
-                        }
-                        // _
-                        if (line.IndexOf(" _", 0) > -1)
-                        {
-                            translatedLine = line.Replace(" _", "\r\n");
-                            line = translatedLine;
-                        }
-                        // If
-                        if (line.IndexOf("If ", 0) > -1)
-                        {
-                            translatedLine = line.Replace("If ", "if ( ");
-                            line = translatedLine;
-                        }
-                        // Not
-                        if (line.IndexOf("Not ", 0) > -1)
-                        {
-                            translatedLine = line.Replace("Not ", "! ");
-                            line = translatedLine;
-                        }
-                        // then
-                        if (line.IndexOf(" Then", 0) > -1)
-                        {
-                            translatedLine = line.Replace(" Then", " )\r\n" + indent6 + "{\r\n");
-                            line = translatedLine;
-                        }
-                        // else
-                        if (line.IndexOf("Else", 0) > -1)
-                        {
-                            translatedLine = line.Replace("Else", "}\r\n" + indent6 + "else\r\n" + indent6 + "{");
-                            line = translatedLine;
-                        }
-                        // End if
-                        if (line.IndexOf("End If", 0) > -1)
-                        {
-                            translatedLine = line.Replace("End If", "}");
-                            line = translatedLine;
-                        }
-                        // Unload Me
-                        if (line.IndexOf("Unload Me", 0) > -1)
-                        {
-                            translatedLine = line.Replace("Unload Me", "Close()");
-                            line = translatedLine;
-                        }
-                        // .Caption
-                        if (line.IndexOf(".Caption", 0) > -1)
-                        {
-                            translatedLine = line.Replace(".Caption", ".Text");
-                            line = translatedLine;
-                        }
-                        // True
-                        if (line.IndexOf("True", 0) > -1)
-                        {
-                            translatedLine = line.Replace("True", "true");
-                            line = translatedLine;
-                        }
-                        // False
-                        if (line.IndexOf("False", 0) > -1)
-                        {
-                            translatedLine = line.Replace("False", "false");
-                            line = translatedLine;
-                        }
-
-                        // New
-                        if (line.Contains("If ") 
-                            && line.Contains("Then") 
-                            && line.TokensAfter(1, "Then").Trim().Length > 0)
-                        {
-                            translatedLine = line.Replace("New", "new");
-                            line = translatedLine;
-                        }
-
-                        // New
-                        if (line.IndexOf("New", 0) > -1)
-                        {
-                            translatedLine = line.Replace("New", "new");
-                            line = translatedLine;
-                        }
-
-                        if (line.IndexOf("On Error Resume Next", 0) > -1)
-                        {
-                            targetProcedure.BottomLineList.Add(@"
-        catch(Exception e) 
-        { 
-            /* ON ERROR RESUME NEXT (ish) */ 
-        }
-");
-                            line = translatedLine = "try\r\n{\r\n";
-                        }
-                        else
-                        {
-                            targetProcedure.LineList.Add(translatedLine == string.Empty ? line : translatedLine);
-                        }
-                    }
-                    else
-                    {
-                        targetProcedure.LineList.Add(string.Empty);
-                    }
+                    ConvertLineOfCode(originalLine, out string convertedLine, out var placeAtBottom);
+                    targetProcedure.LineList.Add(convertedLine);
+                    if(placeAtBottom.IsNotEmpty())
+                        targetProcedure.BottomLineList.Add(placeAtBottom);
                 }
 
                 targetModule.ProcedureList.Add(targetProcedure);
@@ -502,10 +350,159 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
+        public static string ConvertLineOfCode(string originalLine, out string translatedLine, out string placeAtBottom)
+        {
+            placeAtBottom = string.Empty;
+            var line = originalLine.Trim();
+            translatedLine = line;
+
+            if (line.Length > 0)
+            {
+                // vbNullString = string.empty
+                if (translatedLine.Contains("vbNullString"))
+                {
+                    translatedLine = translatedLine.Replace("vbNullString", "string.Empty");
+                }
+
+                // Nothing = null
+                if (translatedLine.Contains("Nothing"))
+                {
+                    translatedLine = line
+                        .Replace("Set ", "")
+                        .Replace("Nothing", "null");
+                    translatedLine += ";";
+                }
+
+                // Set
+                if (translatedLine.Contains("Set "))
+                {
+                    translatedLine = translatedLine.Replace("Set ", " ");
+                }
+
+                // remark
+                if (line[0] == '\'') // '
+                {
+                    translatedLine = translatedLine.Replace("'", "//");
+                }
+
+                // & to +
+                if (translatedLine.Contains("&"))
+                {
+                    translatedLine = translatedLine.Replace("&", "+");
+                }
+
+                // Select Case
+                if (translatedLine.Contains("Select Case"))
+                {
+                    translatedLine = translatedLine.Replace("Select Case", "switch");
+                }
+
+                // End Select
+                if (translatedLine.Contains("End Select"))
+                {
+                    translatedLine = translatedLine.Replace("End Select", "}");
+                }
+
+                // _
+                if (translatedLine.Contains(" _"))
+                {
+                    translatedLine = translatedLine.Replace(" _", "\r\n");
+                }
+
+                // If
+                if (translatedLine.Contains("If "))
+                {
+                    translatedLine = translatedLine.Replace("If ", "if ( ");
+                }
+
+                // Not
+                if (translatedLine.Contains("Not "))
+                {
+                    translatedLine = translatedLine.Replace("Not ", "! ");
+                }
+
+                // then
+                if (translatedLine.Contains(" Then"))
+                {
+                    translatedLine = translatedLine.Replace(" Then", " )\r\n" + ConvertCode.Indent6 + "{\r\n");
+                }
+
+                // else
+                if (translatedLine.Contains("Else"))
+                {
+                    translatedLine = translatedLine.Replace("Else", "}\r\n" + ConvertCode.Indent6 + "else\r\n" + ConvertCode.Indent6 + "{");
+                }
+
+                // End if
+                if (translatedLine.Contains("End If"))
+                {
+                    translatedLine = translatedLine.Replace("End If", "}");
+                }
+
+                // Unload Me
+                if (translatedLine.Contains("Unload Me"))
+                {
+                    translatedLine = translatedLine.Replace("Unload Me", "Close()");
+                }
+
+                // .Caption
+                if (translatedLine.Contains(".Caption"))
+                {
+                    translatedLine = translatedLine.Replace(".Caption", ".Text");
+                }
+
+                // True
+                if (translatedLine.Contains("True"))
+                {
+                    translatedLine = translatedLine.Replace("True", "true");
+                }
+
+                // False
+                if (translatedLine.Contains("False"))
+                {
+                    translatedLine = translatedLine.Replace("False", "false");
+                }
+
+                // New
+                if (line.Contains("If ")
+                    && line.Contains("Then")
+                    && line.TokensAfter(1, "Then").Trim().Length > 0)
+                {
+                    translatedLine = translatedLine.Replace("New", "new");
+                }
+
+                // New
+                if (translatedLine.Contains("New"))
+                {
+                    translatedLine = translatedLine.Replace("New", "new");
+                }
+
+                if (translatedLine.Contains("On Error Resume Next"))
+                {
+                    placeAtBottom = @"
+        }
+        catch(Exception e)
+        {
+            /* ON ERROR RESUME NEXT (ish) */
+        }
+";
+                    return "try\r\n{\r\n";
+                }
+                else
+                {
+                    return translatedLine == string.Empty ? line : translatedLine;
+                }
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
         public static bool ParseProperties(string type,
                                         ControlProperty sourceProperty,
                                         ControlProperty targetProperty,
-                                        ArrayList sourcePropertyList)
+                                        List<ControlProperty> sourcePropertyList)
         {
             var validProperty = true;
             targetProperty.Valid = true;
@@ -1064,7 +1061,7 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseVariables(ArrayList sourceVariableList, ArrayList targetVariableList)
+        public static bool ParseVariables(List<Variable> sourceVariableList, List<Variable> targetVariableList)
         {
             // each property
             foreach (Variable sourceVariable in sourceVariableList)
@@ -1078,7 +1075,7 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        private static void ControlListLoad()
+        public static void ControlListLoad()
         {
             _mControlList = new Hashtable();
             var doc = new XmlDocument();
@@ -1134,7 +1131,7 @@ namespace MetX.VB6ToCSharp
                 _mControlList.Add(oItem.Vb6Name, oItem);
             }
 
-            //      private string getKeyValue(string aSection, string aKey, string aDefaultValue)
+            //      public string getKeyValue(string aSection, string aKey, string aDefaultValue)
             //      {
             //        XmlNode node;
             //        node = (Doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
@@ -1143,7 +1140,7 @@ namespace MetX.VB6ToCSharp
             //      }
         }
 
-        private static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
+        public static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
         {
             var fontName = string.Empty;
             var fontSize = 0;
@@ -1163,16 +1160,16 @@ namespace MetX.VB6ToCSharp
             //         Strikethrough   =   0   'False
             //      EndProperty
 
-            foreach (ControlProperty oProperty in sourceProperty.PropertyList)
+            foreach (ControlProperty property in sourceProperty.PropertyList)
             {
-                switch (oProperty.Name)
+                switch (property.Name)
                 {
                     case "Name":
-                        fontName = oProperty.Value;
+                        fontName = property.Value;
                         break;
 
                     case "Size":
-                        fontSize = GetFontSizeInt(oProperty.Value);
+                        fontSize = GetFontSizeInt(property.Value);
                         break;
 
                     case "Weight":
@@ -1182,23 +1179,23 @@ namespace MetX.VB6ToCSharp
                         //          bFontBold = False
                         //        End If
                         // FW_BOLD = 700
-                        fontBold = (int.Parse(oProperty.Value) >= 700);
+                        fontBold = (int.Parse(property.Value) >= 700);
                         break;
 
                     case "Charset":
-                        fontCharSet = int.Parse(oProperty.Value);
+                        fontCharSet = int.Parse(property.Value);
                         break;
 
                     case "Underline":
-                        fontUnderline = (int.Parse(oProperty.Value) != 0);
+                        fontUnderline = (int.Parse(property.Value) != 0);
                         break;
 
                     case "Italic":
-                        fontItalic = (int.Parse(oProperty.Value) != 0);
+                        fontItalic = (int.Parse(property.Value) != 0);
                         break;
 
                     case "Strikethrough":
-                        fontStrikethrough = (int.Parse(oProperty.Value) != 0);
+                        fontStrikethrough = (int.Parse(property.Value) != 0);
                         break;
                 }
             }
@@ -1248,7 +1245,7 @@ namespace MetX.VB6ToCSharp
             targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
         }
 
-        private static string GetBool(string value)
+        public static string GetBool(string value)
         {
             if (int.Parse(value) == 0)
             {
@@ -1260,7 +1257,7 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        private static string GetColor(string value)
+        public static string GetColor(string value)
         {
             Color color;
 
@@ -1303,16 +1300,16 @@ namespace MetX.VB6ToCSharp
         }
 
         // return control name
-        private static string GetControlIndexName(string tabName)
+        public static string GetControlIndexName(string tabName)
         {
             //  this.SSTab1.(Tab(1).Control(4) = "Option1(0)";
             var start = 0;
             var end = 0;
 
-            start = tabName.IndexOf("(", 0);
+            start = tabName.IndexOf("(");
             if (start > -1)
             {
-                end = tabName.IndexOf(")", 0);
+                end = tabName.IndexOf(")");
                 return tabName.Substring(0, start) + tabName.Substring(start + 1, end - start - 1);
             }
             else
@@ -1321,17 +1318,17 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        private static int GetFontSizeInt(string value)
+        public static int GetFontSizeInt(string value)
         {
             var position = 0;
 
-            position = value.IndexOf(",", 0);
+            position = value.IndexOf(",");
             if (position > -1)
             {
                 return int.Parse(value.Substring(0, position));
             }
 
-            position = value.IndexOf(".", 0);
+            position = value.IndexOf(".");
             if (position > 0)
             {
                 return int.Parse(value.Substring(0, position));
@@ -1339,54 +1336,54 @@ namespace MetX.VB6ToCSharp
             return int.Parse(value);
         }
 
-        private static string GetLocation(ArrayList propertyList)
+        public static string GetLocation(List<ControlProperty> propertyList)
         {
             var left = 0;
             var top = 0;
 
             // each property
-            foreach (ControlProperty oProperty in propertyList)
+            foreach (ControlProperty property in propertyList)
             {
-                if (oProperty.Name == "Left")
+                if (property.Name == "Left")
                 {
-                    left = int.Parse(oProperty.Value);
+                    left = int.Parse(property.Value);
                     if (left < 0)
                     {
                         left = 75000 + left;
                     }
                     left = left / 15;
                 }
-                if (oProperty.Name == "Top")
+                if (property.Name == "Top")
                 {
-                    top = int.Parse(oProperty.Value) / 15;
+                    top = int.Parse(property.Value) / 15;
                 }
             }
             // 616, 520
             return left.ToString() + ", " + top.ToString();
         }
 
-        private static string GetSize(string height, string width, ArrayList propertyList)
+        public static string GetSize(string height, string width, List<ControlProperty> propertyList)
         {
             var heightValue = 0;
             var widthValue = 0;
 
             // each property
-            foreach (ControlProperty oProperty in propertyList)
+            foreach (ControlProperty property in propertyList)
             {
-                if (oProperty.Name == height)
+                if (property.Name == height)
                 {
-                    heightValue = int.Parse(oProperty.Value) / 15;
+                    heightValue = int.Parse(property.Value) / 15;
                 }
-                if (oProperty.Name == width)
+                if (property.Name == width)
                 {
-                    widthValue = int.Parse(oProperty.Value) / 15;
+                    widthValue = int.Parse(property.Value) / 15;
                 }
             }
             // 0, 120
             return widthValue.ToString() + ", " + heightValue.ToString();
         }
 
-        private static string VariableTypeConvert(string sourceType)
+        public static string VariableTypeConvert(string sourceType)
         {
             string targetType;
 

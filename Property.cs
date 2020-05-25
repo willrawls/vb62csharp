@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 
 namespace MetX.VB6ToCSharp
 {
@@ -11,11 +12,11 @@ namespace MetX.VB6ToCSharp
 
         public string Direction { get; set; }
 
-        public ArrayList LineList { get; set; }
+        public List<string> LineList { get; set; }
 
         public string Name { get; set; }
 
-        public ArrayList ParameterList { get; set; }
+        public List<Parameter> ParameterList { get; set; }
 
         public string Scope { get; set; }
 
@@ -23,8 +24,8 @@ namespace MetX.VB6ToCSharp
 
         public Property()
         {
-            LineList = new ArrayList();
-            ParameterList = new ArrayList();
+            LineList = new List<string>();
+            ParameterList = new List<Parameter>();
         }
     }
 }

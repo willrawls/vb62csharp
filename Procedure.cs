@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 
 namespace MetX.VB6ToCSharp
 {
@@ -6,13 +7,13 @@ namespace MetX.VB6ToCSharp
     {
         public string Comment { get; set; }
 
-        public ArrayList LineList { get; set; }
+        public List<string> LineList { get; set; }
 
-        public ArrayList BottomLineList { get; set; }
+        public List<string> BottomLineList { get; set; }
 
         public string Name { get; set; }
 
-        public ArrayList ParameterList { get; set; }
+        public List<Parameter> ParameterList { get; set; }
 
         public string ReturnType { get; set; }
 
@@ -22,9 +23,9 @@ namespace MetX.VB6ToCSharp
 
         public Procedure()
         {
-            LineList = new ArrayList();
-            BottomLineList = new ArrayList();
-            ParameterList = new ArrayList();
+            LineList = new List<string>();
+            BottomLineList = new List<string>();
+            ParameterList = new List<Parameter>();
         }
     }
 }

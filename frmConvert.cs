@@ -11,18 +11,18 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class FrmConvert : Form
     {
-        private Button cmdConvert;
-        private Button cmdExit;
-        private Button cmdLoad;
-        private readonly IContainer components = null;
-        private Button convertAllButton;
-        private Label label;
-        private Label label1;
-        private string mFileName;
-        private string mOutPath;
-        private TextBox txtCSharp;
-        private TextBox txtOutPath;
-        private TextBox txtVb6;
+        public Button cmdConvert;
+        public Button cmdExit;
+        public Button cmdLoad;
+        public readonly IContainer components = null;
+        public Button convertAllButton;
+        public Label label;
+        public Label label1;
+        public string mFileName;
+        public string mOutPath;
+        public TextBox txtCSharp;
+        public TextBox txtOutPath;
+        public TextBox txtVb6;
 
         public FrmConvert()
         {
@@ -56,7 +56,7 @@ namespace MetX.VB6ToCSharp
         /// the contents of this method with the code editor.
         /// </summary>
 
-        private void cmdConvert_Click(object sender, EventArgs e)
+        public void cmdConvert_Click(object sender, EventArgs e)
         {
             if (mFileName.Trim() != string.Empty)
             {
@@ -85,12 +85,12 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        private void cmdExit_Click(object sender, EventArgs e)
+        public void cmdExit_Click(object sender, EventArgs e)
         {
             Close();
         }
 
-        private void cmdLoad_Click(object sender, EventArgs e)
+        public void cmdLoad_Click(object sender, EventArgs e)
         {
             mFileName = FileOpen();
             if (mFileName != null)
@@ -102,7 +102,7 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        private void ConvertAllButton_Click(object sender, EventArgs e)
+        public void ConvertAllButton_Click(object sender, EventArgs e)
         {
             foreach (var fileToDelete in Directory.EnumerateFiles(@"I:\SandyB\"))
                 File.Delete(fileToDelete);
@@ -122,7 +122,7 @@ namespace MetX.VB6ToCSharp
                 }
         }
 
-        private string FileOpen()
+        public string FileOpen()
         {
             var sFilter = "VB6 form (*.frm)|*.frm|VB6 module (*.bas)|*.bas|VB6 class (*.cls)|*.cls|All files (*.*)|*.*";
             string sResult = null;
@@ -136,18 +136,18 @@ namespace MetX.VB6ToCSharp
             return sResult;
         }
 
-        private void frmConvert_Closing(object sender, CancelEventArgs e)
+        public void frmConvert_Closing(object sender, CancelEventArgs e)
         {
             App.Config.WriteString(App.ConfigSetting, App.ConfigOutPath, txtOutPath.Text);
         }
 
-        private void frmConvert_Load(object sender, EventArgs e)
+        public void frmConvert_Load(object sender, EventArgs e)
         {
             txtOutPath.Text = App.Config.ReadString(App.ConfigSetting, App.ConfigOutPath, "");
             ConvertAllButton_Click(sender, e);
         }
 
-        private void frmConvert_Resize(object sender, EventArgs e)
+        public void frmConvert_Resize(object sender, EventArgs e)
         {
             //-16
             txtVb6.Top = 8;
@@ -161,7 +161,7 @@ namespace MetX.VB6ToCSharp
             txtCSharp.Width = Width - 24;
         }
 
-        private void InitializeComponent()
+        public void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmConvert));
             this.cmdExit = new System.Windows.Forms.Button();
@@ -302,7 +302,7 @@ namespace MetX.VB6ToCSharp
             this.PerformLayout();
         }
 
-        //    private string FileSave()
+        //    public string FileSave()
         //    {
         //      string sFilter = "C# Files (*.cs)|*.cs" ;
         //      string sResult = null;

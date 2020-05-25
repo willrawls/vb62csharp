@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 
 namespace MetX.VB6ToCSharp
 {
@@ -12,18 +13,18 @@ namespace MetX.VB6ToCSharp
         public string Name { get; set; }
 
         public string Owner { get; set; }
-        public ArrayList PropertyList { get; set; }
+        public List<ControlProperty> PropertyList { get; set; }
         public string Type { get; set; }
         public bool Valid { get; set; }
 
         public Control()
         {
-            PropertyList = new ArrayList();
+            PropertyList = new List<ControlProperty>();
         }
 
-        public void PropertyAdd(ControlProperty oProperty)
+        public void PropertyAdd(ControlProperty property)
         {
-            PropertyList.Add(oProperty);
+            PropertyList.Add(property);
         }
     }
 }
