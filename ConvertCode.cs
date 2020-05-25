@@ -20,10 +20,10 @@ namespace MetX.VB6ToCSharp
         public const string Indent4 = "    ";
         public const string Indent6 = "      ";
         public const string ModuleFirstLine = "ATTRIBUTE";
-        public readonly List<string> moOwnerStock;
-        public VbFileType mFileType;
-        public Module mSourceModule;
-        public Module mTargetModule;
+        public readonly List<string> OwnerStock;
+        public VbFileType FileType;
+        public Module SourceModule;
+        public Module TargetModule;
         public string ActionResult { get; set; }
 
         public string Code { get; set; }
@@ -32,13 +32,43 @@ namespace MetX.VB6ToCSharp
 
         public ConvertCode()
         {
-            moOwnerStock = new List<string>();
+            OwnerStock = new List<string>();
+        }
+
+        public void ConvertEnumCode(StringBuilder oResult)
+        {
+            oResult.Append("\r\n");
+            foreach (var enumItems in TargetModule.EnumList)
+            {
+                // public enum VB_FILE_TYPE
+                oResult.Append(Indent4 + enumItems.Scope + " enum " + enumItems.Name + "\r\n");
+                oResult.Append(Indent4 + "{\r\n");
+
+                foreach (var enumItem in enumItems.ItemList)
+                {
+                    // name
+                    oResult.Append(Indent6 + enumItem.Name);
+
+                    if (enumItem.Value != string.Empty)
+                    {
+                        oResult.Append(" = " + enumItem.Value);
+                    }
+
+                    // enum items delimiter
+                    oResult.Append(",\r\n");
+                }
+
+                // remove last comma, keep CRLF
+                oResult.Remove(oResult.Length - 3, 1);
+                // end enum
+                oResult.Append(Indent4 + "};\r\n");
+            }
         }
 
         public void ConvertFormCode(string outPath, StringBuilder oResult)
         {
             // list of controls
-            foreach (Control control in mTargetModule.ControlList)
+            foreach (var control in TargetModule.ControlList)
             {
                 if (!control.Valid)
                 {
@@ -53,7 +83,7 @@ namespace MetX.VB6ToCSharp
             oResult.Append(Indent4 + "/// </summary>\r\n");
             oResult.Append(Indent4 + "public System.ComponentModel.Container components = null;\r\n");
             oResult.Append("\r\n");
-            oResult.Append(Indent4 + "public " + mSourceModule.Name + "()\r\n");
+            oResult.Append(Indent4 + "public " + SourceModule.Name + "()\r\n");
             oResult.Append(Indent4 + "{\r\n");
             oResult.Append(Indent6 + "// Required for Windows Form Designer support\r\n");
             oResult.Append(Indent6 + "InitializeComponent();\r\n");
@@ -85,14 +115,14 @@ namespace MetX.VB6ToCSharp
             oResult.Append(Indent4 + "{\r\n");
 
             // if form contain images
-            if (mTargetModule.ImagesUsed)
+            if (TargetModule.ImagesUsed)
             {
                 // System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(Form1));
                 oResult.Append(Indent6 + "System.Resources.ResourceManager resources = " +
-                               "new System.Resources.ResourceManager(typeof(" + mTargetModule.Name + "));\r\n");
+                               "new System.Resources.ResourceManager(typeof(" + TargetModule.Name + "));\r\n");
             }
 
-            foreach (Control control in mTargetModule.ControlList)
+            foreach (var control in TargetModule.ControlList)
             {
                 if (!control.Valid)
                 {
@@ -108,7 +138,7 @@ namespace MetX.VB6ToCSharp
             oResult.Append(Indent6 + "this.SuspendLayout();\r\n");
             // this.Frame1.ResumeLayout(false);
             // resume layout for each container
-            foreach (Control control in mTargetModule.ControlList)
+            foreach (var control in TargetModule.ControlList)
             {
                 // check if control is container
                 // !! for menu controls
@@ -124,7 +154,7 @@ namespace MetX.VB6ToCSharp
             }
 
             // each controls and his property
-            foreach (Control control in mTargetModule.ControlList)
+            foreach (var control in TargetModule.ControlList)
             {
                 oResult.Append(Indent6 + "//\r\n");
                 oResult.Append(Indent6 + "// " + control.Name + "\r\n");
@@ -146,14 +176,14 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // write properties
-                foreach (ControlProperty property in control.PropertyList)
+                foreach (var property in control.PropertyList)
                 {
                     GetPropertyRow(oResult, control.Type, control.Name, property, outPath);
                 }
 
                 // if control is container for other controls
                 var temp = string.Empty;
-                foreach (Control oControl1 in mTargetModule.ControlList)
+                foreach (var oControl1 in TargetModule.ControlList)
                 {
                     // all controls ownered by current control
                     if ((oControl1.Owner == control.Name) && (!oControl1.InvisibleAtRuntime))
@@ -194,13 +224,13 @@ namespace MetX.VB6ToCSharp
             }
 
             oResult.Append(Indent6 + "//\r\n");
-            oResult.Append(Indent6 + "// " + mSourceModule.Name + "\r\n");
+            oResult.Append(Indent6 + "// " + SourceModule.Name + "\r\n");
             oResult.Append(Indent6 + "//\r\n");
             oResult.Append(Indent6 + "this.Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
             oResult.Append(Indent6 + "{\r\n");
 
             // add control range to form
-            foreach (Control control in mTargetModule.ControlList)
+            foreach (var control in TargetModule.ControlList)
             {
                 if (!control.Valid)
                 {
@@ -208,7 +238,7 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // all controls ownered by main form
-                if ((control.Owner == mSourceModule.Name) && (!control.InvisibleAtRuntime))
+                if ((control.Owner == SourceModule.Name) && (!control.InvisibleAtRuntime))
                 {
                     oResult.Append(Indent6 + "      this." + control.Name + ",\r\n");
                 }
@@ -220,12 +250,12 @@ namespace MetX.VB6ToCSharp
             oResult.Append(Indent6 + "});\r\n");
 
             // form name
-            oResult.Append(Indent6 + "this.Name = " + (char)34 + mTargetModule.Name + (char)34 + ";\r\n");
+            oResult.Append(Indent6 + "this.Name = " + (char)34 + TargetModule.Name + (char)34 + ";\r\n");
             // exception for menu
             // this.Menu = this.mainMenu1;
-            if (mTargetModule.MenuUsed)
+            if (TargetModule.MenuUsed)
             {
-                foreach (Control control in mTargetModule.ControlList)
+                foreach (var control in TargetModule.ControlList)
                 {
                     if (control.Type == "MainMenu")
                     {
@@ -235,18 +265,18 @@ namespace MetX.VB6ToCSharp
             }
 
             // form properties
-            foreach (ControlProperty property in mTargetModule.FormPropertyList)
+            foreach (var property in TargetModule.FormPropertyList)
             {
                 if (!property.Valid)
                 {
                     oResult.Append("//");
                 }
 
-                GetPropertyRow(oResult, mTargetModule.Type, "", property, outPath);
+                GetPropertyRow(oResult, TargetModule.Type, "", property, outPath);
             }
 
             // resume layout for each container
-            foreach (Control control in mTargetModule.ControlList)
+            foreach (var control in TargetModule.ControlList)
             {
                 // check if control is container
                 if ((control.Container) && !(control.Type == "MenuItem") && !(control.Type == "MainMenu"))
@@ -267,158 +297,10 @@ namespace MetX.VB6ToCSharp
             oResult.Append(Indent4 + "#endregion\r\n");
         }
 
-        public bool ParseFile(string filename, string outputPath)
-        {
-            var version = string.Empty;
-            bool result;
-
-            // try recognize source code type depend by file extension
-            var extension = filename.Substring(filename.Length - 3, 3);
-            switch (extension.ToUpper())
-            {
-                case "FRM":
-                    mFileType = VbFileType.VbFileForm;
-                    break;
-
-                case "BAS":
-                    mFileType = VbFileType.VbFileModule;
-                    break;
-
-                case "CLS":
-                    mFileType = VbFileType.VbFileClass;
-                    break;
-
-                default:
-                    mFileType = VbFileType.VbFileUnknown;
-                    break;
-            }
-
-            // open file
-            using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read))
-            {
-                using (var reader = new StreamReader(stream))
-                {
-                    reader.BaseStream.Seek(0, SeekOrigin.Begin);
-                    var line = reader.ReadLine() ?? string.Empty;
-                    // verify type of file based on first line - form, module, class
-
-                    // get first word from first line
-                    var position = 0;
-                    var temp = GetWord(line, ref position);
-                    switch (temp.ToUpper())
-                    {
-                        // module first line
-                        // 'Attribute VB_Name = "ModuleName"'
-                        case ModuleFirstLine:
-                            mFileType = VbFileType.VbFileModule;
-                            break;
-
-                        // form or class first line
-                        // 'VERSION 5.00' or 'VERSION 1.0 CLASS'
-                        case "VERSION":
-                            position++;
-                            version = GetWord(line, ref position);
-
-                            mFileType = line.Contains(ClassFirstLine)
-                                ? VbFileType.VbFileClass
-                                : VbFileType.VbFileForm;
-                            break;
-
-                        default:
-                            mFileType = VbFileType.VbFileUnknown;
-                            break;
-                    }
-
-                    // if file is still unknown
-                    if (mFileType == VbFileType.VbFileUnknown)
-                    {
-                        ActionResult = "Unknown file type";
-                        return false;
-                    }
-
-                    mSourceModule = new Module
-                    {
-                        Version = version ?? "1.0",
-                        FileName = filename
-                    };
-
-                    // now parse specifics of each type
-                    switch (extension.ToUpper())
-                    {
-                        case "FRM":
-                            mSourceModule.Type = "form";
-                            result = ParseForm(reader);
-                            break;
-
-                        case "BAS":
-                            mSourceModule.Type = "module";
-                            result = ParseModule(reader);
-                            break;
-
-                        case "CLS":
-                            mSourceModule.Type = "class";
-                            result = ParseClass(reader);
-                            break;
-                    }
-
-                    // parse remain - variables, functions, procedures
-                    result = ParseProcedures(reader);
-
-                    stream.Close();
-                    reader.Close();
-                }
-            }
-
-            // generate output file
-            Code = GetCode(outputPath);
-
-            // save result
-            var outFileName = outputPath + mTargetModule.FileName;
-            File.WriteAllText(outFileName, Code);
-
-            // generate resx file if source form contain any images
-            if ((mTargetModule.ImagesUsed))
-            {
-                WriteResX(mTargetModule.ImageList, outputPath, mTargetModule.Name);
-            }
-
-            return result;
-        }
-
-        public void ConvertEnumCode(StringBuilder oResult)
-        {
-            oResult.Append("\r\n");
-            foreach (Enum enumItems in mTargetModule.EnumList)
-            {
-                // public enum VB_FILE_TYPE
-                oResult.Append(Indent4 + enumItems.Scope + " enum " + enumItems.Name + "\r\n");
-                oResult.Append(Indent4 + "{\r\n");
-
-                foreach (EnumItem enumItem in enumItems.ItemList)
-                {
-                    // name
-                    oResult.Append(Indent6 + enumItem.Name);
-
-                    if (enumItem.Value != string.Empty)
-                    {
-                        oResult.Append(" = " + enumItem.Value);
-                    }
-
-                    // enum items delimiter
-                    oResult.Append(",\r\n");
-                }
-
-                // remove last comma, keep CRLF
-                oResult.Remove(oResult.Length - 3, 1);
-                // end enum
-                oResult.Append(Indent4 + "};\r\n");
-            }
-        }
-
         public void ConvertProcedureCode(StringBuilder oResult)
         {
             oResult.Append("\r\n");
-            foreach (Procedure procedure in mTargetModule.ProcedureList)
+            foreach (var procedure in TargetModule.ProcedureList)
             {
                 // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
                 oResult.Append(Indent4 + procedure.Scope + " ");
@@ -448,7 +330,7 @@ namespace MetX.VB6ToCSharp
                 // start body
                 oResult.Append(Indent4 + "{\r\n");
 
-                foreach (string line in procedure.LineList)
+                foreach (var line in procedure.LineList)
                 {
                     var temp = line.Trim();
                     if (temp.Length > 0)
@@ -461,7 +343,7 @@ namespace MetX.VB6ToCSharp
                     }
                 }
 
-                foreach (string line in procedure.BottomLineList)
+                foreach (var line in procedure.BottomLineList)
                 {
                     var temp = line.Trim();
                     if (temp.Length > 0)
@@ -482,7 +364,7 @@ namespace MetX.VB6ToCSharp
         public void ConvertPropertyCode(StringBuilder result)
         {
             // properties
-            if (mTargetModule.PropertyList.Count > 0)
+            if (TargetModule.PropertyList.Count > 0)
             {
                 // new line
                 result.Append("\r\n");
@@ -491,7 +373,7 @@ namespace MetX.VB6ToCSharp
                 //  get { return mComment; }
                 //  set { mComment = value; }
                 //}
-                foreach (Property property in mTargetModule.PropertyList)
+                foreach (var property in TargetModule.PropertyList)
                 {
                     // possible comment
                     result.Append(property.Comment + ";\r\n");
@@ -500,16 +382,16 @@ namespace MetX.VB6ToCSharp
 
                     // lines
                     var atBottom = new List<string>();
-                    foreach (string line in property.LineList)
+                    foreach (var line in property.LineList)
                     {
                         var temp = line.Trim();
                         if (temp.Length > 0)
                         {
-                            Tools.ConvertLineOfCode(temp, out string convertedLineOfCode, out var placeAtBottom);
-                            if(convertedLineOfCode.IsNotEmpty())
+                            Tools.ConvertLineOfCode(temp, out var convertedLineOfCode, out var placeAtBottom);
+                            if (convertedLineOfCode.IsNotEmpty())
                                 convertedLineOfCode = Indent6 + convertedLineOfCode + ";";
-                            result.AppendLine(convertedLineOfCode); 
-                            if(placeAtBottom.IsNotEmpty())
+                            result.AppendLine(convertedLineOfCode);
+                            if (placeAtBottom.IsNotEmpty())
                                 atBottom.Add(placeAtBottom);
                         }
                         else
@@ -518,7 +400,7 @@ namespace MetX.VB6ToCSharp
                         }
                     }
 
-                    foreach (string line in atBottom)
+                    foreach (var line in atBottom)
                         result.AppendLine(line);
 
                     result.Append(Indent4 + "}\r\n");
@@ -530,7 +412,7 @@ namespace MetX.VB6ToCSharp
         {
             oResult.Append("\r\n");
 
-            foreach (Variable variable in mTargetModule.VariableList)
+            foreach (var variable in TargetModule.VariableList)
             {
                 // string Result = null;
                 oResult.Append(Indent4 + variable.Scope + " " + variable.Type + " " + variable.Name + ";\r\n");
@@ -546,8 +428,8 @@ namespace MetX.VB6ToCSharp
             var oResult = new StringBuilder();
 
             // convert source to target
-            mTargetModule = new Module();
-            Tools.ParseModule(mSourceModule, mTargetModule);
+            TargetModule = new Module();
+            Tools.ParseModule(SourceModule, TargetModule);
 
             // ********************************************************
             // common class
@@ -557,7 +439,7 @@ namespace MetX.VB6ToCSharp
             // ********************************************************
             // only form class
             // ********************************************************
-            if (mTargetModule.Type == "form")
+            if (TargetModule.Type == "form")
             {
                 oResult.Append("using System.Drawing;\r\n");
                 oResult.Append("using System.Collections;\r\n");
@@ -569,26 +451,26 @@ namespace MetX.VB6ToCSharp
             oResult.Append($"namespace {ProjectNamespace}\r\n");
             // start namepsace region
             oResult.Append("{\r\n");
-            if (!string.IsNullOrEmpty(mSourceModule.Comment))
+            if (!string.IsNullOrEmpty(SourceModule.Comment))
             {
                 oResult.Append(Indent2 + "/// <summary>\r\n");
-                oResult.Append(Indent2 + "///   " + mSourceModule.Comment + ".\r\n");
+                oResult.Append(Indent2 + "///   " + SourceModule.Comment + ".\r\n");
                 oResult.Append(Indent2 + "/// </summary>\r\n");
             }
 
-            switch (mTargetModule.Type)
+            switch (TargetModule.Type)
             {
                 case "form":
-                    oResult.Append(Indent2 + "public class " + mSourceModule.Name + " : System.Windows.Forms.Form\r\n");
+                    oResult.Append(Indent2 + "public class " + SourceModule.Name + " : System.Windows.Forms.Form\r\n");
                     break;
 
                 case "module":
-                    oResult.Append(Indent2 + "class " + mSourceModule.Name + "\r\n");
+                    oResult.Append(Indent2 + "class " + SourceModule.Name + "\r\n");
                     // all procedures must be static
                     break;
 
                 case "class":
-                    oResult.Append(Indent2 + "public class " + mSourceModule.Name + "\r\n");
+                    oResult.Append(Indent2 + "public class " + SourceModule.Name + "\r\n");
                     break;
             }
             // start class region
@@ -598,7 +480,7 @@ namespace MetX.VB6ToCSharp
             // only form class
             // ********************************************************
 
-            if (mTargetModule.Type == "form")
+            if (TargetModule.Type == "form")
             {
                 ConvertFormCode(outPath, oResult);
             }
@@ -607,7 +489,7 @@ namespace MetX.VB6ToCSharp
             // enums
             // ********************************************************
 
-            if (mTargetModule.EnumList.Count > 0)
+            if (TargetModule.EnumList.Count > 0)
             {
                 ConvertEnumCode(oResult);
             }
@@ -616,7 +498,7 @@ namespace MetX.VB6ToCSharp
             //  variables for al module types
             // ********************************************************
 
-            if (mTargetModule.VariableList.Count > 0)
+            if (TargetModule.VariableList.Count > 0)
             {
                 ConvertVariablesInCode(oResult);
             }
@@ -625,7 +507,7 @@ namespace MetX.VB6ToCSharp
             // properties has only forms and classes
             // ********************************************************
 
-            if ((mTargetModule.Type == "form") || (mTargetModule.Type == "class"))
+            if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
             {
                 ConvertPropertyCode(oResult);
             }
@@ -634,7 +516,7 @@ namespace MetX.VB6ToCSharp
             // procedures
             // ********************************************************
 
-            if (mTargetModule.ProcedureList.Count > 0)
+            if (TargetModule.ProcedureList.Count > 0)
             {
                 ConvertProcedureCode(oResult);
             }
@@ -671,7 +553,7 @@ namespace MetX.VB6ToCSharp
                         break;
                 }
 
-                if (!WriteImage(mSourceModule, resourceName, controlProperty.Value, outPath)) return;
+                if (!WriteImage(SourceModule, resourceName, controlProperty.Value, outPath)) return;
 
                 switch (controlProperty.Name)
                 {
@@ -773,7 +655,7 @@ namespace MetX.VB6ToCSharp
                             position++;
                             tempString = GetWord(line, ref position);
                             position++;
-                            mSourceModule.Name = GetWord(line, ref position).Replace("\"", string.Empty);
+                            SourceModule.Name = GetWord(line, ref position).Replace("\"", string.Empty);
                             break;
 
                         case "VB_Exposed":
@@ -783,7 +665,7 @@ namespace MetX.VB6ToCSharp
                             position++;
                             tempString = GetWord(line, ref position);
                             position++;
-                            mSourceModule.Comment = GetWord(line, ref position).Replace("\"", string.Empty);
+                            SourceModule.Comment = GetWord(line, ref position).Replace("\"", string.Empty);
                             break;
                     }
                 }
@@ -808,6 +690,124 @@ namespace MetX.VB6ToCSharp
             iPosition++;
             // optional
             enumItem.Value = GetWord(line, ref iPosition);
+        }
+
+        public bool ParseFile(string filename, string outputPath)
+        {
+            var version = string.Empty;
+            bool result;
+
+            // try recognize source code type depend by file extension
+            var extension = filename.Substring(filename.Length - 3, 3);
+            switch (extension.ToUpper())
+            {
+                case "FRM":
+                    FileType = VbFileType.VbFileForm;
+                    break;
+
+                case "BAS":
+                    FileType = VbFileType.VbFileModule;
+                    break;
+
+                case "CLS":
+                    FileType = VbFileType.VbFileClass;
+                    break;
+
+                default:
+                    FileType = VbFileType.VbFileUnknown;
+                    break;
+            }
+
+            // open file
+            using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    reader.BaseStream.Seek(0, SeekOrigin.Begin);
+                    var line = reader.ReadLine() ?? string.Empty;
+                    // verify type of file based on first line - form, module, class
+
+                    // get first word from first line
+                    var position = 0;
+                    var temp = GetWord(line, ref position);
+                    switch (temp.ToUpper())
+                    {
+                        // module first line
+                        // 'Attribute VB_Name = "ModuleName"'
+                        case ModuleFirstLine:
+                            FileType = VbFileType.VbFileModule;
+                            break;
+
+                        // form or class first line
+                        // 'VERSION 5.00' or 'VERSION 1.0 CLASS'
+                        case "VERSION":
+                            position++;
+                            version = GetWord(line, ref position);
+
+                            FileType = line.Contains(ClassFirstLine)
+                                ? VbFileType.VbFileClass
+                                : VbFileType.VbFileForm;
+                            break;
+
+                        default:
+                            FileType = VbFileType.VbFileUnknown;
+                            break;
+                    }
+
+                    // if file is still unknown
+                    if (FileType == VbFileType.VbFileUnknown)
+                    {
+                        ActionResult = "Unknown file type";
+                        return false;
+                    }
+
+                    SourceModule = new Module
+                    {
+                        Version = version ?? "1.0",
+                        FileName = filename
+                    };
+
+                    // now parse specifics of each type
+                    switch (extension.ToUpper())
+                    {
+                        case "FRM":
+                            SourceModule.Type = "form";
+                            result = ParseForm(reader);
+                            break;
+
+                        case "BAS":
+                            SourceModule.Type = "module";
+                            result = ParseModule(reader);
+                            break;
+
+                        case "CLS":
+                            SourceModule.Type = "class";
+                            result = ParseClass(reader);
+                            break;
+                    }
+
+                    // parse remain - variables, functions, procedures
+                    result = ParseProcedures(reader);
+
+                    stream.Close();
+                    reader.Close();
+                }
+            }
+
+            // generate output file
+            Code = GetCode(outputPath);
+
+            // save result
+            var outFileName = outputPath + TargetModule.FileName;
+            File.WriteAllText(outFileName, Code);
+
+            // generate resx file if source form contain any images
+            if ((TargetModule.ImagesUsed))
+            {
+                WriteResX(TargetModule.ImageList, outputPath, TargetModule.Name);
+            }
+
+            return result;
         }
 
         public bool ParseForm(StreamReader oReader)
@@ -852,10 +852,10 @@ namespace MetX.VB6ToCSharp
                             if (!(control == null))
                             {
                                 control.Container = true;
-                                mSourceModule.ControlAdd(control);
+                                SourceModule.ControlAdd(control);
                             }
                             // save name of previous control as owner for current and next controls
-                            moOwnerStock.Add(sOwner);
+                            OwnerStock.Add(sOwner);
                         }
                         bEnd = false;
 
@@ -864,7 +864,7 @@ namespace MetX.VB6ToCSharp
                             case "Form":            // VERSION 2.00 - VB3
                             case "VB.Form":
                             case "VB.MDIForm":
-                                mSourceModule.Name = sName;
+                                SourceModule.Name = sName;
                                 // first owner
                                 // save control name for possible next controls as owner
                                 sOwner = sName;
@@ -878,7 +878,7 @@ namespace MetX.VB6ToCSharp
                                 // save control name for possible next controls as owner
                                 sOwner = sName;
                                 // set current container name
-                                control.Owner = (string)moOwnerStock[moOwnerStock.Count - 1];
+                                control.Owner = (string)OwnerStock[OwnerStock.Count - 1];
                                 break;
                         }
                         break;
@@ -888,7 +888,7 @@ namespace MetX.VB6ToCSharp
                         if (bEnd)
                         {
                             // remove last item from stock
-                            moOwnerStock.Remove((string)moOwnerStock[moOwnerStock.Count - 1]);
+                            OwnerStock.Remove((string)OwnerStock[OwnerStock.Count - 1]);
                         }
                         else
                         {
@@ -896,7 +896,7 @@ namespace MetX.VB6ToCSharp
                             if (iLevel > 1)
                             {
                                 // add control to colection
-                                mSourceModule.ControlAdd(control);
+                                SourceModule.ControlAdd(control);
                             }
                         }
                         // form or control end detected
@@ -927,7 +927,7 @@ namespace MetX.VB6ToCSharp
                         if (iLevel == 1)
                         {
                             // add property to form
-                            mSourceModule.FormPropertyAdd(oNestedProperty);
+                            SourceModule.FormPropertyAdd(oNestedProperty);
                         }
                         else
                         {
@@ -970,7 +970,7 @@ namespace MetX.VB6ToCSharp
                                 else
                                 {
                                     // add property to form
-                                    mSourceModule.FormPropertyAdd(property);
+                                    SourceModule.FormPropertyAdd(property);
                                 }
                             }
                         }
@@ -996,7 +996,7 @@ namespace MetX.VB6ToCSharp
             {
                 var line = reader.ReadLine();
                 var position = line.IndexOf('"');
-                mSourceModule.Name = line.Substring(position + 1, line.Length - position - 2);
+                SourceModule.Name = line.Substring(position + 1, line.Length - position - 2);
                 return true;
             }
             return false;
@@ -1341,17 +1341,17 @@ namespace MetX.VB6ToCSharp
                     //
                     if (bEnum)
                     {
-                        mSourceModule.EnumList.Add(enumItems);
+                        SourceModule.EnumList.Add(enumItems);
                         bEnum = false;
                     }
                     if (bProperty)
                     {
-                        mSourceModule.PropertyAdd(property);
+                        SourceModule.PropertyAdd(property);
                         bProperty = false;
                     }
                     if (bProcedure)
                     {
-                        mSourceModule.ProcedureAdd(procedure);
+                        SourceModule.ProcedureAdd(procedure);
                         bProcedure = false;
                     }
                     bEnd = false;
@@ -1360,7 +1360,7 @@ namespace MetX.VB6ToCSharp
                 {
                     if (bVariable)
                     {
-                        mSourceModule.VariableAdd(variable);
+                        SourceModule.VariableAdd(variable);
                     }
                 }
 
@@ -1526,7 +1526,7 @@ namespace MetX.VB6ToCSharp
                 writer.Close();
 
                 // write
-                mTargetModule.ImageList.Add(resourceName);
+                TargetModule.ImageList.Add(resourceName);
                 return true;
             }
             else
@@ -1585,7 +1585,7 @@ namespace MetX.VB6ToCSharp
                 // open file
                 var rsxw = new ResXResourceWriter(sResxName);
 
-                foreach (string resourceName in mImageList)
+                foreach (var resourceName in mImageList)
                 {
                     try
                     {
@@ -1600,7 +1600,7 @@ namespace MetX.VB6ToCSharp
                 // rsxw.Generate();
                 rsxw.Close();
 
-                foreach (string resourceName in mImageList)
+                foreach (var resourceName in mImageList)
                 {
                     File.Delete(outPath + resourceName);
                 }

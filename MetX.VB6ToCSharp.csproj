@@ -85,7 +85,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -107,9 +106,6 @@
     </Compile>
     <Compile Include="EnumItem.cs">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="frmConvert.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Module.cs">
       <SubType>Code</SubType>
@@ -133,13 +129,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="VbFileType.cs" />
-    <Compile Include="XmlConfig.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Content Include="OMEGA.ICO" />
-    <EmbeddedResource Include="frmConvert.resx">
-      <DependentUpon>frmConvert.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

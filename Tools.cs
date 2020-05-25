@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Xml;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp
@@ -12,7 +10,8 @@ namespace MetX.VB6ToCSharp
     public class Tools
     {
         public static readonly Dictionary<string, string> BlanketReplacements = new Dictionary<string, string>();
-        public static Hashtable _mControlList;
+        public static readonly Dictionary<string, string> EndsWithReplacements = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> StartsWithReplacements = new Dictionary<string, string>();
 
         static Tools()
         {
@@ -20,6 +19,10 @@ namespace MetX.VB6ToCSharp
             BlanketReplacements.Add("For Each ", "foreach( var ");
             BlanketReplacements.Add(" In ", " in ");
             BlanketReplacements.Add(";;", ";");
+
+            StartsWithReplacements.Add("' ", "// ");
+
+            EndsWithReplacements.Add(";;", ";");
         }
 
         public static string BlanketReplaceNow(string originalLineOfCode)
@@ -35,80 +38,6 @@ namespace MetX.VB6ToCSharp
             }
 
             return lineOfCode;
-        }
-
-        public static void ControlListLoad()
-        {
-            _mControlList = new Hashtable();
-            var doc = new XmlDocument();
-            XmlNode node;
-            ControlListItem oItem;
-
-            // get current directory
-            string[] commandLineArgs;
-            commandLineArgs = Environment.GetCommandLineArgs();
-            // index 0 contain path and name of exe file
-            var binPath = Path.GetDirectoryName(commandLineArgs[0].ToLower());
-            var fileName = binPath + @"\vb2c.xml";
-
-            doc.Load(fileName);
-            // Select the node given
-            node = doc.DocumentElement.SelectSingleNode("/configuration/ControlList");
-            // exit with an empty collection if nothing here
-            if (node == null)
-            {
-                return;
-            }
-
-            // exit with an empty colection if the node has no children
-            if (node.HasChildNodes == false)
-            {
-                return;
-            }
-
-            // get the nodelist of all children
-            var nodeList = node.ChildNodes;
-
-            foreach (XmlElement element in nodeList)
-            {
-                oItem = new ControlListItem();
-                oItem.Vb6Name = string.Empty;
-                oItem.CsharpName = string.Empty;
-                oItem.Unsupported = false;
-                oItem.InvisibleAtRuntime = false;
-                foreach (XmlElement childElement in element)
-                {
-                    switch (childElement.Name)
-                    {
-                        case "VB6":
-                            // compare in uppercase
-                            oItem.Vb6Name = childElement.InnerText.ToUpper();
-                            break;
-
-                        case "Csharp":
-                            oItem.CsharpName = childElement.InnerText;
-                            break;
-
-                        case "Unsupported":
-                            oItem.Unsupported = bool.Parse(childElement.InnerText);
-                            break;
-
-                        case "InvisibleAtRuntime":
-                            oItem.InvisibleAtRuntime = bool.Parse(childElement.InnerText);
-                            break;
-                    }
-                }
-
-                _mControlList.Add(oItem.Vb6Name, oItem);
-            }
-
-            //      public string getKeyValue(string aSection, string aKey, string aDefaultValue)
-            //      {
-            //        XmlNode node;
-            //        node = (Doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
-            //        if (node == null) {return aDefaultValue;}
-            //        return node.InnerText;
-            //      }
         }
 
         public static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
@@ -131,7 +60,7 @@ namespace MetX.VB6ToCSharp
             //         Strikethrough   =   0   'False
             //      EndProperty
 
-            foreach (ControlProperty property in sourceProperty.PropertyList)
+            foreach (var property in sourceProperty.PropertyList)
             {
                 switch (property.Name)
                 {
@@ -379,7 +308,25 @@ namespace MetX.VB6ToCSharp
             }
 
             translatedLine = BlanketReplaceNow(translatedLine);
+            translatedLine = StartsWithReplaceNow(translatedLine);
+            translatedLine = EndsWithReplaceNow(translatedLine);
+
             translatedLine = CleanupTranslatedLineOfCode(translatedLine);
+        }
+
+        public static string EndsWithReplaceNow(string originalLineOfCode)
+        {
+            if (originalLineOfCode.IsEmpty())
+                return originalLineOfCode;
+
+            var lineOfCode = originalLineOfCode;
+            foreach (var entry in EndsWithReplacements)
+            {
+                while (lineOfCode.EndsWith(entry.Key))
+                    lineOfCode = lineOfCode.Replace(entry.Key, entry.Value);
+            }
+
+            return lineOfCode;
         }
 
         public static string GetBool(string value)
@@ -516,7 +463,7 @@ namespace MetX.VB6ToCSharp
             var top = 0;
 
             // each property
-            foreach (ControlProperty property in propertyList)
+            foreach (var property in propertyList)
             {
                 if (property.Name == "Left")
                 {
@@ -545,7 +492,7 @@ namespace MetX.VB6ToCSharp
             var widthValue = 0;
 
             // each property
-            foreach (ControlProperty property in propertyList)
+            foreach (var property in propertyList)
             {
                 if (property.Name == height)
                 {
@@ -564,7 +511,7 @@ namespace MetX.VB6ToCSharp
 
         public static bool ParseClassProperties(Module sourceModule, Module targetModule)
         {
-            foreach (Property sourceProperty in sourceModule.PropertyList)
+            foreach (var sourceProperty in sourceModule.PropertyList)
             {
                 var targetProperty = new Property
                 {
@@ -587,7 +534,7 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // lines
-                foreach (string line in sourceProperty.LineList)
+                foreach (var line in sourceProperty.LineList)
                     if (line.Trim() != string.Empty)
                         targetProperty.LineList.Add(line);
 
@@ -602,7 +549,7 @@ namespace MetX.VB6ToCSharp
             List<ControlProperty> targetPropertyList)
         {
             // each property
-            foreach (ControlProperty sourceProperty in sourcePropertyList)
+            foreach (var sourceProperty in sourcePropertyList)
             {
                 if (sourceProperty.Name == "Index")
                 {
@@ -627,12 +574,12 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseControls(Module oModule, List<Control> sourceControlList,
+        public static bool ParseControls(Module module, List<Control> sourceControlList,
             List<Control> targetControlList)
         {
             var type = string.Empty;
 
-            foreach (Control sourceControl in sourceControlList)
+            foreach (var sourceControl in sourceControlList)
             {
                 var targetControl = new Control
                 {
@@ -642,34 +589,10 @@ namespace MetX.VB6ToCSharp
                     Valid = true
                 };
 
-                // compare upper case type
-                if (_mControlList.ContainsKey(sourceControl.Type.ToUpper()))
-                {
-                    var oItem = (ControlListItem) _mControlList[sourceControl.Type.ToUpper()];
-
-                    if (oItem.Unsupported)
-                    {
-                        type = "Unsuported";
-                        targetControl.Valid = false;
-                    }
-                    else
-                    {
-                        type = oItem.CsharpName;
-                        if (type == "MenuItem")
-                        {
-                            oModule.MenuUsed = true;
-                        }
-                    }
-
-                    targetControl.InvisibleAtRuntime = oItem.InvisibleAtRuntime;
-                }
-                else
-                {
-                    type = sourceControl.Type;
-                }
+                type = sourceControl.Type;
 
                 targetControl.Type = type;
-                ParseControlProperties(oModule, targetControl, sourceControl.PropertyList, targetControl.PropertyList);
+                ParseControlProperties(module, targetControl, sourceControl.PropertyList, targetControl.PropertyList);
 
                 targetControlList.Add(targetControl);
             }
@@ -679,7 +602,7 @@ namespace MetX.VB6ToCSharp
 
         public static bool ParseEnums(Module sourceModule, Module targetModule)
         {
-            foreach (Enum sourceEnum in sourceModule.EnumList)
+            foreach (var sourceEnum in sourceModule.EnumList)
             {
                 targetModule.EnumList.Add(sourceEnum);
             }
@@ -689,8 +612,6 @@ namespace MetX.VB6ToCSharp
 
         public static bool ParseModule(Module sourceModule, Module targetModule)
         {
-            ControlListLoad();
-
             // module name
             targetModule.Name = sourceModule.Name;
             // file name
@@ -717,7 +638,7 @@ namespace MetX.VB6ToCSharp
                     InvisibleAtRuntime = true
                 };
                 targetModule.ControlList.Insert(0, control);
-                foreach (Control oMenuControl in targetModule.ControlList)
+                foreach (var oMenuControl in targetModule.ControlList)
                     if ((oMenuControl.Type == "MenuItem") && (oMenuControl.Owner == targetModule.Name))
                         // rewrite previous owner
                         oMenuControl.Owner = control.Name;
@@ -727,14 +648,14 @@ namespace MetX.VB6ToCSharp
             var tabControlIndex = 0;
 
             // check for TabDlg.SSTab
-            foreach (Control targetControl in targetModule.ControlList)
+            foreach (var targetControl in targetModule.ControlList)
             {
                 Control tabPage = null;
                 var index = 0;
                 if ((targetControl.Type == "TabControl") && (targetControl.Valid))
                 {
                     // each property
-                    foreach (ControlProperty targetProperty in targetControl.PropertyList)
+                    foreach (var targetProperty in targetControl.PropertyList)
                     {
                         Console.WriteLine(targetProperty.Name);
 
@@ -783,7 +704,7 @@ namespace MetX.VB6ToCSharp
                                 tabName = GetControlIndexName(tabName);
                                 // search for "targetProperty.Value" control
                                 // and replace owner of this control to current tab
-                                foreach (Control oNewOwner in targetModule.ControlList)
+                                foreach (var oNewOwner in targetModule.ControlList)
                                 {
                                     if ((oNewOwner.Name == tabName) && (!oNewOwner.InvisibleAtRuntime))
                                     {
@@ -802,7 +723,7 @@ namespace MetX.VB6ToCSharp
             {
                 // right order of tabs
                 var position = 0;
-                foreach (Control control in tempControlList)
+                foreach (var control in tempControlList)
                 {
                     targetModule.ControlList.Insert(tabControlIndex + position, control);
                     position++;
@@ -826,7 +747,7 @@ namespace MetX.VB6ToCSharp
             List<ControlProperty> targetPropertyList)
         {
             // each property
-            foreach (ControlProperty sourceProperty in sourcePropertyList)
+            foreach (var sourceProperty in sourcePropertyList)
             {
                 var targetProperty = new ControlProperty();
                 if (ParseProperties(oModule.Type, sourceProperty, targetProperty, sourcePropertyList))
@@ -847,7 +768,7 @@ namespace MetX.VB6ToCSharp
         {
             const string indent6 = "      ";
 
-            foreach (Procedure sourceProcedure in sourceModule.ProcedureList)
+            foreach (var sourceProcedure in sourceModule.ProcedureList)
             {
                 var targetProcedure = new Procedure
                 {
@@ -860,9 +781,9 @@ namespace MetX.VB6ToCSharp
                 };
 
                 // lines
-                foreach (string originalLine in sourceProcedure.LineList)
+                foreach (var originalLine in sourceProcedure.LineList)
                 {
-                    ConvertLineOfCode(originalLine, out string convertedLine, out var placeAtBottom);
+                    ConvertLineOfCode(originalLine, out var convertedLine, out var placeAtBottom);
                     targetProcedure.LineList.Add(convertedLine);
                     if (placeAtBottom.IsNotEmpty())
                         targetProcedure.BottomLineList.Add(placeAtBottom);
@@ -1461,7 +1382,7 @@ namespace MetX.VB6ToCSharp
         public static bool ParseVariables(List<Variable> sourceVariableList, List<Variable> targetVariableList)
         {
             // each property
-            foreach (Variable sourceVariable in sourceVariableList)
+            foreach (var sourceVariable in sourceVariableList)
             {
                 var targetVariable = new Variable();
                 if (ParseVariable(sourceVariable, targetVariable))
@@ -1471,6 +1392,21 @@ namespace MetX.VB6ToCSharp
             }
 
             return true;
+        }
+
+        public static string StartsWithReplaceNow(string originalLineOfCode)
+        {
+            if (originalLineOfCode.IsEmpty())
+                return originalLineOfCode;
+
+            var lineOfCode = originalLineOfCode;
+            foreach (var entry in StartsWithReplacements)
+            {
+                while (lineOfCode.StartsWith(entry.Key))
+                    lineOfCode = lineOfCode.Replace(entry.Key, entry.Value);
+            }
+
+            return lineOfCode;
         }
 
         public static string VariableTypeConvert(string sourceType)
