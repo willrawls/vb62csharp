@@ -13,6 +13,7 @@ namespace MetX.VB6ToCSharp
         public static readonly Dictionary<string, string> EndsWithReplacements = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> StartsWithReplacements = new Dictionary<string, string>();
         public static readonly Dictionary<string, Dictionary<string, string>> StartsAndEndsWithReplacements = new Dictionary<string, Dictionary<string, string>>();
+        public static string WithCurrentlyIn = "";
 
         static Tools()
         {
@@ -181,7 +182,7 @@ namespace MetX.VB6ToCSharp
             var line = originalLine.Trim();
             translatedLine = line;
 
-            if (line.Length > 0)
+            if (translatedLine.Length > 0)
             {
                 // vbNullString = string.empty
                 if (translatedLine.Contains("vbNullString"))
@@ -196,6 +197,21 @@ namespace MetX.VB6ToCSharp
                         .Replace("Set ", "")
                         .Replace("Nothing", "null");
                     translatedLine += ";";
+                }
+
+                if (WithCurrentlyIn.IsNotEmpty())
+                {
+                    if(translatedLine.StartsWith("."))
+                        translatedLine = WithCurrentlyIn + translatedLine;
+                    if (translatedLine.Contains(" ."))
+                        translatedLine = translatedLine.FirstToken(" .") + " " + WithCurrentlyIn + "." + translatedLine.TokensAfterFirst(" .");
+                }
+
+                // Begin With
+                if (translatedLine.StartsWith("With "))
+                {
+                    WithCurrentlyIn = translatedLine.TokenAt(2).Trim();
+                    translatedLine = "";
                 }
 
                 // Set
@@ -298,9 +314,11 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // New
-                if (translatedLine.Contains("New"))
+                if (translatedLine.Contains("New "))
                 {
-                    translatedLine = translatedLine.Replace("New", "new");
+                    translatedLine = translatedLine.Replace("New ", "new ");
+                    if (!translatedLine.Contains("("))
+                        translatedLine += "();";
                 }
 
                 if (translatedLine.Contains("On Error Resume Next"))
@@ -314,17 +332,15 @@ namespace MetX.VB6ToCSharp
 ";
                     translatedLine = "try\r\n{\r\n";
                 }
-                else
-                {
-                    translatedLine = translatedLine == string.Empty ? line : translatedLine;
-                }
             }
 
-            translatedLine = BlanketReplaceNow(translatedLine);
-            translatedLine = StartsWithReplaceNow(translatedLine);
-            translatedLine = EndsWithReplaceNow(translatedLine);
-
-            translatedLine = CleanupTranslatedLineOfCode(translatedLine);
+            if (translatedLine.IsNotEmpty())
+            {
+                translatedLine = BlanketReplaceNow(translatedLine);
+                translatedLine = StartsWithReplaceNow(translatedLine);
+                translatedLine = EndsWithReplaceNow(translatedLine);
+                translatedLine = CleanupTranslatedLineOfCode(translatedLine);
+            }
         }
 
         public static string EndsWithReplaceNow(string originalLineOfCode)

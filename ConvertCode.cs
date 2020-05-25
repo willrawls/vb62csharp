@@ -323,7 +323,7 @@ namespace MetX.VB6ToCSharp
                 // name
                 result.Append(" " + procedure.Name);
                 // parameters
-                if (procedure.ParameterList.Count <= 0)
+                if (procedure.ParameterList.Count == 0)
                 {
                     result.AppendLine("()");
                 }
@@ -332,28 +332,19 @@ namespace MetX.VB6ToCSharp
                 result.AppendLine(Indent4 + "{");
 
                 foreach (var line in procedure.LineList.Select(l => l.Trim()))
-                {
                     if (line.Length > 0)
                         result.AppendLine(Indent6 + line + ";");
                     else
                         result.AppendLine();
-                }
 
-                foreach (var line in procedure.BottomLineList)
-                {
-                    var temp = line.Trim();
-                    if (temp.Length > 0)
-                    {
-                        result.Append(Indent6 + temp + ";\r\n");
-                    }
+                foreach (var line in procedure.BottomLineList.Select(l => l.Trim()))
+                    if (line.Length > 0)
+                        result.AppendLine($"{Indent6}{line};");
                     else
-                    {
                         result.AppendLine();
-                    }
-                }
 
                 // end procedure
-                result.Append(Indent4 + "}\r\n");
+                result.AppendLine(Indent4 + "}");
             }
         }
 
