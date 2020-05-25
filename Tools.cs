@@ -12,28 +12,28 @@ namespace MetX.VB6ToCSharp
     {
         private static Hashtable _mControlList;
 
-        public static void GetFrxImage(string ImageFile, int ImageOffset, out byte[] ImageString)
+        public static void GetFrxImage(string imageFile, int imageOffset, out byte[] imageString)
         {
-            byte[] Header;
-            var BytesToRead = 0;
+            byte[] header;
+            var bytesToRead = 0;
 
             // open file
-            var Stream = new FileStream(ImageFile, FileMode.Open, FileAccess.Read);
-            var Reader = new BinaryReader(Stream);
+            var stream = new FileStream(imageFile, FileMode.Open, FileAccess.Read);
+            var reader = new BinaryReader(stream);
             // Start from offset
-            Reader.BaseStream.Seek(ImageOffset, SeekOrigin.Begin);
+            reader.BaseStream.Seek(imageOffset, SeekOrigin.Begin);
             // Get the four byte header
-            Header = new byte[4];
-            Header = Reader.ReadBytes(4);
+            header = new byte[4];
+            header = reader.ReadBytes(4);
             // Convert This Header Into The Number Of Bytes
             // To Read For This Image
-            BytesToRead = Header[0];
-            BytesToRead = BytesToRead + (Header[1] * 0x100);
-            BytesToRead = BytesToRead + (Header[2] * 0x10000);
-            BytesToRead = BytesToRead + (Header[3] * 0x1000000);
+            bytesToRead = header[0];
+            bytesToRead = bytesToRead + (header[1] * 0x100);
+            bytesToRead = bytesToRead + (header[2] * 0x10000);
+            bytesToRead = bytesToRead + (header[3] * 0x1000000);
             // Get image information
-            ImageString = new byte[BytesToRead];
-            ImageString = Reader.ReadBytes(BytesToRead);
+            imageString = new byte[bytesToRead];
+            imageString = reader.ReadBytes(bytesToRead);
 
             //      Stream = new FileStream( @"C:\temp\test\Ba.bmp", FileMode.CreateNew, FileAccess.Write );
             //      BinaryWriter Writer = new BinaryWriter( Stream );
@@ -44,78 +44,78 @@ namespace MetX.VB6ToCSharp
             //  FileStream inFile = new FileStream(@"C:\WINdows\Blue Lace 16.bmp", FileMode.Open, FileAccess.Read);
             //  ReturnImage = Image.FromStream(inFile, false);
 
-            Stream.Close();
-            Reader.Close();
+            stream.Close();
+            reader.Close();
         }
 
-        public static bool ParseClassProperties(Module SourceModule, Module TargetModule)
+        public static bool ParseClassProperties(Module sourceModule, Module targetModule)
         {
-            foreach (Property SourceProperty in SourceModule.PropertyList)
+            foreach (Property sourceProperty in sourceModule.PropertyList)
             {
-                var TargetProperty = new Property
+                var targetProperty = new Property
                 {
-                    Name = SourceProperty.Name, 
-                    Comment = SourceProperty.Comment,
-                    Scope = SourceProperty.Scope,
-                    Type = VariableTypeConvert(SourceProperty.Type),
+                    Name = sourceProperty.Name, 
+                    Comment = sourceProperty.Comment,
+                    Scope = sourceProperty.Scope,
+                    Type = VariableTypeConvert(sourceProperty.Type),
                 };
 
-                switch (SourceProperty.Direction)
+                switch (sourceProperty.Direction)
                 {
                     case "Get":
-                        TargetProperty.Direction = "get";
+                        targetProperty.Direction = "get";
                         break;
 
                     case "Set":
                     case "Let":
-                        TargetProperty.Direction = "set";
+                        targetProperty.Direction = "set";
                         break;
                 }
                 // lines
-                foreach (string Line in SourceProperty.LineList)
-                    if (Line.Trim() != string.Empty)
-                        TargetProperty.LineList.Add(Line);
+                foreach (string line in sourceProperty.LineList)
+                    if (line.Trim() != string.Empty)
+                        targetProperty.LineList.Add(line);
 
-                TargetModule.PropertyList.Add(TargetProperty);
+                targetModule.PropertyList.Add(targetProperty);
             }
             return true;
         }
 
         public static bool ParseControlProperties(Module oModule, Control oControl,
-                                                ArrayList SourcePropertyList,
-                                                ArrayList TargetPropertyList)
+                                                ArrayList sourcePropertyList,
+                                                ArrayList targetPropertyList)
         {
-            ControlProperty TargetProperty = null;
+            ControlProperty targetProperty = null;
 
             // each property
-            foreach (ControlProperty SourceProperty in SourcePropertyList)
+            foreach (ControlProperty sourceProperty in sourcePropertyList)
             {
-                if (SourceProperty.Name == "Index")
+                if (sourceProperty.Name == "Index")
                 {
                     // Index           =   3
-                    oControl.Name = oControl.Name + SourceProperty.Value;
+                    oControl.Name = oControl.Name + sourceProperty.Value;
                 }
                 else
                 {
-                    TargetProperty = new ControlProperty();
-                    if (ParseProperties(oControl.Type, SourceProperty, TargetProperty, SourcePropertyList))
+                    targetProperty = new ControlProperty();
+                    if (ParseProperties(oControl.Type, sourceProperty, targetProperty, sourcePropertyList))
                     {
-                        if (TargetProperty.Name == "Image")
+                        if (targetProperty.Name == "Image")
                         {
                             oModule.ImagesUsed = true;
                         }
-                        TargetPropertyList.Add(TargetProperty);
+                        targetPropertyList.Add(targetProperty);
                     }
                 }
             }
             return true;
         }
 
-        public static bool ParseControls(Module oModule, ArrayList SourceControlList, ArrayList TargetControlList)
+        public static bool ParseControls(Module oModule, ArrayList sourceControlList, ArrayList targetControlList)
         {
-            var Type = string.Empty;
+            var type = string.Empty;
 
-            foreach (Control oSourceControl in SourceControlList)
+            foreach (Control oSourceControl in sourceControlList)
             {
                 var oTargetControl = new Control();
 
@@ -131,13 +131,13 @@ namespace MetX.VB6ToCSharp
 
                     if (oItem.Unsupported)
                     {
-                        Type = "Unsuported";
+                        type = "Unsuported";
                         oTargetControl.Valid = false;
                     }
                     else
                     {
-                        Type = oItem.CsharpName;
-                        if (Type == "MenuItem")
+                        type = oItem.CsharpName;
+                        if (type == "MenuItem")
                         {
                             oModule.MenuUsed = true;
                         }
@@ -146,42 +146,42 @@ namespace MetX.VB6ToCSharp
                 }
                 else
                 {
-                    Type = oSourceControl.Type;
+                    type = oSourceControl.Type;
                 }
 
-                oTargetControl.Type = Type;
+                oTargetControl.Type = type;
                 ParseControlProperties(oModule, oTargetControl, oSourceControl.PropertyList, oTargetControl.PropertyList);
 
-                TargetControlList.Add(oTargetControl);
+                targetControlList.Add(oTargetControl);
             }
             return true;
         }
 
-        public static bool ParseEnums(Module SourceModule, Module TargetModule)
+        public static bool ParseEnums(Module sourceModule, Module targetModule)
         {
-            foreach (Enum SourceEnum in SourceModule.EnumList)
+            foreach (Enum sourceEnum in sourceModule.EnumList)
             {
-                TargetModule.EnumList.Add(SourceEnum);
+                targetModule.EnumList.Add(sourceEnum);
             }
             return true;
         }
 
-        public static bool ParseModule(Module SourceModule, Module targetModule)
+        public static bool ParseModule(Module sourceModule, Module targetModule)
         {
             ControlListLoad();
 
             // module name
-            targetModule.Name = SourceModule.Name;
+            targetModule.Name = sourceModule.Name;
             // file name
-            targetModule.FileName = Path.GetFileNameWithoutExtension(SourceModule.FileName) + ".cs";
+            targetModule.FileName = Path.GetFileNameWithoutExtension(sourceModule.FileName) + ".cs";
             // type
-            targetModule.Type = SourceModule.Type;
+            targetModule.Type = sourceModule.Type;
             // version
-            targetModule.Version = SourceModule.Version;
+            targetModule.Version = sourceModule.Version;
             // process own properties - forms
-            ParseModuleProperties(targetModule, SourceModule.FormPropertyList, targetModule.FormPropertyList);
+            ParseModuleProperties(targetModule, sourceModule.FormPropertyList, targetModule.FormPropertyList);
             // process controls - form
-            ParseControls(targetModule, SourceModule.ControlList, targetModule.ControlList);
+            ParseControls(targetModule, sourceModule.ControlList, targetModule.ControlList);
 
             // special exception for menu
             if (targetModule.MenuUsed)
@@ -202,8 +202,8 @@ namespace MetX.VB6ToCSharp
                         oMenuControl.Owner = oControl.Name;
             }
 
-            var TempControlList = new ArrayList();
-            var TabControlIndex = 0;
+            var tempControlList = new ArrayList();
+            var tabControlIndex = 0;
 
             // check for TabDlg.SSTab
             foreach (Control oTargetControl in targetModule.ControlList)
@@ -214,7 +214,7 @@ namespace MetX.VB6ToCSharp
                     //          this.tabControl1 = new System.Windows.Forms.TabControl();
                     //          this.tabPage1 = new System.Windows.Forms.TabPage();
 
-                    var Index = 0;
+                    var index = 0;
                     Control oTabPage = null;
                     // each property
                     foreach (ControlProperty oTargetProperty in oTargetControl.PropertyList)
@@ -224,44 +224,44 @@ namespace MetX.VB6ToCSharp
 
                         Console.WriteLine(oTargetProperty.Name);
 
-                        if (oTargetProperty.Name.IndexOf("TabCaption(" + Index.ToString() + ")", 0) > -1)
+                        if (oTargetProperty.Name.IndexOf("TabCaption(" + index.ToString() + ")", 0) > -1)
                         {
                             // new tab
                             oTabPage = new Control();
                             oTabPage.Type = "TabPage";
-                            oTabPage.Name = "tabPage" + Index.ToString();
+                            oTabPage.Name = "tabPage" + index.ToString();
                             oTabPage.Owner = oTargetControl.Name;
                             oTabPage.Container = true;
                             oTabPage.Valid = true;
                             oTabPage.InvisibleAtRuntime = false;
 
                             // add some necessary properties
-                            var TargetProperty = new ControlProperty();
-                            TargetProperty.Name = "Location";
-                            TargetProperty.Value = "new System.Drawing.Point(4, 22)";
-                            TargetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(TargetProperty);
+                            var targetProperty = new ControlProperty();
+                            targetProperty.Name = "Location";
+                            targetProperty.Value = "new System.Drawing.Point(4, 22)";
+                            targetProperty.Valid = true;
+                            oTabPage.PropertyList.Add(targetProperty);
 
-                            TargetProperty = new ControlProperty();
-                            TargetProperty.Name = "Size";
-                            TargetProperty.Value = "new System.Drawing.Size(477, 374)";
-                            TargetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(TargetProperty);
+                            targetProperty = new ControlProperty();
+                            targetProperty.Name = "Size";
+                            targetProperty.Value = "new System.Drawing.Size(477, 374)";
+                            targetProperty.Valid = true;
+                            oTabPage.PropertyList.Add(targetProperty);
 
-                            TargetProperty = new ControlProperty();
-                            TargetProperty.Name = "Text";
-                            TargetProperty.Value = oTargetProperty.Value;
-                            TargetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(TargetProperty);
+                            targetProperty = new ControlProperty();
+                            targetProperty.Name = "Text";
+                            targetProperty.Value = oTargetProperty.Value;
+                            targetProperty.Valid = true;
+                            oTabPage.PropertyList.Add(targetProperty);
 
-                            TargetProperty = new ControlProperty();
-                            TargetProperty.Name = "TabIndex";
-                            TargetProperty.Value = Index.ToString();
-                            TargetProperty.Valid = true;
-                            oTabPage.PropertyList.Add(TargetProperty);
+                            targetProperty = new ControlProperty();
+                            targetProperty.Name = "TabIndex";
+                            targetProperty.Value = index.ToString();
+                            targetProperty.Valid = true;
+                            oTabPage.PropertyList.Add(targetProperty);
 
-                            TempControlList.Add(oTabPage);
-                            Index++;
+                            tempControlList.Add(oTabPage);
+                            index++;
                         }
 
                         // Control = change owner of control to current tab
@@ -270,13 +270,13 @@ namespace MetX.VB6ToCSharp
                         {
                             if (oTargetProperty.Name.IndexOf("Enable", 0) == -1)
                             {
-                                var TabName = oTargetProperty.Value.Substring(1, oTargetProperty.Value.Length - 2);
-                                TabName = GetControlIndexName(TabName);
+                                var tabName = oTargetProperty.Value.Substring(1, oTargetProperty.Value.Length - 2);
+                                tabName = GetControlIndexName(tabName);
                                 // search for "oTargetProperty.Value" control
                                 // and replace owner of this control to current tab
                                 foreach (Control oNewOwner in targetModule.ControlList)
                                 {
-                                    if ((oNewOwner.Name == TabName) && (!oNewOwner.InvisibleAtRuntime))
+                                    if ((oNewOwner.Name == tabName) && (!oNewOwner.InvisibleAtRuntime))
                                     {
                                         oNewOwner.Owner = oTabPage.Name;
                                     }
@@ -285,72 +285,72 @@ namespace MetX.VB6ToCSharp
                         }
                     }
                 }
-                TabControlIndex++;
+                tabControlIndex++;
             }
 
-            if (TempControlList.Count > 0)
+            if (tempControlList.Count > 0)
             {
                 // right order of tabs
-                var Position = 0;
-                foreach (Control oControl in TempControlList)
+                var position = 0;
+                foreach (Control oControl in tempControlList)
                 {
-                    targetModule.ControlList.Insert(TabControlIndex + Position, oControl);
-                    Position++;
+                    targetModule.ControlList.Insert(tabControlIndex + position, oControl);
+                    position++;
                 }
             }
 
             // process enums
-            ParseEnums(SourceModule, targetModule);
+            ParseEnums(sourceModule, targetModule);
             // process variables
-            ParseVariables(SourceModule.VariableList, targetModule.VariableList);
+            ParseVariables(sourceModule.VariableList, targetModule.VariableList);
             // process properties
-            ParseClassProperties(SourceModule, targetModule);
+            ParseClassProperties(sourceModule, targetModule);
             // process procedures
-            ParseProcedures(SourceModule, targetModule);
+            ParseProcedures(sourceModule, targetModule);
 
             return true;
         }
 
         public static bool ParseModuleProperties(Module oModule,
-                                              ArrayList SourcePropertyList,
-                                              ArrayList TargetPropertyList)
+                                              ArrayList sourcePropertyList,
+                                              ArrayList targetPropertyList)
         {
             // each property
-            foreach (ControlProperty SourceProperty in SourcePropertyList)
+            foreach (ControlProperty sourceProperty in sourcePropertyList)
             {
-                var TargetProperty = new ControlProperty();
-                if (ParseProperties(oModule.Type, SourceProperty, TargetProperty, SourcePropertyList))
+                var targetProperty = new ControlProperty();
+                if (ParseProperties(oModule.Type, sourceProperty, targetProperty, sourcePropertyList))
                 {
-                    if (TargetProperty.Name == "BackgroundImage" || TargetProperty.Name == "Icon")
+                    if (targetProperty.Name == "BackgroundImage" || targetProperty.Name == "Icon")
                     {
                         oModule.ImagesUsed = true;
                     }
-                    TargetPropertyList.Add(TargetProperty);
+                    targetPropertyList.Add(targetProperty);
                 }
             }
             return true;
         }
 
-        public static bool ParseProcedures(Module SourceModule, Module TargetModule)
+        public static bool ParseProcedures(Module sourceModule, Module targetModule)
         {
             const string indent6 = "      ";
 
-            foreach (Procedure SourceProcedure in SourceModule.ProcedureList)
+            foreach (Procedure sourceProcedure in sourceModule.ProcedureList)
             {
-                var TargetProcedure = new Procedure
+                var targetProcedure = new Procedure
                 {
-                    Name = SourceProcedure.Name,
-                    Scope = SourceProcedure.Scope,
-                    Comment = SourceProcedure.Comment,
-                    Type = SourceProcedure.Type,
-                    ReturnType = VariableTypeConvert(SourceProcedure.ReturnType),
-                    ParameterList = SourceProcedure.ParameterList
+                    Name = sourceProcedure.Name,
+                    Scope = sourceProcedure.Scope,
+                    Comment = sourceProcedure.Comment,
+                    Type = sourceProcedure.Type,
+                    ReturnType = VariableTypeConvert(sourceProcedure.ReturnType),
+                    ParameterList = sourceProcedure.ParameterList
                 };
                 
                 // lines
-                foreach (string Line in SourceProcedure.LineList)
+                foreach (string line in sourceProcedure.LineList)
                 {
-                    var tempSource = Line.Trim();
+                    var tempSource = line.Trim();
                     if (tempSource.Length > 0)
                     {
                         var translatedLine = string.Empty;
@@ -460,9 +460,9 @@ namespace MetX.VB6ToCSharp
                         }
 
                         // New
-                        if (Line.Contains("If ") 
-                            && Line.Contains("Then") 
-                            && Line.TokensAfter(1, "Then").Trim().Length > 0)
+                        if (line.Contains("If ") 
+                            && line.Contains("Then") 
+                            && line.TokensAfter(1, "Then").Trim().Length > 0)
                         {
                             translatedLine = tempSource.Replace("New", "new");
                             tempSource = translatedLine;
@@ -477,7 +477,7 @@ namespace MetX.VB6ToCSharp
 
                         if (tempSource.IndexOf("On Error Resume Next", 0) > -1)
                         {
-                            TargetProcedure.BottomLineList.Add(@"
+                            targetProcedure.BottomLineList.Add(@"
         catch(Exception e) 
         { 
             /* ON ERROR RESUME NEXT (ish) */ 
@@ -487,29 +487,29 @@ namespace MetX.VB6ToCSharp
                         }
                         else
                         {
-                            TargetProcedure.LineList.Add(translatedLine == string.Empty ? tempSource : translatedLine);
+                            targetProcedure.LineList.Add(translatedLine == string.Empty ? tempSource : translatedLine);
                         }
                     }
                     else
                     {
-                        TargetProcedure.LineList.Add(string.Empty);
+                        targetProcedure.LineList.Add(string.Empty);
                     }
                 }
 
-                TargetModule.ProcedureList.Add(TargetProcedure);
+                targetModule.ProcedureList.Add(targetProcedure);
             }
             return true;
         }
 
-        public static bool ParseProperties(string Type,
-                                        ControlProperty SourceProperty,
-                                        ControlProperty TargetProperty,
-                                        ArrayList SourcePropertyList)
+        public static bool ParseProperties(string type,
+                                        ControlProperty sourceProperty,
+                                        ControlProperty targetProperty,
+                                        ArrayList sourcePropertyList)
         {
-            var ValidProperty = true;
-            TargetProperty.Valid = true;
+            var validProperty = true;
+            targetProperty.Valid = true;
 
-            switch (SourceProperty.Name)
+            switch (sourceProperty.Name)
             {
                 // not used
                 case "Appearance":
@@ -521,7 +521,7 @@ namespace MetX.VB6ToCSharp
                 case "WhatsThisHelpID":
                 case "Mask":              // maskedit
                 case "PromptChar":        // maskedit
-                    ValidProperty = false;
+                    validProperty = false;
                     break;
 
                 // begin common properties
@@ -530,42 +530,42 @@ namespace MetX.VB6ToCSharp
                     //              0 - left
                     //              1 - right
                     //              2 - center
-                    TargetProperty.Name = "TextAlign";
-                    TargetProperty.Value = "System.Drawing.ContentAlignment.";
-                    switch (SourceProperty.Value)
+                    targetProperty.Name = "TextAlign";
+                    targetProperty.Value = "System.Drawing.ContentAlignment.";
+                    switch (sourceProperty.Value)
                     {
                         case "0":
-                            TargetProperty.Value = TargetProperty.Value + "TopLeft";
+                            targetProperty.Value = targetProperty.Value + "TopLeft";
                             break;
 
                         case "1":
-                            TargetProperty.Value = TargetProperty.Value + "TopRight";
+                            targetProperty.Value = targetProperty.Value + "TopRight";
                             break;
 
                         case "2":
                         default:
-                            TargetProperty.Value = TargetProperty.Value + "TopCenter";
+                            targetProperty.Value = targetProperty.Value + "TopCenter";
                             break;
                     }
                     break;
 
                 case "BackColor":
                 case "ForeColor":
-                    if (Type != "ImageList")
+                    if (type != "ImageList")
                     {
-                        TargetProperty.Name = SourceProperty.Name;
-                        TargetProperty.Value = GetColor(SourceProperty.Value);
+                        targetProperty.Name = sourceProperty.Name;
+                        targetProperty.Value = GetColor(sourceProperty.Value);
                     }
                     else
                     {
-                        ValidProperty = false;
+                        validProperty = false;
                     }
                     break;
 
                 case "BorderStyle":
-                    if (Type == "form")
+                    if (type == "form")
                     {
-                        TargetProperty.Name = "FormBorderStyle";
+                        targetProperty.Name = "FormBorderStyle";
                         // 0 - none
                         // 1 - fixed single
                         // 2 - sizable
@@ -575,52 +575,52 @@ namespace MetX.VB6ToCSharp
 
                         // FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 
-                        TargetProperty.Value = "System.Windows.Forms.FormBorderStyle.";
-                        switch (SourceProperty.Value)
+                        targetProperty.Value = "System.Windows.Forms.FormBorderStyle.";
+                        switch (sourceProperty.Value)
                         {
                             case "0":
-                                TargetProperty.Value = TargetProperty.Value + "None";
+                                targetProperty.Value = targetProperty.Value + "None";
                                 break;
 
                             default:
                             case "1":
-                                TargetProperty.Value = TargetProperty.Value + "FixedSingle";
+                                targetProperty.Value = targetProperty.Value + "FixedSingle";
                                 break;
 
                             case "2":
-                                TargetProperty.Value = TargetProperty.Value + "Sizable";
+                                targetProperty.Value = targetProperty.Value + "Sizable";
                                 break;
 
                             case "3":
-                                TargetProperty.Value = TargetProperty.Value + "FixedDialog";
+                                targetProperty.Value = targetProperty.Value + "FixedDialog";
                                 break;
 
                             case "4":
-                                TargetProperty.Value = TargetProperty.Value + "FixedToolWindow";
+                                targetProperty.Value = targetProperty.Value + "FixedToolWindow";
                                 break;
 
                             case "5":
-                                TargetProperty.Value = TargetProperty.Value + "SizableToolWindow";
+                                targetProperty.Value = targetProperty.Value + "SizableToolWindow";
                                 break;
                         }
                     }
                     else
                     {
-                        TargetProperty.Name = SourceProperty.Name;
-                        TargetProperty.Value = "System.Windows.Forms.BorderStyle.";
-                        switch (SourceProperty.Value)
+                        targetProperty.Name = sourceProperty.Name;
+                        targetProperty.Value = "System.Windows.Forms.BorderStyle.";
+                        switch (sourceProperty.Value)
                         {
                             case "0":
-                                TargetProperty.Value = TargetProperty.Value + "None";
+                                targetProperty.Value = targetProperty.Value + "None";
                                 break;
 
                             case "1":
-                                TargetProperty.Value = TargetProperty.Value + "FixedSingle";
+                                targetProperty.Value = targetProperty.Value + "FixedSingle";
                                 break;
 
                             case "2":
                             default:
-                                TargetProperty.Value = TargetProperty.Value + "Fixed3D";
+                                targetProperty.Value = targetProperty.Value + "Fixed3D";
                                 break;
                         }
                     }
@@ -628,33 +628,33 @@ namespace MetX.VB6ToCSharp
 
                 case "Caption":
                 case "Text":
-                    TargetProperty.Name = "Text";
-                    TargetProperty.Value = SourceProperty.Value;
+                    targetProperty.Name = "Text";
+                    targetProperty.Value = sourceProperty.Value;
                     break;
 
                 // this.cmdExit.Size = new System.Drawing.Size(80, 40);
                 case "Height":
-                    TargetProperty.Name = "Size";
-                    TargetProperty.Value = "new System.Drawing.Size(" + GetSize("Height", "Width", SourcePropertyList) + ")";
+                    targetProperty.Name = "Size";
+                    targetProperty.Value = "new System.Drawing.Size(" + GetSize("Height", "Width", sourcePropertyList) + ")";
                     break;
 
                 // this.cmdExit.Location = new System.Drawing.Point(616, 520);
                 case "Left":
-                    if ((Type != "ImageList") && (Type != "Timer"))
+                    if ((type != "ImageList") && (type != "Timer"))
                     {
-                        TargetProperty.Name = "Location";
-                        TargetProperty.Value = "new System.Drawing.Point(" + GetLocation(SourcePropertyList) + ")";
+                        targetProperty.Name = "Location";
+                        targetProperty.Value = "new System.Drawing.Point(" + GetLocation(sourcePropertyList) + ")";
                     }
                     else
                     {
-                        ValidProperty = false;
+                        validProperty = false;
                     }
                     break;
 
                 case "Top":
                 case "Width":
                     // nothing, already processed by Height, Left
-                    ValidProperty = false;
+                    validProperty = false;
                     break;
 
                 case "Enabled":
@@ -662,99 +662,99 @@ namespace MetX.VB6ToCSharp
                 case "TabStop":
                 case "Visible":
                 case "UseMnemonic":
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 case "WordWrap":
-                    if (Type == "Text")
+                    if (type == "Text")
                     {
-                        TargetProperty.Name = SourceProperty.Name;
-                        TargetProperty.Value = GetBool(SourceProperty.Value);
+                        targetProperty.Name = sourceProperty.Name;
+                        targetProperty.Value = GetBool(sourceProperty.Value);
                     }
                     else
                     {
-                        ValidProperty = false;
+                        validProperty = false;
                     }
                     break;
 
                 case "Font":
-                    ConvertFont(SourceProperty, TargetProperty);
+                    ConvertFont(sourceProperty, targetProperty);
                     break;
                 // end common properties
 
                 case "MaxLength":
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = SourceProperty.Value;
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = sourceProperty.Value;
                     break;
 
                 // PasswordChar
                 case "PasswordChar":
-                    TargetProperty.Name = SourceProperty.Name;
+                    targetProperty.Name = sourceProperty.Name;
                     // PasswordChar = '*';
-                    TargetProperty.Value = "'" + SourceProperty.Value.Substring(1, 1) + "'";
+                    targetProperty.Value = "'" + sourceProperty.Value.Substring(1, 1) + "'";
                     break;
 
                 // Value
                 case "Value":
-                    switch (Type)
+                    switch (type)
                     {
                         case "RadioButton":
                             // .Checked = true;
-                            TargetProperty.Name = "Checked";
-                            TargetProperty.Value = GetBool(SourceProperty.Value);
+                            targetProperty.Name = "Checked";
+                            targetProperty.Value = GetBool(sourceProperty.Value);
                             break;
 
                         case "CheckBox":
                             //.CheckState = System.Windows.Forms.CheckState.Checked;
-                            TargetProperty.Name = "CheckState";
-                            TargetProperty.Value = "System.Windows.Forms.CheckState.";
+                            targetProperty.Name = "CheckState";
+                            targetProperty.Value = "System.Windows.Forms.CheckState.";
                             // 0 - Unchecked
                             // 1 - checked
                             // 2 - grayed
-                            switch (SourceProperty.Value)
+                            switch (sourceProperty.Value)
                             {
                                 default:
                                 case "0":
-                                    TargetProperty.Value = TargetProperty.Value + "Unchecked";
+                                    targetProperty.Value = targetProperty.Value + "Unchecked";
                                     break;
 
                                 case "1":
-                                    TargetProperty.Value = TargetProperty.Value + "Checked";
+                                    targetProperty.Value = targetProperty.Value + "Checked";
                                     break;
 
                                 case "2":
-                                    TargetProperty.Value = TargetProperty.Value + "Indeterminate";
+                                    targetProperty.Value = targetProperty.Value + "Indeterminate";
                                     break;
                             }
                             break;
 
                         default:
-                            TargetProperty.Value = TargetProperty.Value + "Both";
+                            targetProperty.Value = targetProperty.Value + "Both";
                             break;
                     }
                     break;
 
                 // timer
                 case "Interval":
-                    TargetProperty.Name = "Interval";
-                    TargetProperty.Value = SourceProperty.Value;
+                    targetProperty.Name = "Interval";
+                    targetProperty.Value = sourceProperty.Value;
                     break;
 
                 // this.cmdExit.Anchor = (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right);
                 case "Cancel":
-                    if (int.Parse(SourceProperty.Value) != 0)
+                    if (int.Parse(sourceProperty.Value) != 0)
                     {
-                        TargetProperty.Name = "DialogResult";
-                        TargetProperty.Value = "System.Windows.Forms.DialogResult.Cancel";
+                        targetProperty.Name = "DialogResult";
+                        targetProperty.Value = "System.Windows.Forms.DialogResult.Cancel";
                     }
                     break;
 
                 case "Default":
-                    if (int.Parse(SourceProperty.Value) != 0)
+                    if (int.Parse(sourceProperty.Value) != 0)
                     {
-                        TargetProperty.Name = "DialogResult";
-                        TargetProperty.Value = "System.Windows.Forms.DialogResult.OK";
+                        targetProperty.Name = "DialogResult";
+                        targetProperty.Value = "System.Windows.Forms.DialogResult.OK";
                     }
                     break;
 
@@ -766,14 +766,14 @@ namespace MetX.VB6ToCSharp
                 case "TabIndex":
                 case "Tag":
                     // except MenuItem
-                    if (Type != "MenuItem")
+                    if (type != "MenuItem")
                     {
-                        TargetProperty.Name = SourceProperty.Name;
-                        TargetProperty.Value = SourceProperty.Value;
+                        targetProperty.Name = sourceProperty.Name;
+                        targetProperty.Value = sourceProperty.Value;
                     }
                     else
                     {
-                        ValidProperty = false;
+                        validProperty = false;
                     }
                     break;
 
@@ -781,14 +781,14 @@ namespace MetX.VB6ToCSharp
                 // 0 to false
                 case "AutoSize":
                     // only for Label
-                    if (Type == "Label")
+                    if (type == "Label")
                     {
-                        TargetProperty.Name = SourceProperty.Name;
-                        TargetProperty.Value = GetBool(SourceProperty.Value);
+                        targetProperty.Name = sourceProperty.Name;
+                        targetProperty.Value = GetBool(sourceProperty.Value);
                     }
                     else
                     {
-                        ValidProperty = false;
+                        validProperty = false;
                     }
                     break;
 
@@ -799,90 +799,90 @@ namespace MetX.VB6ToCSharp
                     //          System.Drawing.Bitmap pic = null;
                     //          GetFRXImage(@"C:\temp\test\form1.frx", 0x13960, pic );
 
-                    if (Type == "form")
+                    if (type == "form")
                     {
                         //.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-                        TargetProperty.Name = "Icon";
-                        TargetProperty.Value = SourceProperty.Value;
+                        targetProperty.Name = "Icon";
+                        targetProperty.Value = sourceProperty.Value;
                     }
                     else
                     {
                         // ((System.Drawing.Bitmap)(resources.GetObject("Command1.Image")));
-                        TargetProperty.Name = "Image";
-                        TargetProperty.Value = SourceProperty.Value;
+                        targetProperty.Name = "Image";
+                        targetProperty.Value = sourceProperty.Value;
                     }
                     break;
 
                 case "Picture":
                     // = "Form1.frx":13960;
-                    if (Type == "form")
+                    if (type == "form")
                     {
                         // ((System.Drawing.Bitmap)(resources.GetObject("$this.BackgroundImage")));
-                        TargetProperty.Name = "BackgroundImage";
-                        TargetProperty.Value = SourceProperty.Value;
+                        targetProperty.Name = "BackgroundImage";
+                        targetProperty.Value = sourceProperty.Value;
                     }
                     else
                     {
                         // ((System.Drawing.Bitmap)(resources.GetObject("Command1.Image")));
-                        TargetProperty.Name = "Image";
-                        TargetProperty.Value = SourceProperty.Value;
+                        targetProperty.Name = "Image";
+                        targetProperty.Value = sourceProperty.Value;
                     }
                     break;
 
                 case "ScrollBars":
                     // ScrollBars = System.Windows.Forms.ScrollBars.Both;
-                    TargetProperty.Name = SourceProperty.Name;
+                    targetProperty.Name = sourceProperty.Name;
 
-                    if (Type == "RichTextBox")
+                    if (type == "RichTextBox")
                     {
-                        TargetProperty.Value = "System.Windows.Forms.RichTextBoxScrollBars.";
+                        targetProperty.Value = "System.Windows.Forms.RichTextBoxScrollBars.";
                     }
                     else
                     {
-                        TargetProperty.Value = "System.Windows.Forms.ScrollBars.";
+                        targetProperty.Value = "System.Windows.Forms.ScrollBars.";
                     }
-                    switch (SourceProperty.Value)
+                    switch (sourceProperty.Value)
                     {
                         default:
                         case "0":
-                            TargetProperty.Value = TargetProperty.Value + "None";
+                            targetProperty.Value = targetProperty.Value + "None";
                             break;
 
                         case "1":
-                            TargetProperty.Value = TargetProperty.Value + "Horizontal";
+                            targetProperty.Value = targetProperty.Value + "Horizontal";
                             break;
 
                         case "2":
-                            TargetProperty.Value = TargetProperty.Value + "Vertical";
+                            targetProperty.Value = targetProperty.Value + "Vertical";
                             break;
 
                         case "3":
-                            TargetProperty.Value = TargetProperty.Value + "Both";
+                            targetProperty.Value = targetProperty.Value + "Both";
                             break;
                     }
                     break;
 
                 // SS tab
                 case "TabOrientation":
-                    TargetProperty.Name = "Alignment";
-                    TargetProperty.Value = "System.Windows.Forms.TabAlignment.";
-                    switch (SourceProperty.Value)
+                    targetProperty.Name = "Alignment";
+                    targetProperty.Value = "System.Windows.Forms.TabAlignment.";
+                    switch (sourceProperty.Value)
                     {
                         default:
                         case "0":
-                            TargetProperty.Value = TargetProperty.Value + "Top";
+                            targetProperty.Value = targetProperty.Value + "Top";
                             break;
 
                         case "1":
-                            TargetProperty.Value = TargetProperty.Value + "Bottom";
+                            targetProperty.Value = targetProperty.Value + "Bottom";
                             break;
 
                         case "2":
-                            TargetProperty.Value = TargetProperty.Value + "Left";
+                            targetProperty.Value = targetProperty.Value + "Left";
                             break;
 
                         case "3":
-                            TargetProperty.Value = TargetProperty.Value + "Right";
+                            targetProperty.Value = targetProperty.Value + "Right";
                             break;
                     }
                     break;
@@ -894,30 +894,30 @@ namespace MetX.VB6ToCSharp
                 case "_ExtentY":
                 case "_Version":
                 case "OLEDropMode":
-                    ValidProperty = false;
+                    validProperty = false;
                     break;
 
                 // this.listView.View = System.Windows.Forms.View.List;
                 case "View":
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = "System.Windows.Forms.View.";
-                    switch (SourceProperty.Value)
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = "System.Windows.Forms.View.";
+                    switch (sourceProperty.Value)
                     {
                         case "0":
-                            TargetProperty.Value = TargetProperty.Value + "Details";
+                            targetProperty.Value = targetProperty.Value + "Details";
                             break;
 
                         case "1":
-                            TargetProperty.Value = TargetProperty.Value + "LargeIcon";
+                            targetProperty.Value = targetProperty.Value + "LargeIcon";
                             break;
 
                         case "2":
-                            TargetProperty.Value = TargetProperty.Value + "SmallIcon";
+                            targetProperty.Value = targetProperty.Value + "SmallIcon";
                             break;
 
                         case "3":
                         default:
-                            TargetProperty.Value = TargetProperty.Value + "List";
+                            targetProperty.Value = targetProperty.Value + "List";
                             break;
                     }
                     break;
@@ -926,8 +926,8 @@ namespace MetX.VB6ToCSharp
                 case "LabelWrap":
                 case "MultiSelect":
                 case "HideSelection":
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 // end List view
@@ -942,55 +942,55 @@ namespace MetX.VB6ToCSharp
                 case "ClipControls":
                 case "LockControls":
                 case "FillStyle":
-                    ValidProperty = false;
+                    validProperty = false;
                     break;
 
                 // supported properties
 
                 case "ControlBox":
                 case "KeyPreview":
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 case "ClientHeight":
-                    TargetProperty.Name = "ClientSize";
-                    TargetProperty.Value = "new System.Drawing.Size(" + GetSize("ClientHeight", "ClientWidth", SourcePropertyList) + ")";
+                    targetProperty.Name = "ClientSize";
+                    targetProperty.Value = "new System.Drawing.Size(" + GetSize("ClientHeight", "ClientWidth", sourcePropertyList) + ")";
                     break;
 
                 case "ClientWidth":
                     // nothing, already processed by Height, Left
-                    ValidProperty = false;
+                    validProperty = false;
                     break;
 
                 case "ClientLeft":
                 case "ClientTop":
-                    ValidProperty = false;
+                    validProperty = false;
                     break;
 
                 case "MaxButton":
-                    TargetProperty.Name = "MaximizeBox";
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = "MaximizeBox";
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 case "MinButton":
-                    TargetProperty.Name = "MinimizeBox";
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = "MinimizeBox";
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 case "WhatsThisHelp":
-                    TargetProperty.Name = "HelpButton";
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = "HelpButton";
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 case "ShowInTaskbar":
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 case "WindowList":
-                    TargetProperty.Name = "MdiList";
-                    TargetProperty.Value = GetBool(SourceProperty.Value);
+                    targetProperty.Name = "MdiList";
+                    targetProperty.Value = GetBool(sourceProperty.Value);
                     break;
 
                 // this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
@@ -998,21 +998,21 @@ namespace MetX.VB6ToCSharp
                 // 1 - minimized
                 // 2 - maximized
                 case "WindowState":
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = "System.Windows.Forms.FormWindowState.";
-                    switch (SourceProperty.Value)
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = "System.Windows.Forms.FormWindowState.";
+                    switch (sourceProperty.Value)
                     {
                         case "0":
                         default:
-                            TargetProperty.Value = TargetProperty.Value + "Normal";
+                            targetProperty.Value = targetProperty.Value + "Normal";
                             break;
 
                         case "1":
-                            TargetProperty.Value = TargetProperty.Value + "Minimized";
+                            targetProperty.Value = targetProperty.Value + "Minimized";
                             break;
 
                         case "2":
-                            TargetProperty.Value = TargetProperty.Value + "Maximized";
+                            targetProperty.Value = targetProperty.Value + "Maximized";
                             break;
                     }
                     break;
@@ -1022,56 +1022,56 @@ namespace MetX.VB6ToCSharp
                     // 1 - center owner
                     // 2 - center screen
                     // 3 - windows default
-                    TargetProperty.Name = "StartPosition";
-                    TargetProperty.Value = "System.Windows.Forms.FormStartPosition.";
-                    switch (SourceProperty.Value)
+                    targetProperty.Name = "StartPosition";
+                    targetProperty.Value = "System.Windows.Forms.FormStartPosition.";
+                    switch (sourceProperty.Value)
                     {
                         case "0":
-                            TargetProperty.Value = TargetProperty.Value + "Manual";
+                            targetProperty.Value = targetProperty.Value + "Manual";
                             break;
 
                         case "1":
-                            TargetProperty.Value = TargetProperty.Value + "CenterParent";
+                            targetProperty.Value = targetProperty.Value + "CenterParent";
                             break;
 
                         case "2":
-                            TargetProperty.Value = TargetProperty.Value + "CenterScreen";
+                            targetProperty.Value = targetProperty.Value + "CenterScreen";
                             break;
 
                         case "3":
                         default:
-                            TargetProperty.Value = TargetProperty.Value + "WindowsDefaultLocation";
+                            targetProperty.Value = targetProperty.Value + "WindowsDefaultLocation";
                             break;
                     }
                     break;
 
                 default:
-                    TargetProperty.Name = SourceProperty.Name;
-                    TargetProperty.Value = SourceProperty.Value;
-                    TargetProperty.Valid = false;
+                    targetProperty.Name = sourceProperty.Name;
+                    targetProperty.Value = sourceProperty.Value;
+                    targetProperty.Valid = false;
                     break;
             }
-            return ValidProperty;
+            return validProperty;
         }
 
-        public static bool ParseVariable(Variable SourceVariable, Variable TargetVariable)
+        public static bool ParseVariable(Variable sourceVariable, Variable targetVariable)
         {
-            TargetVariable.Scope = SourceVariable.Scope;
-            TargetVariable.Name = SourceVariable.Name;
-            TargetVariable.Type = VariableTypeConvert(SourceVariable.Type);
+            targetVariable.Scope = sourceVariable.Scope;
+            targetVariable.Name = sourceVariable.Name;
+            targetVariable.Type = VariableTypeConvert(sourceVariable.Type);
 
             return true;
         }
 
-        public static bool ParseVariables(ArrayList SourceVariableList, ArrayList TargetVariableList)
+        public static bool ParseVariables(ArrayList sourceVariableList, ArrayList targetVariableList)
         {
             // each property
-            foreach (Variable SourceVariable in SourceVariableList)
+            foreach (Variable sourceVariable in sourceVariableList)
             {
-                var TargetVariable = new Variable();
-                if (ParseVariable(SourceVariable, TargetVariable))
+                var targetVariable = new Variable();
+                if (ParseVariable(sourceVariable, targetVariable))
                 {
-                    TargetVariableList.Add(TargetVariable);
+                    targetVariableList.Add(targetVariable);
                 }
             }
             return true;
@@ -1080,20 +1080,20 @@ namespace MetX.VB6ToCSharp
         private static void ControlListLoad()
         {
             _mControlList = new Hashtable();
-            var Doc = new XmlDocument();
+            var doc = new XmlDocument();
             XmlNode node;
             ControlListItem oItem;
 
             // get current directory
-            string[] CommandLineArgs;
-            CommandLineArgs = Environment.GetCommandLineArgs();
+            string[] commandLineArgs;
+            commandLineArgs = Environment.GetCommandLineArgs();
             // index 0 contain path and name of exe file
-            var BinPath = Path.GetDirectoryName(CommandLineArgs[0].ToLower());
-            var FileName = BinPath + @"\vb2c.xml";
+            var binPath = Path.GetDirectoryName(commandLineArgs[0].ToLower());
+            var fileName = binPath + @"\vb2c.xml";
 
-            Doc.Load(FileName);
+            doc.Load(fileName);
             // Select the node given
-            node = Doc.DocumentElement.SelectSingleNode("/configuration/ControlList");
+            node = doc.DocumentElement.SelectSingleNode("/configuration/ControlList");
             // exit with an empty collection if nothing here
             if (node == null) { return; }
             // exit with an empty colection if the node has no children
@@ -1142,16 +1142,16 @@ namespace MetX.VB6ToCSharp
             //      }
         }
 
-        private static void ConvertFont(ControlProperty SourceProperty, ControlProperty TargetProperty)
+        private static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
         {
-            var FontName = string.Empty;
-            var FontSize = 0;
-            var FontCharSet = 0;
-            var FontBold = false;
-            var FontUnderline = false;
-            var FontItalic = false;
-            var FontStrikethrough = false;
-            var Temp = string.Empty;
+            var fontName = string.Empty;
+            var fontSize = 0;
+            var fontCharSet = 0;
+            var fontBold = false;
+            var fontUnderline = false;
+            var fontItalic = false;
+            var fontStrikethrough = false;
+            var temp = string.Empty;
             //      BeginProperty Font
             //         Name            =   "Arial"
             //         Size            =   8.25
@@ -1162,16 +1162,16 @@ namespace MetX.VB6ToCSharp
             //         Strikethrough   =   0   'False
             //      EndProperty
 
-            foreach (ControlProperty oProperty in SourceProperty.PropertyList)
+            foreach (ControlProperty oProperty in sourceProperty.PropertyList)
             {
                 switch (oProperty.Name)
                 {
                     case "Name":
-                        FontName = oProperty.Value;
+                        fontName = oProperty.Value;
                         break;
 
                     case "Size":
-                        FontSize = GetFontSizeInt(oProperty.Value);
+                        fontSize = GetFontSizeInt(oProperty.Value);
                         break;
 
                     case "Weight":
@@ -1181,23 +1181,23 @@ namespace MetX.VB6ToCSharp
                         //          bFontBold = False
                         //        End If
                         // FW_BOLD = 700
-                        FontBold = (int.Parse(oProperty.Value) >= 700);
+                        fontBold = (int.Parse(oProperty.Value) >= 700);
                         break;
 
                     case "Charset":
-                        FontCharSet = int.Parse(oProperty.Value);
+                        fontCharSet = int.Parse(oProperty.Value);
                         break;
 
                     case "Underline":
-                        FontUnderline = (int.Parse(oProperty.Value) != 0);
+                        fontUnderline = (int.Parse(oProperty.Value) != 0);
                         break;
 
                     case "Italic":
-                        FontItalic = (int.Parse(oProperty.Value) != 0);
+                        fontItalic = (int.Parse(oProperty.Value) != 0);
                         break;
 
                     case "Strikethrough":
-                        FontStrikethrough = (int.Parse(oProperty.Value) != 0);
+                        fontStrikethrough = (int.Parse(oProperty.Value) != 0);
                         break;
                 }
             }
@@ -1211,45 +1211,45 @@ namespace MetX.VB6ToCSharp
             // System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point,
             // ((System.Byte)(238)));
 
-            TargetProperty.Name = "Font";
-            TargetProperty.Value = "new System.Drawing.Font(" + FontName + ",";
-            TargetProperty.Value = TargetProperty.Value + FontSize.ToString() + "F,";
+            targetProperty.Name = "Font";
+            targetProperty.Value = "new System.Drawing.Font(" + fontName + ",";
+            targetProperty.Value = targetProperty.Value + fontSize.ToString() + "F,";
 
-            Temp = string.Empty;
-            if (FontBold)
+            temp = string.Empty;
+            if (fontBold)
             {
-                Temp = "System.Drawing.FontStyle.Bold";
+                temp = "System.Drawing.FontStyle.Bold";
             }
-            if (FontItalic)
+            if (fontItalic)
             {
-                if (Temp != string.Empty) { Temp = Temp + " | "; }
-                Temp = Temp + "System.Drawing.FontStyle.Italic";
+                if (temp != string.Empty) { temp = temp + " | "; }
+                temp = temp + "System.Drawing.FontStyle.Italic";
             }
-            if (FontUnderline)
+            if (fontUnderline)
             {
-                if (Temp != string.Empty) { Temp = Temp + " | "; }
-                Temp = Temp + "System.Drawing.FontStyle.Underline";
+                if (temp != string.Empty) { temp = temp + " | "; }
+                temp = temp + "System.Drawing.FontStyle.Underline";
             }
-            if (FontStrikethrough)
+            if (fontStrikethrough)
             {
-                if (Temp != string.Empty) { Temp = Temp + " | "; }
-                Temp = Temp + "System.Drawing.FontStyle.Strikeout";
+                if (temp != string.Empty) { temp = temp + " | "; }
+                temp = temp + "System.Drawing.FontStyle.Strikeout";
             }
-            if (Temp == string.Empty)
+            if (temp == string.Empty)
             {
-                TargetProperty.Value = TargetProperty.Value + " System.Drawing.FontStyle.Regular,";
+                targetProperty.Value = targetProperty.Value + " System.Drawing.FontStyle.Regular,";
             }
             else
             {
-                TargetProperty.Value = TargetProperty.Value + " ( " + Temp + " ),";
+                targetProperty.Value = targetProperty.Value + " ( " + temp + " ),";
             }
-            TargetProperty.Value = TargetProperty.Value + " System.Drawing.GraphicsUnit.Point, ";
-            TargetProperty.Value = TargetProperty.Value + "((System.Byte)(" + FontCharSet.ToString() + ")));";
+            targetProperty.Value = targetProperty.Value + " System.Drawing.GraphicsUnit.Point, ";
+            targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
         }
 
-        private static string GetBool(string Value)
+        private static string GetBool(string value)
         {
-            if (int.Parse(Value) == 0)
+            if (int.Parse(value) == 0)
             {
                 return "false";
             }
@@ -1259,26 +1259,26 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        private static string GetColor(string Value)
+        private static string GetColor(string value)
         {
             Color color;
 
-            if (Value.Length < 3)
+            if (value.Length < 3)
             {
-                var ColorValue = "0x" + Value;
-                color = ColorTranslator.FromWin32(Convert.ToInt32(ColorValue, 16));
+                var colorValue = "0x" + value;
+                color = ColorTranslator.FromWin32(Convert.ToInt32(colorValue, 16));
             }
-            else if (Value.StartsWith("&"))
+            else if (value.StartsWith("&"))
             {
-                Value = Value
+                value = value
                     .Replace("&H", "")
                     .Replace("&", "")
                     ;
-                color = ColorTranslator.FromHtml("#" + Value);
+                color = ColorTranslator.FromHtml("#" + value);
             }
             else
             {
-                color = Color.FromArgb(Convert.ToInt32(Value));
+                color = Color.FromArgb(Convert.ToInt32(value));
 
                 //Color = System.Drawing.ColorTranslator.FromWin32(System.Convert.ToInt32(Value, 16));
             }
@@ -1302,138 +1302,138 @@ namespace MetX.VB6ToCSharp
         }
 
         // return control name
-        private static string GetControlIndexName(string TabName)
+        private static string GetControlIndexName(string tabName)
         {
             //  this.SSTab1.(Tab(1).Control(4) = "Option1(0)";
-            var Start = 0;
-            var End = 0;
+            var start = 0;
+            var end = 0;
 
-            Start = TabName.IndexOf("(", 0);
-            if (Start > -1)
+            start = tabName.IndexOf("(", 0);
+            if (start > -1)
             {
-                End = TabName.IndexOf(")", 0);
-                return TabName.Substring(0, Start) + TabName.Substring(Start + 1, End - Start - 1);
+                end = tabName.IndexOf(")", 0);
+                return tabName.Substring(0, start) + tabName.Substring(start + 1, end - start - 1);
             }
             else
             {
-                return TabName;
+                return tabName;
             }
         }
 
-        private static int GetFontSizeInt(string Value)
+        private static int GetFontSizeInt(string value)
         {
-            var Position = 0;
+            var position = 0;
 
-            Position = Value.IndexOf(",", 0);
-            if (Position > -1)
+            position = value.IndexOf(",", 0);
+            if (position > -1)
             {
-                return int.Parse(Value.Substring(0, Position));
+                return int.Parse(value.Substring(0, position));
             }
 
-            Position = Value.IndexOf(".", 0);
-            if (Position > 0)
+            position = value.IndexOf(".", 0);
+            if (position > 0)
             {
-                return int.Parse(Value.Substring(0, Position));
+                return int.Parse(value.Substring(0, position));
             }
-            return int.Parse(Value);
+            return int.Parse(value);
         }
 
-        private static string GetLocation(ArrayList PropertyList)
+        private static string GetLocation(ArrayList propertyList)
         {
-            var Left = 0;
-            var Top = 0;
+            var left = 0;
+            var top = 0;
 
             // each property
-            foreach (ControlProperty oProperty in PropertyList)
+            foreach (ControlProperty oProperty in propertyList)
             {
                 if (oProperty.Name == "Left")
                 {
-                    Left = int.Parse(oProperty.Value);
-                    if (Left < 0)
+                    left = int.Parse(oProperty.Value);
+                    if (left < 0)
                     {
-                        Left = 75000 + Left;
+                        left = 75000 + left;
                     }
-                    Left = Left / 15;
+                    left = left / 15;
                 }
                 if (oProperty.Name == "Top")
                 {
-                    Top = int.Parse(oProperty.Value) / 15;
+                    top = int.Parse(oProperty.Value) / 15;
                 }
             }
             // 616, 520
-            return Left.ToString() + ", " + Top.ToString();
+            return left.ToString() + ", " + top.ToString();
         }
 
-        private static string GetSize(string Height, string Width, ArrayList PropertyList)
+        private static string GetSize(string height, string width, ArrayList propertyList)
         {
-            var HeightValue = 0;
-            var WidthValue = 0;
+            var heightValue = 0;
+            var widthValue = 0;
 
             // each property
-            foreach (ControlProperty oProperty in PropertyList)
+            foreach (ControlProperty oProperty in propertyList)
             {
-                if (oProperty.Name == Height)
+                if (oProperty.Name == height)
                 {
-                    HeightValue = int.Parse(oProperty.Value) / 15;
+                    heightValue = int.Parse(oProperty.Value) / 15;
                 }
-                if (oProperty.Name == Width)
+                if (oProperty.Name == width)
                 {
-                    WidthValue = int.Parse(oProperty.Value) / 15;
+                    widthValue = int.Parse(oProperty.Value) / 15;
                 }
             }
             // 0, 120
-            return WidthValue.ToString() + ", " + HeightValue.ToString();
+            return widthValue.ToString() + ", " + heightValue.ToString();
         }
 
-        private static string VariableTypeConvert(string SourceType)
+        private static string VariableTypeConvert(string sourceType)
         {
-            string TargetType;
+            string targetType;
 
-            switch (SourceType)
+            switch (sourceType)
             {
                 case "Long":
-                    TargetType = "int";
+                    targetType = "int";
                     break;
 
                 case "Integer":
-                    TargetType = "short";
+                    targetType = "short";
                     break;
 
                 case "Byte":
-                    TargetType = "byte";
+                    targetType = "byte";
                     break;
 
                 case "String":
-                    TargetType = "string";
+                    targetType = "string";
                     break;
 
                 case "Boolean":
-                    TargetType = "bool";
+                    targetType = "bool";
                     break;
 
                 case "Currency":
-                    TargetType = "decimal";
+                    targetType = "decimal";
                     break;
 
                 case "Single":
-                    TargetType = "float";
+                    targetType = "float";
                     break;
 
                 case "Double":
-                    TargetType = "double";
+                    targetType = "double";
                     break;
 
                 case "ADODB.Recordset":
                 case "DAO.Recordset":
                 case "Recordset":
-                    TargetType = "DataReader";
+                    targetType = "DataReader";
                     break;
 
                 default:
-                    TargetType = SourceType;
+                    targetType = sourceType;
                     break;
             }
-            return TargetType;
+            return targetType;
         }
     }
 }

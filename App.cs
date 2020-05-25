@@ -24,14 +24,14 @@ namespace MetX.VB6ToCSharp
             // index 0 contain path and name of exe file
             var sBinPath = Path.GetDirectoryName(args[0]);
 
-            var showGUI = false;
+            var showGui = false;
             if (args.Length > 1)
-                showGUI = args[1].ToLower().Replace("-", "") == "gui";
+                showGui = args[1].ToLower().Replace("-", "") == "gui";
 
             // create configuration object
             Config = new XmlConfig(sBinPath + Path.DirectorySeparatorChar + ConfigFile);
 
-            if (showGUI)
+            if (showGui)
             {
                 // create main screen
                 MainForm = new FrmConvert();

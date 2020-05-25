@@ -15,14 +15,14 @@ namespace MetX.VB6ToCSharp
         private Button cmdExit;
         private Button cmdLoad;
         private readonly IContainer components = null;
-        private Button _convertAllButton;
+        private Button convertAllButton;
         private Label label;
         private Label label1;
         private string mFileName;
         private string mOutPath;
         private TextBox txtCSharp;
         private TextBox txtOutPath;
-        private TextBox _txtVb6;
+        private TextBox txtVb6;
 
         public FrmConvert()
         {
@@ -61,7 +61,7 @@ namespace MetX.VB6ToCSharp
             if (mFileName.Trim() != string.Empty)
             {
                 // parse file
-                var ConvertObject = new ConvertCode();
+                var convertObject = new ConvertCode();
                 if (txtOutPath.Text.Trim() == string.Empty)
                 {
                     MessageBox.Show("Fill out path !", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -78,10 +78,10 @@ namespace MetX.VB6ToCSharp
                 {
                     mOutPath = mOutPath + @"\";
                 }
-                ConvertObject.ParseFile(mFileName, mOutPath);
+                convertObject.ParseFile(mFileName, mOutPath);
 
                 // show result
-                txtCSharp.Text = ConvertObject.Code;
+                txtCSharp.Text = convertObject.Code;
             }
         }
 
@@ -96,9 +96,9 @@ namespace MetX.VB6ToCSharp
             if (mFileName != null)
             {
                 // show content of file
-                var Reader = File.OpenText(mFileName);
-                _txtVb6.Text = Reader.ReadToEnd();
-                Reader.Close();
+                var reader = File.OpenText(mFileName);
+                txtVb6.Text = reader.ReadToEnd();
+                reader.Close();
             }
         }
 
@@ -114,8 +114,8 @@ namespace MetX.VB6ToCSharp
             foreach (var fileSet in new[] { clsFiles, basFiles, frmFiles })
                 foreach (var clsFile in fileSet)
                 {
-                    var ConvertObject = new ConvertCode();
-                    ConvertObject.ParseFile(clsFile, @"I:\SandyB\");
+                    var convertObject = new ConvertCode();
+                    convertObject.ParseFile(clsFile, @"I:\SandyB\");
 
                     // show result
                     //txtCSharp.Text = ConvertObject.OutSourceCode;
@@ -150,10 +150,10 @@ namespace MetX.VB6ToCSharp
         private void frmConvert_Resize(object sender, EventArgs e)
         {
             //-16
-            _txtVb6.Top = 8;
-            _txtVb6.Left = 8;
-            _txtVb6.Height = Height / 2 - 60;
-            _txtVb6.Width = Width - 24;
+            txtVb6.Top = 8;
+            txtVb6.Left = 8;
+            txtVb6.Height = Height / 2 - 60;
+            txtVb6.Width = Width - 24;
 
             txtCSharp.Left = 8;
             txtCSharp.Top = Height / 2 - 16;
@@ -169,10 +169,10 @@ namespace MetX.VB6ToCSharp
             this.txtCSharp = new System.Windows.Forms.TextBox();
             this.cmdConvert = new System.Windows.Forms.Button();
             this.cmdLoad = new System.Windows.Forms.Button();
-            this._txtVb6 = new System.Windows.Forms.TextBox();
+            this.txtVb6 = new System.Windows.Forms.TextBox();
             this.txtOutPath = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this._convertAllButton = new System.Windows.Forms.Button();
+            this.convertAllButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             //
             // cmdExit
@@ -235,18 +235,18 @@ namespace MetX.VB6ToCSharp
             //
             // txtVB6
             //
-            this._txtVb6.AcceptsReturn = true;
-            this._txtVb6.AcceptsTab = true;
-            this._txtVb6.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this._txtVb6.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._txtVb6.Location = new System.Drawing.Point(8, 8);
-            this._txtVb6.MaxLength = 327670;
-            this._txtVb6.Multiline = true;
-            this._txtVb6.Name = "_txtVb6";
-            this._txtVb6.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this._txtVb6.Size = new System.Drawing.Size(688, 248);
-            this._txtVb6.TabIndex = 2;
-            this._txtVb6.WordWrap = false;
+            this.txtVb6.AcceptsReturn = true;
+            this.txtVb6.AcceptsTab = true;
+            this.txtVb6.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.txtVb6.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtVb6.Location = new System.Drawing.Point(8, 8);
+            this.txtVb6.MaxLength = 327670;
+            this.txtVb6.Multiline = true;
+            this.txtVb6.Name = "txtVb6";
+            this.txtVb6.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtVb6.Size = new System.Drawing.Size(688, 248);
+            this.txtVb6.TabIndex = 2;
+            this.txtVb6.WordWrap = false;
             //
             // txtOutPath
             //
@@ -268,13 +268,13 @@ namespace MetX.VB6ToCSharp
             //
             // ConvertAllButton
             //
-            this._convertAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this._convertAllButton.Location = new System.Drawing.Point(491, 520);
-            this._convertAllButton.Name = "_convertAllButton";
-            this._convertAllButton.Size = new System.Drawing.Size(80, 40);
-            this._convertAllButton.TabIndex = 6;
-            this._convertAllButton.Text = "Convert all";
-            this._convertAllButton.Click += new System.EventHandler(this.ConvertAllButton_Click);
+            this.convertAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.convertAllButton.Location = new System.Drawing.Point(491, 520);
+            this.convertAllButton.Name = "convertAllButton";
+            this.convertAllButton.Size = new System.Drawing.Size(80, 40);
+            this.convertAllButton.TabIndex = 6;
+            this.convertAllButton.Text = "Convert all";
+            this.convertAllButton.Click += new System.EventHandler(this.ConvertAllButton_Click);
             //
             // frmConvert
             //
@@ -283,11 +283,11 @@ namespace MetX.VB6ToCSharp
             this.ClientSize = new System.Drawing.Size(704, 565);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtOutPath);
-            this.Controls.Add(this._convertAllButton);
+            this.Controls.Add(this.convertAllButton);
             this.Controls.Add(this.cmdConvert);
             this.Controls.Add(this.cmdLoad);
             this.Controls.Add(this.txtCSharp);
-            this.Controls.Add(this._txtVb6);
+            this.Controls.Add(this.txtVb6);
             this.Controls.Add(this.cmdExit);
             this.HelpButton = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));

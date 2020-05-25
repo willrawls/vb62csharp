@@ -4,7 +4,7 @@ namespace MetX.VB6ToCSharp
 {
     public class XmlConfig
     {
-        private readonly XmlDocument _doc = new XmlDocument();
+        private readonly XmlDocument doc = new XmlDocument();
         private readonly bool doesExist;
 
         public string FileName { get; }
@@ -14,13 +14,13 @@ namespace MetX.VB6ToCSharp
             FileName = sFileName;
             try
             {
-                _doc.Load(FileName);
+                doc.Load(FileName);
                 doesExist = true;
             }
             catch
             {
-                _doc.LoadXml(("<configuration>" + "</configuration>"));
-                _doc.Save(FileName);
+                doc.LoadXml(("<configuration>" + "</configuration>"));
+                doc.Save(FileName);
             }
         }
 
@@ -35,10 +35,10 @@ namespace MetX.VB6ToCSharp
 
             // Select the root if the Node is empty
             if (aNodeName == "")
-                node = _doc.DocumentElement;
+                node = doc.DocumentElement;
             else
                 // Select the node given
-                node = _doc.DocumentElement.SelectSingleNode(aNodeName);
+                node = doc.DocumentElement.SelectSingleNode(aNodeName);
 
             // exit with an empty collection if nothing here
             if (node == null) { return sReturn; }
@@ -139,7 +139,7 @@ namespace MetX.VB6ToCSharp
         private string GetKeyValue(string aSection, string aKey, string aDefaultValue)
         {
             XmlNode node;
-            node = (_doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
+            node = (doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
             if (node == null) { return aDefaultValue; }
             return node.InnerText;
         }
@@ -153,14 +153,14 @@ namespace MetX.VB6ToCSharp
             if (aKey == "")
             // find the section, remove all its keys and remove the section
             {
-                node1 = (_doc.DocumentElement).SelectSingleNode("/configuration/" + aSection);
+                node1 = (doc.DocumentElement).SelectSingleNode("/configuration/" + aSection);
                 // if no such section, return true
                 if (node1 == null)
                 { return true; }
                 // remove all its children
                 node1.RemoveAll();
                 // select its parent ("configuration")
-                node2 = (_doc.DocumentElement).SelectSingleNode("configuration");
+                node2 = (doc.DocumentElement).SelectSingleNode("configuration");
                 // remove the section
                 node2.RemoveChild(node1);
             }
@@ -169,11 +169,11 @@ namespace MetX.VB6ToCSharp
                 if (aValue == "")
                 {
                     // find the section of this key
-                    node1 = (_doc.DocumentElement).SelectSingleNode("/configuration/" + aSection);
+                    node1 = (doc.DocumentElement).SelectSingleNode("/configuration/" + aSection);
                     // return if the section doesn't exist
                     if (node1 == null) { return true; }
                     // find the key
-                    node2 = (_doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
+                    node2 = (doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
                     // return true if the key doesn't exist
                     if (node2 == null) { return true; }
                     // remove the key
@@ -183,21 +183,21 @@ namespace MetX.VB6ToCSharp
                 {
                     // Both the Key and the Value are filled
                     // Find the key
-                    node1 = (_doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
+                    node1 = (doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
                     if (node1 == null)
                     {
                         // The key doesn't exist: find the section
-                        node2 = (_doc.DocumentElement).SelectSingleNode("/configuration/" + aSection);
+                        node2 = (doc.DocumentElement).SelectSingleNode("/configuration/" + aSection);
                         if (node2 == null)
                         {
                             // Create the section first
-                            var e = _doc.CreateElement(aSection);
+                            var e = doc.CreateElement(aSection);
                             // Add the new node at the end of the children of ("configuration")
-                            node2 = _doc.DocumentElement.AppendChild(e);
+                            node2 = doc.DocumentElement.AppendChild(e);
                             // return false if failure
                             if (node2 == null) { return false; }
                             // now create key and value
-                            e = _doc.CreateElement(aKey);
+                            e = doc.CreateElement(aKey);
                             e.InnerText = aValue;
                             // return false if failure
                             if (node2.AppendChild(e) == null) { return false; }
@@ -205,7 +205,7 @@ namespace MetX.VB6ToCSharp
                         else
                         {
                             // Create the key and put the value
-                            var e = _doc.CreateElement(aKey);
+                            var e = doc.CreateElement(aKey);
                             e.InnerText = aValue;
                             node2.AppendChild(e);
                         }
@@ -217,7 +217,7 @@ namespace MetX.VB6ToCSharp
                     }
                 }
                 // Save the document
-                _doc.Save(FileName);
+                doc.Save(FileName);
             }
             return bReturn;
         }

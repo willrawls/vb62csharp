@@ -4,9 +4,9 @@ namespace MetX.VB6ToCSharp
 {
     internal sealed class Debug
     {
-        public static void WriteLine(string Message)
+        public static void WriteLine(string message)
         {
-            MessageBox.Show(Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
