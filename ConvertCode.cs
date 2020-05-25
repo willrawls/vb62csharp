@@ -298,50 +298,45 @@ namespace MetX.VB6ToCSharp
             oResult.Append(Indent4 + "#endregion\r\n");
         }
 
-        public void ConvertProcedureCode(StringBuilder oResult)
+        public void ConvertProcedureCode(StringBuilder result)
         {
-            oResult.AppendLine();
+            result.AppendLine();
             foreach (var procedure in TargetModule.ProcedureList)
             {
                 // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
-                oResult.Append(Indent4 + procedure.Scope + " ");
+                result.Append(Indent4 + procedure.Scope + " ");
                 switch (procedure.Type)
                 {
                     case ProcedureType.ProcedureSub:
-                        oResult.Append("void");
+                        result.Append("void");
                         break;
 
                     case ProcedureType.ProcedureFunction:
-                        oResult.Append(procedure.ReturnType);
+                        result.Append(procedure.ReturnType);
                         break;
 
                     case ProcedureType.ProcedureEvent:
-                        oResult.Append("void");
+                        result.Append("void");
                         break;
                 }
 
                 // name
-                oResult.Append(" " + procedure.Name);
+                result.Append(" " + procedure.Name);
                 // parameters
                 if (procedure.ParameterList.Count <= 0)
                 {
-                    oResult.Append("()\r\n");
+                    result.AppendLine("()");
                 }
 
                 // start body
-                oResult.Append(Indent4 + "{\r\n");
+                result.AppendLine(Indent4 + "{");
 
-                foreach (var line in procedure.LineList)
+                foreach (var line in procedure.LineList.Select(l => l.Trim()))
                 {
-                    var temp = line.Trim();
-                    if (temp.Length > 0)
-                    {
-                        oResult.Append(Indent6 + temp + ";\r\n");
-                    }
+                    if (line.Length > 0)
+                        result.AppendLine(Indent6 + line + ";");
                     else
-                    {
-                        oResult.AppendLine();
-                    }
+                        result.AppendLine();
                 }
 
                 foreach (var line in procedure.BottomLineList)
@@ -349,16 +344,16 @@ namespace MetX.VB6ToCSharp
                     var temp = line.Trim();
                     if (temp.Length > 0)
                     {
-                        oResult.Append(Indent6 + temp + ";\r\n");
+                        result.Append(Indent6 + temp + ";\r\n");
                     }
                     else
                     {
-                        oResult.AppendLine();
+                        result.AppendLine();
                     }
                 }
 
                 // end procedure
-                oResult.Append(Indent4 + "}\r\n");
+                result.Append(Indent4 + "}\r\n");
             }
         }
 
@@ -379,6 +374,7 @@ namespace MetX.VB6ToCSharp
                     // possible comment
                     result.Append(property.Comment + ";\r\n");
                     // string Result = null;
+                    property.Scope = "public";
                     result.Append(Indent4 + property.Scope + " " + property.Type + " " + property.Name + ";\r\n");
 
                     // lines
@@ -416,6 +412,7 @@ namespace MetX.VB6ToCSharp
             foreach (var variable in TargetModule.VariableList)
             {
                 // string Result = null;
+                variable.Scope = "public"; // Cause I really don't like anything but public stuff
                 oResult.Append(Indent4 + variable.Scope + " " + variable.Type + " " + variable.Name + ";\r\n");
             }
         }
@@ -471,7 +468,10 @@ namespace MetX.VB6ToCSharp
                     break;
 
                 case "class":
-                    result.AppendLine(Indent2 + "public class " + SourceModule.Name);
+                    //if (SourceModule.Name.ToUpper().StartsWith("I")) 
+                    //    TargetModule.Type = "interface";
+
+                    result.AppendLine($"{Indent2}public {TargetModule.Type} {SourceModule.Name}");
                     break;
             }
             // start class region
@@ -721,78 +721,76 @@ namespace MetX.VB6ToCSharp
 
             // open file
             using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read))
+            using (var reader = new StreamReader(stream))
             {
-                using (var reader = new StreamReader(stream))
+                reader.BaseStream.Seek(0, SeekOrigin.Begin);
+                var line = reader.ReadLine() ?? string.Empty;
+                // verify type of file based on first line - form, module, class
+
+                // get first word from first line
+                var position = 0;
+                var temp = GetWord(line, ref position);
+                switch (temp.ToUpper())
                 {
-                    reader.BaseStream.Seek(0, SeekOrigin.Begin);
-                    var line = reader.ReadLine() ?? string.Empty;
-                    // verify type of file based on first line - form, module, class
+                    // module first line
+                    // 'Attribute VB_Name = "ModuleName"'
+                    case ModuleFirstLine:
+                        FileType = VbFileType.VbFileModule;
+                        break;
 
-                    // get first word from first line
-                    var position = 0;
-                    var temp = GetWord(line, ref position);
-                    switch (temp.ToUpper())
-                    {
-                        // module first line
-                        // 'Attribute VB_Name = "ModuleName"'
-                        case ModuleFirstLine:
-                            FileType = VbFileType.VbFileModule;
-                            break;
+                    // form or class first line
+                    // 'VERSION 5.00' or 'VERSION 1.0 CLASS'
+                    case "VERSION":
+                        position++;
+                        version = GetWord(line, ref position);
 
-                        // form or class first line
-                        // 'VERSION 5.00' or 'VERSION 1.0 CLASS'
-                        case "VERSION":
-                            position++;
-                            version = GetWord(line, ref position);
+                        FileType = line.Contains(ClassFirstLine)
+                            ? VbFileType.VbFileClass
+                            : VbFileType.VbFileForm;
+                        break;
 
-                            FileType = line.Contains(ClassFirstLine)
-                                ? VbFileType.VbFileClass
-                                : VbFileType.VbFileForm;
-                            break;
-
-                        default:
-                            FileType = VbFileType.VbFileUnknown;
-                            break;
-                    }
-
-                    // if file is still unknown
-                    if (FileType == VbFileType.VbFileUnknown)
-                    {
-                        ActionResult = "Unknown file type";
-                        return false;
-                    }
-
-                    SourceModule = new Module
-                    {
-                        Version = version ?? "1.0",
-                        FileName = filename
-                    };
-
-                    // now parse specifics of each type
-                    switch (extension.ToUpper())
-                    {
-                        case "FRM":
-                            SourceModule.Type = "form";
-                            result = ParseForm(reader);
-                            break;
-
-                        case "BAS":
-                            SourceModule.Type = "module";
-                            result = ParseModule(reader);
-                            break;
-
-                        case "CLS":
-                            SourceModule.Type = "class";
-                            result = ParseClass(reader);
-                            break;
-                    }
-
-                    // parse remain - variables, functions, procedures
-                    result = ParseProcedures(reader);
-
-                    stream.Close();
-                    reader.Close();
+                    default:
+                        FileType = VbFileType.VbFileUnknown;
+                        break;
                 }
+
+                // if file is still unknown
+                if (FileType == VbFileType.VbFileUnknown)
+                {
+                    ActionResult = "Unknown file type";
+                    return false;
+                }
+
+                SourceModule = new Module
+                {
+                    Version = version ?? "1.0",
+                    FileName = filename
+                };
+
+                // now parse specifics of each type
+                switch (extension.ToUpper())
+                {
+                    case "FRM":
+                        SourceModule.Type = "form";
+                        result = ParseForm(reader);
+                        break;
+
+                    case "BAS":
+                        SourceModule.Type = "module";
+                        result = ParseModule(reader);
+                        break;
+
+                    case "CLS":
+                        SourceModule.Type = "class";
+                        result = ParseClass(reader);
+                        break;
+                }
+
+                // parse remain - variables, functions, procedures
+                result = ParseProcedures(reader);
+
+                stream.Close();
+                reader.Close();
             }
 
             // generate output file

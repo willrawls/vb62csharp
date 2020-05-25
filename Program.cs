@@ -5,29 +5,35 @@ namespace MetX.VB6ToCSharp
 {
     public static class Program
     {
+        public const string SourceCodeFolderPath = @"I:\OneDrive\data\code\Slice and Dice\Sandy\";
+        public const string OutputFolderPath = @"I:\OneDrive\data\code\Slice and Dice\SandyB\";
+
         public static int Main(string[] args)
         {
-            ConvertAll(@"I:\SandyB\");
+            ConvertAll();
             return 0;
         }
 
-        public static void ConvertAll(string folderPath)
+        public static void ConvertAll()
         {
-            foreach (var fileToDelete in Directory.EnumerateFiles(folderPath))
+            // Delete previous run
+            foreach (var fileToDelete in Directory.EnumerateFiles(OutputFolderPath))
+            {
+                File.SetAttributes(fileToDelete, FileAttributes.Normal);
                 File.Delete(fileToDelete);
+            }
 
             var fileSets = new List<IEnumerable<string>>
             {
-                Directory.EnumerateFiles(@"I:\Sandy", "*.cls"),
-                Directory.EnumerateFiles(@"I:\Sandy", "*.frm"),
-                Directory.EnumerateFiles(@"I:\Sandy", "*.bas"),
+                Directory.EnumerateFiles(SourceCodeFolderPath, "*.cls"),
+                Directory.EnumerateFiles(SourceCodeFolderPath, "*.frm"),
+                Directory.EnumerateFiles(SourceCodeFolderPath, "*.bas"),
             };
 
             foreach (var fileSet in fileSets)
             foreach (var clsFile in fileSet)
             {
-                var toConvert = new ConvertCode();
-                toConvert.ParseFile(clsFile, folderPath);
+                new ConvertCode().ParseFile(clsFile, OutputFolderPath);
             }
         }
     }
