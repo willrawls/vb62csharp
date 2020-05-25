@@ -583,7 +583,7 @@ namespace MetX.VB6ToCSharp
                     break;
 
                 case "module":
-                    oResult.Append(Indent2 + "sealed class " + mSourceModule.Name + "\r\n");
+                    oResult.Append(Indent2 + "class " + mSourceModule.Name + "\r\n");
                     // all procedures must be static
                     break;
 

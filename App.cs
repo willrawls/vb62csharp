@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace MetX.VB6ToCSharp
 {
-    internal sealed class App
+    public class App
     {
         public const string ConfigOutPath = "OutPath";
         public const string ConfigSetting = "Setting";

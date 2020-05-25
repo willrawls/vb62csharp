@@ -1,18 +1,478 @@
-using MetX.Library;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Xml;
+using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
     // parse VB6 properties and values to C#
-    internal sealed class Tools
+    public class Tools
     {
+        public static readonly Dictionary<string, string> BlanketReplacements = new Dictionary<string, string>();
         public static Hashtable _mControlList;
+
+        static Tools()
+        {
+            BlanketReplacements.Add("Exit Property", "return; // ???");
+            BlanketReplacements.Add("For Each ", "foreach( var ");
+            BlanketReplacements.Add(" In ", " in ");
+            BlanketReplacements.Add(";;", ";");
+        }
+
+        public static string BlanketReplaceNow(string originalLineOfCode)
+        {
+            if (originalLineOfCode.IsEmpty())
+                return originalLineOfCode;
+
+            var lineOfCode = originalLineOfCode;
+            foreach (var entry in BlanketReplacements)
+            {
+                while (lineOfCode.Contains(entry.Key))
+                    lineOfCode = lineOfCode.Replace(entry.Key, entry.Value);
+            }
+
+            return lineOfCode;
+        }
+
+        public static void ControlListLoad()
+        {
+            _mControlList = new Hashtable();
+            var doc = new XmlDocument();
+            XmlNode node;
+            ControlListItem oItem;
+
+            // get current directory
+            string[] commandLineArgs;
+            commandLineArgs = Environment.GetCommandLineArgs();
+            // index 0 contain path and name of exe file
+            var binPath = Path.GetDirectoryName(commandLineArgs[0].ToLower());
+            var fileName = binPath + @"\vb2c.xml";
+
+            doc.Load(fileName);
+            // Select the node given
+            node = doc.DocumentElement.SelectSingleNode("/configuration/ControlList");
+            // exit with an empty collection if nothing here
+            if (node == null)
+            {
+                return;
+            }
+
+            // exit with an empty colection if the node has no children
+            if (node.HasChildNodes == false)
+            {
+                return;
+            }
+
+            // get the nodelist of all children
+            var nodeList = node.ChildNodes;
+
+            foreach (XmlElement element in nodeList)
+            {
+                oItem = new ControlListItem();
+                oItem.Vb6Name = string.Empty;
+                oItem.CsharpName = string.Empty;
+                oItem.Unsupported = false;
+                oItem.InvisibleAtRuntime = false;
+                foreach (XmlElement childElement in element)
+                {
+                    switch (childElement.Name)
+                    {
+                        case "VB6":
+                            // compare in uppercase
+                            oItem.Vb6Name = childElement.InnerText.ToUpper();
+                            break;
+
+                        case "Csharp":
+                            oItem.CsharpName = childElement.InnerText;
+                            break;
+
+                        case "Unsupported":
+                            oItem.Unsupported = bool.Parse(childElement.InnerText);
+                            break;
+
+                        case "InvisibleAtRuntime":
+                            oItem.InvisibleAtRuntime = bool.Parse(childElement.InnerText);
+                            break;
+                    }
+                }
+
+                _mControlList.Add(oItem.Vb6Name, oItem);
+            }
+
+            //      public string getKeyValue(string aSection, string aKey, string aDefaultValue)
+            //      {
+            //        XmlNode node;
+            //        node = (Doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
+            //        if (node == null) {return aDefaultValue;}
+            //        return node.InnerText;
+            //      }
+        }
+
+        public static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
+        {
+            var fontName = string.Empty;
+            var fontSize = 0;
+            var fontCharSet = 0;
+            var fontBold = false;
+            var fontUnderline = false;
+            var fontItalic = false;
+            var fontStrikethrough = false;
+            var temp = string.Empty;
+            //      BeginProperty Font
+            //         Name            =   "Arial"
+            //         Size            =   8.25
+            //         Charset         =   238
+            //         Weight          =   400
+            //         Underline       =   0   'False
+            //         Italic          =   0   'False
+            //         Strikethrough   =   0   'False
+            //      EndProperty
+
+            foreach (ControlProperty property in sourceProperty.PropertyList)
+            {
+                switch (property.Name)
+                {
+                    case "Name":
+                        fontName = property.Value;
+                        break;
+
+                    case "Size":
+                        fontSize = GetFontSizeInt(property.Value);
+                        break;
+
+                    case "Weight":
+                        //        If tLogFont.lfWeight >= FW_BOLD Then
+                        //          bFontBold = True
+                        //        Else
+                        //          bFontBold = False
+                        //        End If
+                        // FW_BOLD = 700
+                        fontBold = (int.Parse(property.Value) >= 700);
+                        break;
+
+                    case "Charset":
+                        fontCharSet = int.Parse(property.Value);
+                        break;
+
+                    case "Underline":
+                        fontUnderline = (int.Parse(property.Value) != 0);
+                        break;
+
+                    case "Italic":
+                        fontItalic = (int.Parse(property.Value) != 0);
+                        break;
+
+                    case "Strikethrough":
+                        fontStrikethrough = (int.Parse(property.Value) != 0);
+                        break;
+                }
+            }
+
+            //      this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
+            //        (System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline
+            //        | System.Drawing.FontStyle.Strikeout), System.Drawing.GraphicsUnit.Point,
+            //        ((System.Byte)(0)));
+
+            // this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
+            // System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point,
+            // ((System.Byte)(238)));
+
+            targetProperty.Name = "Font";
+            targetProperty.Value = "new System.Drawing.Font(" + fontName + ",";
+            targetProperty.Value = targetProperty.Value + fontSize.ToString() + "F,";
+
+            temp = string.Empty;
+            if (fontBold)
+            {
+                temp = "System.Drawing.FontStyle.Bold";
+            }
+
+            if (fontItalic)
+            {
+                if (temp != string.Empty)
+                {
+                    temp = temp + " | ";
+                }
+
+                temp = temp + "System.Drawing.FontStyle.Italic";
+            }
+
+            if (fontUnderline)
+            {
+                if (temp != string.Empty)
+                {
+                    temp = temp + " | ";
+                }
+
+                temp = temp + "System.Drawing.FontStyle.Underline";
+            }
+
+            if (fontStrikethrough)
+            {
+                if (temp != string.Empty)
+                {
+                    temp = temp + " | ";
+                }
+
+                temp = temp + "System.Drawing.FontStyle.Strikeout";
+            }
+
+            if (temp == string.Empty)
+            {
+                targetProperty.Value = targetProperty.Value + " System.Drawing.FontStyle.Regular,";
+            }
+            else
+            {
+                targetProperty.Value = targetProperty.Value + " ( " + temp + " ),";
+            }
+
+            targetProperty.Value = targetProperty.Value + " System.Drawing.GraphicsUnit.Point, ";
+            targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
+        }
+
+        public static void ConvertLineOfCode(string originalLine, out string translatedLine, out string placeAtBottom)
+        {
+            placeAtBottom = string.Empty;
+            var line = originalLine.Trim();
+            translatedLine = line;
+
+            if (line.Length > 0)
+            {
+                // vbNullString = string.empty
+                if (translatedLine.Contains("vbNullString"))
+                {
+                    translatedLine = translatedLine.Replace("vbNullString", "string.Empty");
+                }
+
+                // Nothing = null
+                if (translatedLine.Contains("Nothing"))
+                {
+                    translatedLine = line
+                        .Replace("Set ", "")
+                        .Replace("Nothing", "null");
+                    translatedLine += ";";
+                }
+
+                // Set
+                if (translatedLine.Contains("Set "))
+                {
+                    translatedLine = translatedLine.Replace("Set ", " ");
+                }
+
+                // remark
+                if (line[0] == '\'') // '
+                {
+                    translatedLine = translatedLine.Replace("'", "//");
+                }
+
+                // & to +
+                if (translatedLine.Contains("&"))
+                {
+                    translatedLine = translatedLine.Replace("&", "+");
+                }
+
+                // Select Case
+                if (translatedLine.Contains("Select Case"))
+                {
+                    translatedLine = translatedLine.Replace("Select Case", "switch");
+                }
+
+                // End Select
+                if (translatedLine.Contains("End Select"))
+                {
+                    translatedLine = translatedLine.Replace("End Select", "}");
+                }
+
+                // _
+                if (translatedLine.Contains(" _"))
+                {
+                    translatedLine = translatedLine.Replace(" _", "\r\n");
+                }
+
+                // If
+                if (translatedLine.Contains("If "))
+                {
+                    translatedLine = translatedLine.Replace("If ", "if ( ");
+                }
+
+                // Not
+                if (translatedLine.Contains("Not "))
+                {
+                    translatedLine = translatedLine.Replace("Not ", "! ");
+                }
+
+                // then
+                if (translatedLine.Contains(" Then"))
+                {
+                    translatedLine = translatedLine.Replace(" Then", " )\r\n" + ConvertCode.Indent6 + "{\r\n");
+                }
+
+                // else
+                if (translatedLine.Contains("Else"))
+                {
+                    translatedLine = translatedLine.Replace("Else",
+                        "}\r\n" + ConvertCode.Indent6 + "else\r\n" + ConvertCode.Indent6 + "{");
+                }
+
+                // End if
+                if (translatedLine.Contains("End If"))
+                {
+                    translatedLine = translatedLine.Replace("End If", "}");
+                }
+
+                // Unload Me
+                if (translatedLine.Contains("Unload Me"))
+                {
+                    translatedLine = translatedLine.Replace("Unload Me", "Close()");
+                }
+
+                // .Caption
+                if (translatedLine.Contains(".Caption"))
+                {
+                    translatedLine = translatedLine.Replace(".Caption", ".Text");
+                }
+
+                // True
+                if (translatedLine.Contains("True"))
+                {
+                    translatedLine = translatedLine.Replace("True", "true");
+                }
+
+                // False
+                if (translatedLine.Contains("False"))
+                {
+                    translatedLine = translatedLine.Replace("False", "false");
+                }
+
+                // New
+                if (line.Contains("If ")
+                    && line.Contains("Then")
+                    && line.TokensAfter(1, "Then").Trim().Length > 0)
+                {
+                    translatedLine = translatedLine.Replace("New", "new");
+                }
+
+                // New
+                if (translatedLine.Contains("New"))
+                {
+                    translatedLine = translatedLine.Replace("New", "new");
+                }
+
+                if (translatedLine.Contains("On Error Resume Next"))
+                {
+                    placeAtBottom = @"
+        }
+        catch(Exception e)
+        {
+            /* ON ERROR RESUME NEXT (ish) */
+        }
+";
+                    translatedLine = "try\r\n{\r\n";
+                }
+                else
+                {
+                    translatedLine = translatedLine == string.Empty ? line : translatedLine;
+                }
+            }
+
+            translatedLine = BlanketReplaceNow(translatedLine);
+            translatedLine = CleanupTranslatedLineOfCode(translatedLine);
+        }
+
+        public static string GetBool(string value)
+        {
+            if (int.Parse(value) == 0)
+            {
+                return "false";
+            }
+            else
+            {
+                return "true";
+            }
+        }
+
+        public static string GetColor(string value)
+        {
+            Color color;
+
+            if (value.Length < 3)
+            {
+                var colorValue = "0x" + value;
+                color = ColorTranslator.FromWin32(Convert.ToInt32(colorValue, 16));
+            }
+            else if (value.StartsWith("&"))
+            {
+                value = value
+                        .Replace("&H", "")
+                        .Replace("&", "")
+                    ;
+                color = ColorTranslator.FromHtml("#" + value);
+            }
+            else
+            {
+                color = Color.FromArgb(Convert.ToInt32(value));
+
+                //Color = System.Drawing.ColorTranslator.FromWin32(System.Convert.ToInt32(Value, 16));
+            }
+
+            if (!color.IsSystemColor)
+            {
+                if (color.IsNamedColor)
+                {
+                    // System.Drawing.Color.Yellow;
+                    return "System.Drawing.Color." + color.Name;
+                }
+                else
+                {
+                    return "System.Drawing.Color.FromArgb(" + color.ToArgb() + ")";
+                }
+            }
+            else
+            {
+                return "System.Drawing.SystemColors." + color.Name;
+            }
+        }
+
+        // return control name
+        public static string GetControlIndexName(string tabName)
+        {
+            //  this.SSTab1.(Tab(1).Control(4) = "Option1(0)";
+            var start = 0;
+            var end = 0;
+
+            start = tabName.IndexOf("(");
+            if (start > -1)
+            {
+                end = tabName.IndexOf(")");
+                return tabName.Substring(0, start) + tabName.Substring(start + 1, end - start - 1);
+            }
+            else
+            {
+                return tabName;
+            }
+        }
+
+        public static int GetFontSizeInt(string value)
+        {
+            var position = 0;
+
+            position = value.IndexOf(",");
+            if (position > -1)
+            {
+                return int.Parse(value.Substring(0, position));
+            }
+
+            position = value.IndexOf(".");
+            if (position > 0)
+            {
+                return int.Parse(value.Substring(0, position));
+            }
+
+            return int.Parse(value);
+        }
 
         public static void GetFrxImage(string imageFile, int imageOffset, out byte[] imageString)
         {
@@ -50,6 +510,58 @@ namespace MetX.VB6ToCSharp
             reader.Close();
         }
 
+        public static string GetLocation(List<ControlProperty> propertyList)
+        {
+            var left = 0;
+            var top = 0;
+
+            // each property
+            foreach (ControlProperty property in propertyList)
+            {
+                if (property.Name == "Left")
+                {
+                    left = int.Parse(property.Value);
+                    if (left < 0)
+                    {
+                        left = 75000 + left;
+                    }
+
+                    left = left / 15;
+                }
+
+                if (property.Name == "Top")
+                {
+                    top = int.Parse(property.Value) / 15;
+                }
+            }
+
+            // 616, 520
+            return left.ToString() + ", " + top.ToString();
+        }
+
+        public static string GetSize(string height, string width, List<ControlProperty> propertyList)
+        {
+            var heightValue = 0;
+            var widthValue = 0;
+
+            // each property
+            foreach (ControlProperty property in propertyList)
+            {
+                if (property.Name == height)
+                {
+                    heightValue = int.Parse(property.Value) / 15;
+                }
+
+                if (property.Name == width)
+                {
+                    widthValue = int.Parse(property.Value) / 15;
+                }
+            }
+
+            // 0, 120
+            return widthValue.ToString() + ", " + heightValue.ToString();
+        }
+
         public static bool ParseClassProperties(Module sourceModule, Module targetModule)
         {
             foreach (Property sourceProperty in sourceModule.PropertyList)
@@ -73,6 +585,7 @@ namespace MetX.VB6ToCSharp
                         targetProperty.Direction = "set";
                         break;
                 }
+
                 // lines
                 foreach (string line in sourceProperty.LineList)
                     if (line.Trim() != string.Empty)
@@ -80,12 +593,13 @@ namespace MetX.VB6ToCSharp
 
                 targetModule.PropertyList.Add(targetProperty);
             }
+
             return true;
         }
 
         public static bool ParseControlProperties(Module oModule, Control control,
-                                                List<ControlProperty> sourcePropertyList,
-                                                List<ControlProperty> targetPropertyList)
+            List<ControlProperty> sourcePropertyList,
+            List<ControlProperty> targetPropertyList)
         {
             // each property
             foreach (ControlProperty sourceProperty in sourcePropertyList)
@@ -104,14 +618,17 @@ namespace MetX.VB6ToCSharp
                         {
                             oModule.ImagesUsed = true;
                         }
+
                         targetPropertyList.Add(targetProperty);
                     }
                 }
             }
+
             return true;
         }
 
-        public static bool ParseControls(Module oModule, List<Control> sourceControlList, List<Control> targetControlList)
+        public static bool ParseControls(Module oModule, List<Control> sourceControlList,
+            List<Control> targetControlList)
         {
             var type = string.Empty;
 
@@ -128,7 +645,7 @@ namespace MetX.VB6ToCSharp
                 // compare upper case type
                 if (_mControlList.ContainsKey(sourceControl.Type.ToUpper()))
                 {
-                    var oItem = (ControlListItem)_mControlList[sourceControl.Type.ToUpper()];
+                    var oItem = (ControlListItem) _mControlList[sourceControl.Type.ToUpper()];
 
                     if (oItem.Unsupported)
                     {
@@ -143,6 +660,7 @@ namespace MetX.VB6ToCSharp
                             oModule.MenuUsed = true;
                         }
                     }
+
                     targetControl.InvisibleAtRuntime = oItem.InvisibleAtRuntime;
                 }
                 else
@@ -155,6 +673,7 @@ namespace MetX.VB6ToCSharp
 
                 targetControlList.Add(targetControl);
             }
+
             return true;
         }
 
@@ -164,6 +683,7 @@ namespace MetX.VB6ToCSharp
             {
                 targetModule.EnumList.Add(sourceEnum);
             }
+
             return true;
         }
 
@@ -274,6 +794,7 @@ namespace MetX.VB6ToCSharp
                         }
                     }
                 }
+
                 tabControlIndex++;
             }
 
@@ -301,8 +822,8 @@ namespace MetX.VB6ToCSharp
         }
 
         public static bool ParseModuleProperties(Module oModule,
-                                              List<ControlProperty> sourcePropertyList,
-                                              List<ControlProperty> targetPropertyList)
+            List<ControlProperty> sourcePropertyList,
+            List<ControlProperty> targetPropertyList)
         {
             // each property
             foreach (ControlProperty sourceProperty in sourcePropertyList)
@@ -314,9 +835,11 @@ namespace MetX.VB6ToCSharp
                     {
                         oModule.ImagesUsed = true;
                     }
+
                     targetPropertyList.Add(targetProperty);
                 }
             }
+
             return true;
         }
 
@@ -341,168 +864,20 @@ namespace MetX.VB6ToCSharp
                 {
                     ConvertLineOfCode(originalLine, out string convertedLine, out var placeAtBottom);
                     targetProcedure.LineList.Add(convertedLine);
-                    if(placeAtBottom.IsNotEmpty())
+                    if (placeAtBottom.IsNotEmpty())
                         targetProcedure.BottomLineList.Add(placeAtBottom);
                 }
 
                 targetModule.ProcedureList.Add(targetProcedure);
             }
+
             return true;
         }
 
-        public static string ConvertLineOfCode(string originalLine, out string translatedLine, out string placeAtBottom)
-        {
-            placeAtBottom = string.Empty;
-            var line = originalLine.Trim();
-            translatedLine = line;
-
-            if (line.Length > 0)
-            {
-                // vbNullString = string.empty
-                if (translatedLine.Contains("vbNullString"))
-                {
-                    translatedLine = translatedLine.Replace("vbNullString", "string.Empty");
-                }
-
-                // Nothing = null
-                if (translatedLine.Contains("Nothing"))
-                {
-                    translatedLine = line
-                        .Replace("Set ", "")
-                        .Replace("Nothing", "null");
-                    translatedLine += ";";
-                }
-
-                // Set
-                if (translatedLine.Contains("Set "))
-                {
-                    translatedLine = translatedLine.Replace("Set ", " ");
-                }
-
-                // remark
-                if (line[0] == '\'') // '
-                {
-                    translatedLine = translatedLine.Replace("'", "//");
-                }
-
-                // & to +
-                if (translatedLine.Contains("&"))
-                {
-                    translatedLine = translatedLine.Replace("&", "+");
-                }
-
-                // Select Case
-                if (translatedLine.Contains("Select Case"))
-                {
-                    translatedLine = translatedLine.Replace("Select Case", "switch");
-                }
-
-                // End Select
-                if (translatedLine.Contains("End Select"))
-                {
-                    translatedLine = translatedLine.Replace("End Select", "}");
-                }
-
-                // _
-                if (translatedLine.Contains(" _"))
-                {
-                    translatedLine = translatedLine.Replace(" _", "\r\n");
-                }
-
-                // If
-                if (translatedLine.Contains("If "))
-                {
-                    translatedLine = translatedLine.Replace("If ", "if ( ");
-                }
-
-                // Not
-                if (translatedLine.Contains("Not "))
-                {
-                    translatedLine = translatedLine.Replace("Not ", "! ");
-                }
-
-                // then
-                if (translatedLine.Contains(" Then"))
-                {
-                    translatedLine = translatedLine.Replace(" Then", " )\r\n" + ConvertCode.Indent6 + "{\r\n");
-                }
-
-                // else
-                if (translatedLine.Contains("Else"))
-                {
-                    translatedLine = translatedLine.Replace("Else", "}\r\n" + ConvertCode.Indent6 + "else\r\n" + ConvertCode.Indent6 + "{");
-                }
-
-                // End if
-                if (translatedLine.Contains("End If"))
-                {
-                    translatedLine = translatedLine.Replace("End If", "}");
-                }
-
-                // Unload Me
-                if (translatedLine.Contains("Unload Me"))
-                {
-                    translatedLine = translatedLine.Replace("Unload Me", "Close()");
-                }
-
-                // .Caption
-                if (translatedLine.Contains(".Caption"))
-                {
-                    translatedLine = translatedLine.Replace(".Caption", ".Text");
-                }
-
-                // True
-                if (translatedLine.Contains("True"))
-                {
-                    translatedLine = translatedLine.Replace("True", "true");
-                }
-
-                // False
-                if (translatedLine.Contains("False"))
-                {
-                    translatedLine = translatedLine.Replace("False", "false");
-                }
-
-                // New
-                if (line.Contains("If ")
-                    && line.Contains("Then")
-                    && line.TokensAfter(1, "Then").Trim().Length > 0)
-                {
-                    translatedLine = translatedLine.Replace("New", "new");
-                }
-
-                // New
-                if (translatedLine.Contains("New"))
-                {
-                    translatedLine = translatedLine.Replace("New", "new");
-                }
-
-                if (translatedLine.Contains("On Error Resume Next"))
-                {
-                    placeAtBottom = @"
-        }
-        catch(Exception e)
-        {
-            /* ON ERROR RESUME NEXT (ish) */
-        }
-";
-                    return "try\r\n{\r\n";
-                }
-                else
-                {
-                    return translatedLine == string.Empty ? line : translatedLine;
-                }
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
         public static bool ParseProperties(string type,
-                                        ControlProperty sourceProperty,
-                                        ControlProperty targetProperty,
-                                        List<ControlProperty> sourcePropertyList)
+            ControlProperty sourceProperty,
+            ControlProperty targetProperty,
+            List<ControlProperty> sourcePropertyList)
         {
             var validProperty = true;
             targetProperty.Valid = true;
@@ -513,12 +888,12 @@ namespace MetX.VB6ToCSharp
                 case "Appearance":
                 case "ScaleHeight":
                 case "ScaleWidth":
-                case "Style":             // button
-                case "BackStyle":         //label
+                case "Style": // button
+                case "BackStyle": //label
                 case "IMEMode":
                 case "WhatsThisHelpID":
-                case "Mask":              // maskedit
-                case "PromptChar":        // maskedit
+                case "Mask": // maskedit
+                case "PromptChar": // maskedit
                     validProperty = false;
                     break;
 
@@ -545,6 +920,7 @@ namespace MetX.VB6ToCSharp
                             targetProperty.Value = targetProperty.Value + "TopCenter";
                             break;
                     }
+
                     break;
 
                 case "BackColor":
@@ -558,6 +934,7 @@ namespace MetX.VB6ToCSharp
                     {
                         validProperty = false;
                     }
+
                     break;
 
                 case "BorderStyle":
@@ -622,6 +999,7 @@ namespace MetX.VB6ToCSharp
                                 break;
                         }
                     }
+
                     break;
 
                 case "Caption":
@@ -633,7 +1011,8 @@ namespace MetX.VB6ToCSharp
                 // this.cmdExit.Size = new System.Drawing.Size(80, 40);
                 case "Height":
                     targetProperty.Name = "Size";
-                    targetProperty.Value = "new System.Drawing.Size(" + GetSize("Height", "Width", sourcePropertyList) + ")";
+                    targetProperty.Value = "new System.Drawing.Size(" + GetSize("Height", "Width", sourcePropertyList) +
+                                           ")";
                     break;
 
                 // this.cmdExit.Location = new System.Drawing.Point(616, 520);
@@ -647,6 +1026,7 @@ namespace MetX.VB6ToCSharp
                     {
                         validProperty = false;
                     }
+
                     break;
 
                 case "Top":
@@ -674,6 +1054,7 @@ namespace MetX.VB6ToCSharp
                     {
                         validProperty = false;
                     }
+
                     break;
 
                 case "Font":
@@ -725,12 +1106,14 @@ namespace MetX.VB6ToCSharp
                                     targetProperty.Value = targetProperty.Value + "Indeterminate";
                                     break;
                             }
+
                             break;
 
                         default:
                             targetProperty.Value = targetProperty.Value + "Both";
                             break;
                     }
+
                     break;
 
                 // timer
@@ -746,6 +1129,7 @@ namespace MetX.VB6ToCSharp
                         targetProperty.Name = "DialogResult";
                         targetProperty.Value = "System.Windows.Forms.DialogResult.Cancel";
                     }
+
                     break;
 
                 case "Default":
@@ -754,6 +1138,7 @@ namespace MetX.VB6ToCSharp
                         targetProperty.Name = "DialogResult";
                         targetProperty.Value = "System.Windows.Forms.DialogResult.OK";
                     }
+
                     break;
 
                 //                this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
@@ -773,6 +1158,7 @@ namespace MetX.VB6ToCSharp
                     {
                         validProperty = false;
                     }
+
                     break;
 
                 // -1 converted to true
@@ -788,6 +1174,7 @@ namespace MetX.VB6ToCSharp
                     {
                         validProperty = false;
                     }
+
                     break;
 
                 case "Icon":
@@ -809,6 +1196,7 @@ namespace MetX.VB6ToCSharp
                         targetProperty.Name = "Image";
                         targetProperty.Value = sourceProperty.Value;
                     }
+
                     break;
 
                 case "Picture":
@@ -825,6 +1213,7 @@ namespace MetX.VB6ToCSharp
                         targetProperty.Name = "Image";
                         targetProperty.Value = sourceProperty.Value;
                     }
+
                     break;
 
                 case "ScrollBars":
@@ -839,6 +1228,7 @@ namespace MetX.VB6ToCSharp
                     {
                         targetProperty.Value = "System.Windows.Forms.ScrollBars.";
                     }
+
                     switch (sourceProperty.Value)
                     {
                         default:
@@ -858,6 +1248,7 @@ namespace MetX.VB6ToCSharp
                             targetProperty.Value = targetProperty.Value + "Both";
                             break;
                     }
+
                     break;
 
                 // SS tab
@@ -883,6 +1274,7 @@ namespace MetX.VB6ToCSharp
                             targetProperty.Value = targetProperty.Value + "Right";
                             break;
                     }
+
                     break;
 
                 // begin Listview
@@ -918,6 +1310,7 @@ namespace MetX.VB6ToCSharp
                             targetProperty.Value = targetProperty.Value + "List";
                             break;
                     }
+
                     break;
 
                 case "LabelEdit":
@@ -953,7 +1346,8 @@ namespace MetX.VB6ToCSharp
 
                 case "ClientHeight":
                     targetProperty.Name = "ClientSize";
-                    targetProperty.Value = "new System.Drawing.Size(" + GetSize("ClientHeight", "ClientWidth", sourcePropertyList) + ")";
+                    targetProperty.Value = "new System.Drawing.Size(" +
+                                           GetSize("ClientHeight", "ClientWidth", sourcePropertyList) + ")";
                     break;
 
                 case "ClientWidth":
@@ -1013,6 +1407,7 @@ namespace MetX.VB6ToCSharp
                             targetProperty.Value = targetProperty.Value + "Maximized";
                             break;
                     }
+
                     break;
 
                 case "StartUpPosition":
@@ -1041,6 +1436,7 @@ namespace MetX.VB6ToCSharp
                             targetProperty.Value = targetProperty.Value + "WindowsDefaultLocation";
                             break;
                     }
+
                     break;
 
                 default:
@@ -1049,6 +1445,7 @@ namespace MetX.VB6ToCSharp
                     targetProperty.Valid = false;
                     break;
             }
+
             return validProperty;
         }
 
@@ -1072,315 +1469,8 @@ namespace MetX.VB6ToCSharp
                     targetVariableList.Add(targetVariable);
                 }
             }
+
             return true;
-        }
-
-        public static void ControlListLoad()
-        {
-            _mControlList = new Hashtable();
-            var doc = new XmlDocument();
-            XmlNode node;
-            ControlListItem oItem;
-
-            // get current directory
-            string[] commandLineArgs;
-            commandLineArgs = Environment.GetCommandLineArgs();
-            // index 0 contain path and name of exe file
-            var binPath = Path.GetDirectoryName(commandLineArgs[0].ToLower());
-            var fileName = binPath + @"\vb2c.xml";
-
-            doc.Load(fileName);
-            // Select the node given
-            node = doc.DocumentElement.SelectSingleNode("/configuration/ControlList");
-            // exit with an empty collection if nothing here
-            if (node == null) { return; }
-            // exit with an empty colection if the node has no children
-            if (node.HasChildNodes == false) { return; }
-            // get the nodelist of all children
-            var nodeList = node.ChildNodes;
-
-            foreach (XmlElement element in nodeList)
-            {
-                oItem = new ControlListItem();
-                oItem.Vb6Name = string.Empty;
-                oItem.CsharpName = string.Empty;
-                oItem.Unsupported = false;
-                oItem.InvisibleAtRuntime = false;
-                foreach (XmlElement childElement in element)
-                {
-                    switch (childElement.Name)
-                    {
-                        case "VB6":
-                            // compare in uppercase
-                            oItem.Vb6Name = childElement.InnerText.ToUpper();
-                            break;
-
-                        case "Csharp":
-                            oItem.CsharpName = childElement.InnerText;
-                            break;
-
-                        case "Unsupported":
-                            oItem.Unsupported = bool.Parse(childElement.InnerText);
-                            break;
-
-                        case "InvisibleAtRuntime":
-                            oItem.InvisibleAtRuntime = bool.Parse(childElement.InnerText);
-                            break;
-                    }
-                }
-                _mControlList.Add(oItem.Vb6Name, oItem);
-            }
-
-            //      public string getKeyValue(string aSection, string aKey, string aDefaultValue)
-            //      {
-            //        XmlNode node;
-            //        node = (Doc.DocumentElement).SelectSingleNode("/configuration/" + aSection + "/" + aKey);
-            //        if (node == null) {return aDefaultValue;}
-            //        return node.InnerText;
-            //      }
-        }
-
-        public static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
-        {
-            var fontName = string.Empty;
-            var fontSize = 0;
-            var fontCharSet = 0;
-            var fontBold = false;
-            var fontUnderline = false;
-            var fontItalic = false;
-            var fontStrikethrough = false;
-            var temp = string.Empty;
-            //      BeginProperty Font
-            //         Name            =   "Arial"
-            //         Size            =   8.25
-            //         Charset         =   238
-            //         Weight          =   400
-            //         Underline       =   0   'False
-            //         Italic          =   0   'False
-            //         Strikethrough   =   0   'False
-            //      EndProperty
-
-            foreach (ControlProperty property in sourceProperty.PropertyList)
-            {
-                switch (property.Name)
-                {
-                    case "Name":
-                        fontName = property.Value;
-                        break;
-
-                    case "Size":
-                        fontSize = GetFontSizeInt(property.Value);
-                        break;
-
-                    case "Weight":
-                        //        If tLogFont.lfWeight >= FW_BOLD Then
-                        //          bFontBold = True
-                        //        Else
-                        //          bFontBold = False
-                        //        End If
-                        // FW_BOLD = 700
-                        fontBold = (int.Parse(property.Value) >= 700);
-                        break;
-
-                    case "Charset":
-                        fontCharSet = int.Parse(property.Value);
-                        break;
-
-                    case "Underline":
-                        fontUnderline = (int.Parse(property.Value) != 0);
-                        break;
-
-                    case "Italic":
-                        fontItalic = (int.Parse(property.Value) != 0);
-                        break;
-
-                    case "Strikethrough":
-                        fontStrikethrough = (int.Parse(property.Value) != 0);
-                        break;
-                }
-            }
-
-            //      this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
-            //        (System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline
-            //        | System.Drawing.FontStyle.Strikeout), System.Drawing.GraphicsUnit.Point,
-            //        ((System.Byte)(0)));
-
-            // this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
-            // System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point,
-            // ((System.Byte)(238)));
-
-            targetProperty.Name = "Font";
-            targetProperty.Value = "new System.Drawing.Font(" + fontName + ",";
-            targetProperty.Value = targetProperty.Value + fontSize.ToString() + "F,";
-
-            temp = string.Empty;
-            if (fontBold)
-            {
-                temp = "System.Drawing.FontStyle.Bold";
-            }
-            if (fontItalic)
-            {
-                if (temp != string.Empty) { temp = temp + " | "; }
-                temp = temp + "System.Drawing.FontStyle.Italic";
-            }
-            if (fontUnderline)
-            {
-                if (temp != string.Empty) { temp = temp + " | "; }
-                temp = temp + "System.Drawing.FontStyle.Underline";
-            }
-            if (fontStrikethrough)
-            {
-                if (temp != string.Empty) { temp = temp + " | "; }
-                temp = temp + "System.Drawing.FontStyle.Strikeout";
-            }
-            if (temp == string.Empty)
-            {
-                targetProperty.Value = targetProperty.Value + " System.Drawing.FontStyle.Regular,";
-            }
-            else
-            {
-                targetProperty.Value = targetProperty.Value + " ( " + temp + " ),";
-            }
-            targetProperty.Value = targetProperty.Value + " System.Drawing.GraphicsUnit.Point, ";
-            targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
-        }
-
-        public static string GetBool(string value)
-        {
-            if (int.Parse(value) == 0)
-            {
-                return "false";
-            }
-            else
-            {
-                return "true";
-            }
-        }
-
-        public static string GetColor(string value)
-        {
-            Color color;
-
-            if (value.Length < 3)
-            {
-                var colorValue = "0x" + value;
-                color = ColorTranslator.FromWin32(Convert.ToInt32(colorValue, 16));
-            }
-            else if (value.StartsWith("&"))
-            {
-                value = value
-                    .Replace("&H", "")
-                    .Replace("&", "")
-                    ;
-                color = ColorTranslator.FromHtml("#" + value);
-            }
-            else
-            {
-                color = Color.FromArgb(Convert.ToInt32(value));
-
-                //Color = System.Drawing.ColorTranslator.FromWin32(System.Convert.ToInt32(Value, 16));
-            }
-
-            if (!color.IsSystemColor)
-            {
-                if (color.IsNamedColor)
-                {
-                    // System.Drawing.Color.Yellow;
-                    return "System.Drawing.Color." + color.Name;
-                }
-                else
-                {
-                    return "System.Drawing.Color.FromArgb(" + color.ToArgb() + ")";
-                }
-            }
-            else
-            {
-                return "System.Drawing.SystemColors." + color.Name;
-            }
-        }
-
-        // return control name
-        public static string GetControlIndexName(string tabName)
-        {
-            //  this.SSTab1.(Tab(1).Control(4) = "Option1(0)";
-            var start = 0;
-            var end = 0;
-
-            start = tabName.IndexOf("(");
-            if (start > -1)
-            {
-                end = tabName.IndexOf(")");
-                return tabName.Substring(0, start) + tabName.Substring(start + 1, end - start - 1);
-            }
-            else
-            {
-                return tabName;
-            }
-        }
-
-        public static int GetFontSizeInt(string value)
-        {
-            var position = 0;
-
-            position = value.IndexOf(",");
-            if (position > -1)
-            {
-                return int.Parse(value.Substring(0, position));
-            }
-
-            position = value.IndexOf(".");
-            if (position > 0)
-            {
-                return int.Parse(value.Substring(0, position));
-            }
-            return int.Parse(value);
-        }
-
-        public static string GetLocation(List<ControlProperty> propertyList)
-        {
-            var left = 0;
-            var top = 0;
-
-            // each property
-            foreach (ControlProperty property in propertyList)
-            {
-                if (property.Name == "Left")
-                {
-                    left = int.Parse(property.Value);
-                    if (left < 0)
-                    {
-                        left = 75000 + left;
-                    }
-                    left = left / 15;
-                }
-                if (property.Name == "Top")
-                {
-                    top = int.Parse(property.Value) / 15;
-                }
-            }
-            // 616, 520
-            return left.ToString() + ", " + top.ToString();
-        }
-
-        public static string GetSize(string height, string width, List<ControlProperty> propertyList)
-        {
-            var heightValue = 0;
-            var widthValue = 0;
-
-            // each property
-            foreach (ControlProperty property in propertyList)
-            {
-                if (property.Name == height)
-                {
-                    heightValue = int.Parse(property.Value) / 15;
-                }
-                if (property.Name == width)
-                {
-                    widthValue = int.Parse(property.Value) / 15;
-                }
-            }
-            // 0, 120
-            return widthValue.ToString() + ", " + heightValue.ToString();
         }
 
         public static string VariableTypeConvert(string sourceType)
@@ -1431,7 +1521,22 @@ namespace MetX.VB6ToCSharp
                     targetType = sourceType;
                     break;
             }
+
             return targetType;
+        }
+
+        private static string CleanupTranslatedLineOfCode(string lineOfCode)
+        {
+            if (lineOfCode.Contains("foreach(") && !lineOfCode.Contains(")"))
+                lineOfCode += " )";
+
+            if (lineOfCode.Contains("foreach(") && lineOfCode.EndsWith(");"))
+                lineOfCode = lineOfCode.FirstToken(");") + ")";
+
+            if (lineOfCode.StartsWith("Next "))
+                lineOfCode = "}\r\n";
+
+            return lineOfCode;
         }
     }
 }

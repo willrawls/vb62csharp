@@ -3,7 +3,7 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     /// Summary description for Tools.
     /// </summary>
-    internal sealed class Number
+    public class Number
     {
         public static bool IsOdd(int iNumber)
         {
