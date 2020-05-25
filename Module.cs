@@ -8,23 +8,23 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class Module
     {
-        public List<Control> ControlList { get; set; }
-        public List<Enum> EnumList { get; set; }
-        public string FileName { get; set; }
-        public List<ControlProperty> FormPropertyList { get; }
-        public List<string> ImageList { get; set; }
-        public bool ImagesUsed { get; set; } = false;
-        public bool MenuUsed { get; set; } = false;
-        public string Name { get; set; }
+        public List<Control> ControlList;
+        public List<Enum> EnumList;
+        public string FileName;
+        public List<ControlProperty> FormPropertyList;
+        public List<string> ImageList;
+        public bool ImagesUsed = false;
+        public bool MenuUsed = false;
+        public string Name;
 
-        public List<Procedure> ProcedureList { get; set; }
-        public List<Property> PropertyList { get; set; }
-        public string Type { get; set; }
+        public List<Procedure> ProcedureList;
+        public List<Property> PropertyList;
+        public string Type;
 
-        public List<Variable> VariableList { get; set; }
-        public string Version { get; set; }
+        public List<Variable> VariableList;
+        public string Version;
 
-        public string Comment { get; set; }
+        public string Comment;
 
         public Module()
         {

@@ -8,19 +8,19 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class Property
     {
-        public string Comment { get; set; }
+        public string Comment;
 
-        public string Direction { get; set; }
+        public string Direction;
 
-        public List<string> LineList { get; set; }
+        public List<string> LineList;
 
-        public string Name { get; set; }
+        public string Name;
 
-        public List<Parameter> ParameterList { get; set; }
+        public List<Parameter> ParameterList;
 
-        public string Scope { get; set; }
+        public string Scope;
 
-        public string Type { get; set; }
+        public string Type;
 
         public Property()
         {

@@ -12,6 +12,7 @@ namespace MetX.VB6ToCSharp
         public static readonly Dictionary<string, string> BlanketReplacements = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> EndsWithReplacements = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> StartsWithReplacements = new Dictionary<string, string>();
+        public static readonly Dictionary<string, Dictionary<string, string>> StartsAndEndsWithReplacements = new Dictionary<string, Dictionary<string, string>>();
 
         static Tools()
         {
@@ -19,10 +20,22 @@ namespace MetX.VB6ToCSharp
             BlanketReplacements.Add("For Each ", "foreach( var ");
             BlanketReplacements.Add(" In ", " in ");
             BlanketReplacements.Add(";;", ";");
+            BlanketReplacements.Add("; = ", " = ");
+            BlanketReplacements.Add("{ get; set; }", ";");
+            BlanketReplacements.Add("Static", "static");
+            BlanketReplacements.Add("Collection", "Dictionary<string,string>()");
+            BlanketReplacements.Add("True", "true");
+            BlanketReplacements.Add("False", "false");
 
             StartsWithReplacements.Add("' ", "// ");
+            StartsWithReplacements.Add("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. ");
 
             EndsWithReplacements.Add(";;", ";");
+
+            var doWhile = new Dictionary<string, string>();
+            doWhile.Add(";", ")");
+
+            StartsAndEndsWithReplacements.Add("Do While ", doWhile);
         }
 
         public static string BlanketReplaceNow(string originalLineOfCode)

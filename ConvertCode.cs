@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Resources;
 using System.Text;
 using MetX.Library;
@@ -24,11 +25,11 @@ namespace MetX.VB6ToCSharp
         public VbFileType FileType;
         public Module SourceModule;
         public Module TargetModule;
-        public string ActionResult { get; set; }
+        public string ActionResult;
 
-        public string Code { get; set; }
+        public string Code;
 
-        public string ProjectNamespace { get; set; } = "MetX.SliceAndDice";
+        public string ProjectNamespace = "MetX.SliceAndDice";
 
         public ConvertCode()
         {
@@ -37,7 +38,7 @@ namespace MetX.VB6ToCSharp
 
         public void ConvertEnumCode(StringBuilder oResult)
         {
-            oResult.Append("\r\n");
+            oResult.AppendLine();
             foreach (var enumItems in TargetModule.EnumList)
             {
                 // public enum VB_FILE_TYPE
@@ -82,12 +83,12 @@ namespace MetX.VB6ToCSharp
             oResult.Append(Indent4 + "/// Required designer variable.\r\n");
             oResult.Append(Indent4 + "/// </summary>\r\n");
             oResult.Append(Indent4 + "public System.ComponentModel.Container components = null;\r\n");
-            oResult.Append("\r\n");
+            oResult.AppendLine();
             oResult.Append(Indent4 + "public " + SourceModule.Name + "()\r\n");
             oResult.Append(Indent4 + "{\r\n");
             oResult.Append(Indent6 + "// Required for Windows Form Designer support\r\n");
             oResult.Append(Indent6 + "InitializeComponent();\r\n");
-            oResult.Append("\r\n");
+            oResult.AppendLine();
             oResult.Append(Indent6 + "// TODO: Add any constructor code after InitializeComponent call\r\n");
             oResult.Append(Indent4 + "}\r\n");
 
@@ -299,7 +300,7 @@ namespace MetX.VB6ToCSharp
 
         public void ConvertProcedureCode(StringBuilder oResult)
         {
-            oResult.Append("\r\n");
+            oResult.AppendLine();
             foreach (var procedure in TargetModule.ProcedureList)
             {
                 // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
@@ -339,7 +340,7 @@ namespace MetX.VB6ToCSharp
                     }
                     else
                     {
-                        oResult.Append("\r\n");
+                        oResult.AppendLine();
                     }
                 }
 
@@ -352,7 +353,7 @@ namespace MetX.VB6ToCSharp
                     }
                     else
                     {
-                        oResult.Append("\r\n");
+                        oResult.AppendLine();
                     }
                 }
 
@@ -367,7 +368,7 @@ namespace MetX.VB6ToCSharp
             if (TargetModule.PropertyList.Count > 0)
             {
                 // new line
-                result.Append("\r\n");
+                result.AppendLine();
                 //public string Comment
                 //{
                 //  get { return mComment; }
@@ -378,7 +379,7 @@ namespace MetX.VB6ToCSharp
                     // possible comment
                     result.Append(property.Comment + ";\r\n");
                     // string Result = null;
-                    result.Append(Indent4 + property.Scope + " " + property.Type + " " + property.Name + " { get; set; }\r\n");
+                    result.Append(Indent4 + property.Scope + " " + property.Type + " " + property.Name + ";\r\n");
 
                     // lines
                     var atBottom = new List<string>();
@@ -396,7 +397,7 @@ namespace MetX.VB6ToCSharp
                         }
                         else
                         {
-                            result.Append("\r\n");
+                            result.AppendLine();
                         }
                     }
 
@@ -410,7 +411,7 @@ namespace MetX.VB6ToCSharp
 
         public void ConvertVariablesInCode(StringBuilder oResult)
         {
-            oResult.Append("\r\n");
+            oResult.AppendLine();
 
             foreach (var variable in TargetModule.VariableList)
             {
@@ -425,7 +426,7 @@ namespace MetX.VB6ToCSharp
         {
             string temp;
 
-            var oResult = new StringBuilder();
+            var result = new StringBuilder();
 
             // convert source to target
             TargetModule = new Module();
@@ -434,47 +435,47 @@ namespace MetX.VB6ToCSharp
             // ********************************************************
             // common class
             // ********************************************************
-            oResult.Append("using System;\r\n");
+            result.Append("using System;\r\n");
 
             // ********************************************************
             // only form class
             // ********************************************************
             if (TargetModule.Type == "form")
             {
-                oResult.Append("using System.Drawing;\r\n");
-                oResult.Append("using System.Collections;\r\n");
-                oResult.Append("using System.ComponentModel;\r\n");
-                oResult.Append("using System.Windows.Forms;\r\n");
+                result.Append("using System.Drawing;\r\n");
+                result.Append("using System.Collections;\r\n");
+                result.Append("using System.ComponentModel;\r\n");
+                result.Append("using System.Windows.Forms;\r\n");
             }
 
-            oResult.Append("\r\n");
-            oResult.Append($"namespace {ProjectNamespace}\r\n");
+            result.AppendLine();
+            result.AppendLine($"namespace {ProjectNamespace}");
             // start namepsace region
-            oResult.Append("{\r\n");
+            result.Append("{\r\n");
             if (!string.IsNullOrEmpty(SourceModule.Comment))
             {
-                oResult.Append(Indent2 + "/// <summary>\r\n");
-                oResult.Append(Indent2 + "///   " + SourceModule.Comment + ".\r\n");
-                oResult.Append(Indent2 + "/// </summary>\r\n");
+                result.Append(Indent2 + "/// <summary>\r\n");
+                result.Append(Indent2 + "///   " + SourceModule.Comment + ".\r\n");
+                result.Append(Indent2 + "/// </summary>\r\n");
             }
 
             switch (TargetModule.Type)
             {
                 case "form":
-                    oResult.Append(Indent2 + "public class " + SourceModule.Name + " : System.Windows.Forms.Form\r\n");
+                    result.AppendLine(Indent2 + "public class " + SourceModule.Name + " : System.Windows.Forms.Form");
                     break;
 
                 case "module":
-                    oResult.Append(Indent2 + "class " + SourceModule.Name + "\r\n");
+                    result.AppendLine(Indent2 + "class " + SourceModule.Name);
                     // all procedures must be static
                     break;
 
                 case "class":
-                    oResult.Append(Indent2 + "public class " + SourceModule.Name + "\r\n");
+                    result.AppendLine(Indent2 + "public class " + SourceModule.Name);
                     break;
             }
             // start class region
-            oResult.Append(Indent2 + "{\r\n");
+            result.Append(Indent2 + "{\r\n");
 
             // ********************************************************
             // only form class
@@ -482,7 +483,7 @@ namespace MetX.VB6ToCSharp
 
             if (TargetModule.Type == "form")
             {
-                ConvertFormCode(outPath, oResult);
+                ConvertFormCode(outPath, result);
             }
 
             // ********************************************************
@@ -491,7 +492,7 @@ namespace MetX.VB6ToCSharp
 
             if (TargetModule.EnumList.Count > 0)
             {
-                ConvertEnumCode(oResult);
+                ConvertEnumCode(result);
             }
 
             // ********************************************************
@@ -500,7 +501,7 @@ namespace MetX.VB6ToCSharp
 
             if (TargetModule.VariableList.Count > 0)
             {
-                ConvertVariablesInCode(oResult);
+                ConvertVariablesInCode(result);
             }
 
             // ********************************************************
@@ -509,7 +510,7 @@ namespace MetX.VB6ToCSharp
 
             if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
             {
-                ConvertPropertyCode(oResult);
+                ConvertPropertyCode(result);
             }
 
             // ********************************************************
@@ -518,16 +519,16 @@ namespace MetX.VB6ToCSharp
 
             if (TargetModule.ProcedureList.Count > 0)
             {
-                ConvertProcedureCode(oResult);
+                ConvertProcedureCode(result);
             }
 
             // end class
-            oResult.Append(Indent2 + "}\r\n");
+            result.Append(Indent2 + "}\r\n");
             // end namespace
-            oResult.Append("}\r\n");
+            result.Append("}\r\n");
 
             // return result
-            return oResult.ToString();
+            return result.ToString();
         }
 
         public void GetPropertyRow(StringBuilder result, string type, string name, ControlProperty controlProperty, string outPath)
@@ -1008,73 +1009,42 @@ namespace MetX.VB6ToCSharp
             var position = 0;
             var start = 0;
             var status = false;
-            var tempString = string.Empty;
-
+            var word = string.Empty;
             // parameters delimited by comma
-            while (!bFinish)
+            var parts = line.Split(',').ToList().Select(p => p.Trim()).ToList();
+
+            for (var index = 0; index < parts.Count; index++)
             {
+                var part = parts[index];
                 var parameter = new Parameter();
-
-                // next word - control type
-                tempString = GetWord(line, ref position);
-                switch (tempString)
+                
+                parameter.Optional = part.StartsWith("Optional");
+                part = part.Replace("Optional", "").Trim();
+                
+                parameter.Pass = part.StartsWith("ByVal") ? "ByVal" : "ByRef";
+                part = part.Replace("ByRef ", "");
+                part = part.Replace("ByVal ", "").Trim();
+                parameter.Name = part.TokenAt(1, " As ").Trim();
+                var type = part.TokenAt(2, " As ").Trim().TokenAt(1).Trim();
+                parameter.Type = type;
+                var left = part.TokenAt(2, " As ").Replace(type, "");
+                if (left.IsNotEmpty())
                 {
-                    case "Optional":
-
-                        break;
-
-                    case "ByVal":
-                    case "ByRef":
-                        parameter.Pass = tempString;
-                        break;
-                    // missing is byref
-                    default:
-                        parameter.Pass = "ByRef";
-                        // variable name
-                        parameter.Name = tempString;
-                        status = true;
-                        break;
+                    parameter.DefaultValue = left.Replace("= ", "");
                 }
-
-                // variable name
-                if (!status)
-                {
-                    position++;
-                    tempString = GetWord(line, ref position);
-                    parameter.Name = tempString;
-                }
-                // As
-                position++;
-                tempString = GetWord(line, ref position);
-                // parameter type
-                position++;
-                tempString = GetWord(line, ref position);
-                parameter.Type = tempString;
 
                 parameterList.Add(parameter);
 
                 // next parameter
                 position++;
-                start = position;
-
-                if (start <= line.Length)
-                    position = line.IndexOf(",", start);
-                else
-                    position = -1;
-
-                if (position == -1)
-                {
-                    // end
-                    bFinish = true;
-                }
             }
         }
 
         // ByVal lValue As Long, ByVal sValue As string
         public void ParseProcedureName(Procedure procedure, string line)
         {
-            var tempString = string.Empty;
-            var iPosition = 0;
+            var word = string.Empty;
+            var position = 0;
             var start = 0;
             var status = false;
 
@@ -1087,8 +1057,8 @@ namespace MetX.VB6ToCSharp
             //Public Function Rozbor_DefaultFields(ByVal MKf As String) As String
             //public static bool ParseProcedures( Module SourceModule, Module TargetModule )
 
-            tempString = GetWord(line, ref iPosition);
-            switch (tempString)
+            word = GetWord(line, ref position);
+            switch (word)
             {
                 case "Private":
                     procedure.Scope = "private";
@@ -1109,12 +1079,12 @@ namespace MetX.VB6ToCSharp
             if (status)
             {
                 // property
-                iPosition++;
-                tempString = GetWord(line, ref iPosition);
+                position++;
+                word = GetWord(line, ref position);
             }
 
             // procedure type
-            switch (tempString)
+            switch (word)
             {
                 case "Sub":
                     procedure.Type = ProcedureType.ProcedureSub;
@@ -1130,22 +1100,22 @@ namespace MetX.VB6ToCSharp
             }
 
             // next is name
-            iPosition++;
-            start = iPosition;
-            iPosition = line.IndexOf("(", start);
-            procedure.Name = line.Substring(start, iPosition - start);
+            position++;
+            start = position;
+            position = line.IndexOf("(", start);
+            procedure.Name = line.Substring(start, position - start);
 
             // next possible parameters
-            iPosition++;
-            start = iPosition;
-            iPosition = line.IndexOf(")", start);
+            position++;
+            start = position;
+            position = line.IndexOf(")", start);
 
-            if ((iPosition - start) > 0)
+            if ((position - start) > 0)
             {
-                tempString = line.Substring(start, iPosition - start);
+                word = line.Substring(start, position - start);
                 var parameterList = new List<Parameter>();
                 // process parameters
-                ParseParameters(parameterList, tempString);
+                ParseParameters(parameterList, word);
                 procedure.ParameterList = parameterList;
             }
 
@@ -1153,18 +1123,18 @@ namespace MetX.VB6ToCSharp
             if (procedure.Type == ProcedureType.ProcedureFunction)
             {
                 // as
-                iPosition++;
-                tempString = GetWord(line, ref iPosition);
+                position++;
+                word = GetWord(line, ref position);
                 // function return type
-                iPosition++;
-                procedure.ReturnType = GetWord(line, ref iPosition);
+                position++;
+                procedure.ReturnType = GetWord(line, ref position);
             }
         }
 
         public bool ParseProcedures(StreamReader reader)
         {
             string line = null;
-            string tempString = null;
+            string word = null;
             string sComments = null;
             string sScope = null;
 
@@ -1198,15 +1168,16 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // get first word in line
-                tempString = GetWord(line, ref iPosition);
-                if (int.TryParse(tempString, out var tempResult))
+                word = GetWord(line, ref iPosition);
+                if (int.TryParse(word, out var tempResult))
                 {
-                    line = line.Substring(tempResult.ToString().Length).Trim();
+                    line = line.TokensAfter().Trim();
+                    //line = line.Substring(tempResult.ToString().Length).Trim();
                     iPosition = 0;
-                    tempString = GetWord(line, ref iPosition);
+                    word = GetWord(line, ref iPosition);
                 }
 
-                switch (tempString)
+                switch (word)
                 {
                     // ignore this section
 
@@ -1231,13 +1202,13 @@ namespace MetX.VB6ToCSharp
                     case "Public":
                     case "Private":
                         // save it for later use
-                        sScope = tempString.ToLower();
+                        sScope = word.ToLower();
                         // read next word
                         // next word - control type
                         iPosition++;
-                        tempString = GetWord(line, ref iPosition);
+                        word = GetWord(line, ref iPosition);
 
-                        switch (tempString)
+                        switch (word)
                         {
                             // functions or procedures
                             case "Sub":
@@ -1374,14 +1345,14 @@ namespace MetX.VB6ToCSharp
 
         public void ParsePropertyName(Property property, string line)
         {
-            var tempString = string.Empty;
+            var word = string.Empty;
             var iPosition = 0;
             var start = 0;
             var status = false;
 
             // next word - control type
-            tempString = GetWord(line, ref iPosition);
-            switch (tempString)
+            word = GetWord(line, ref iPosition);
+            switch (word)
             {
                 case "Private":
                     property.Scope = "private";
@@ -1401,13 +1372,13 @@ namespace MetX.VB6ToCSharp
             {
                 // property
                 iPosition++;
-                tempString = GetWord(line, ref iPosition);
+                word = GetWord(line, ref iPosition);
             }
 
             // direction Let,Get, Set
             iPosition++;
-            tempString = GetWord(line, ref iPosition);
-            property.Direction = tempString;
+            word = GetWord(line, ref iPosition);
+            property.Direction = word;
 
             //Public Property Let ParentID(ByVal lValue As Long)
 
@@ -1423,20 +1394,20 @@ namespace MetX.VB6ToCSharp
 
             if ((iPosition - start) > 0)
             {
-                tempString = line.Substring(start, iPosition - start);
+                word = line.Substring(start, iPosition - start);
                 // process parameters
-                ParseParameters(property.ParameterList, tempString);
+                ParseParameters(property.ParameterList, word);
             }
 
             // As
             iPosition++;
             iPosition++;
-            tempString = GetWord(line, ref iPosition);
+            word = GetWord(line, ref iPosition);
 
             // type
             iPosition++;
-            tempString = GetWord(line, ref iPosition);
-            property.Type = tempString;
+            word = GetWord(line, ref iPosition);
+            property.Type = word;
         }
 
         public void ParseVariableDeclaration(Variable variable, string line)

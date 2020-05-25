@@ -8,12 +8,12 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class ControlProperty
     {
-        public string Comment { get; set; }
-        public string Name { get; set; }
+        public string Comment;
+        public string Name;
 
-        public List<ControlProperty> PropertyList { get; set; }
-        public bool Valid { get; set; }
-        public string Value { get; set; }
+        public List<ControlProperty> PropertyList;
+        public bool Valid;
+        public string Value;
 
         public ControlProperty()
         {

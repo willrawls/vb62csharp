@@ -8,14 +8,14 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class Control
     {
-        public bool Container { get; set; }
-        public bool InvisibleAtRuntime { get; set; }
-        public string Name { get; set; }
+        public bool Container;
+        public bool InvisibleAtRuntime;
+        public string Name;
 
-        public string Owner { get; set; }
-        public List<ControlProperty> PropertyList { get; set; }
-        public string Type { get; set; }
-        public bool Valid { get; set; }
+        public string Owner;
+        public List<ControlProperty> PropertyList;
+        public string Type;
+        public bool Valid;
 
         public Control()
         {

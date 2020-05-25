@@ -5,9 +5,9 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class EnumItem
     {
-        public string Comment { get; set; }
-        public string Name { get; set; }
+        public string Comment;
+        public string Name;
 
-        public string Value { get; set; }
+        public string Value;
     }
 }

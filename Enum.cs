@@ -8,11 +8,11 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class Enum
     {
-        public List<EnumItem> ItemList { get; set; }
+        public List<EnumItem> ItemList;
 
-        public string Name { get; set; }
+        public string Name;
 
-        public string Scope { get; set; }
+        public string Scope;
 
         public Enum()
         {

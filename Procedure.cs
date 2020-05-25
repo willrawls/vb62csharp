@@ -5,21 +5,21 @@ namespace MetX.VB6ToCSharp
 {
     public class Procedure
     {
-        public string Comment { get; set; }
+        public string Comment;
 
-        public List<string> LineList { get; set; }
+        public List<string> LineList;
 
-        public List<string> BottomLineList { get; set; }
+        public List<string> BottomLineList;
 
-        public string Name { get; set; }
+        public string Name;
 
-        public List<Parameter> ParameterList { get; set; }
+        public List<Parameter> ParameterList;
 
-        public string ReturnType { get; set; }
+        public string ReturnType;
 
-        public string Scope { get; set; }
+        public string Scope;
 
-        public ProcedureType Type { get; set; }
+        public ProcedureType Type;
 
         public Procedure()
         {
