@@ -1,6 +1,6 @@
 using System.Xml;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     public class XmlConfig
     {

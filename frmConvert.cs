@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     /// <summary>
     /// Summary description for Form1.

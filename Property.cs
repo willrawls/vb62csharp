@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     /// <summary>
     /// Summary description for Property.

@@ -5,16 +5,8 @@ using System.IO;
 using System.Resources;
 using System.Text;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
-    public enum VbFileType
-    {
-        VbFileUnknown = 0,
-        VbFileForm = 1,
-        VbFileModule = 2,
-        VbFileClass = 3
-    };
-
     /// <summary>
     /// Summary description for Convert.
     /// </summary>
@@ -568,6 +560,18 @@ namespace VB2C
                     oResult.Append(Indent4 + "{\r\n");
 
                     foreach (string Line in oProcedure.LineList)
+                    {
+                        Temp = Line.Trim();
+                        if (Temp.Length > 0)
+                        {
+                            oResult.Append(Indent6 + Temp + ";\r\n");
+                        }
+                        else
+                        {
+                            oResult.Append("\r\n");
+                        }
+                    }
+                    foreach (string Line in oProcedure.BottomLineList)
                     {
                         Temp = Line.Trim();
                         if (Temp.Length > 0)

@@ -1,4 +1,4 @@
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     /// <summary>
     /// TODO - Add class summary

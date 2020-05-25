@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     public static class Program
     {

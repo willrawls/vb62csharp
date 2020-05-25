@@ -9,15 +9,15 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>OMEGA.ICO</ApplicationIcon>
     <AssemblyKeyContainerName />
-    <AssemblyName>VB2C.William</AssemblyName>
+    <AssemblyName>MetX.VB6ToCSharp</AssemblyName>
     <AssemblyOriginatorKeyFile />
     <DefaultClientScript>JScript</DefaultClientScript>
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>Exe</OutputType>
-    <RootNamespace>VB2C.William</RootNamespace>
-    <StartupObject>VB2C.Program</StartupObject>
+    <RootNamespace>MetX.VB6ToCSharp</RootNamespace>
+    <StartupObject>MetX.VB6ToCSharp.Program</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -66,7 +66,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MetX">
-      <HintPath>..\..\..\OneDrive\data\bin\MetX.dll</HintPath>
+      <HintPath>..\..\..\OneDrive\data\code\xlgGallery\xlg\bin\MetX.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -85,6 +85,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -100,6 +101,7 @@
     <Compile Include="ConvertCode.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Debug.cs" />
     <Compile Include="Enum.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -112,12 +114,14 @@
     <Compile Include="Module.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Number.cs" />
     <Compile Include="Parameter.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Procedure.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ProcedureType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Property.cs">
       <SubType>Code</SubType>
@@ -128,7 +132,8 @@
     <Compile Include="Variable.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="XMLINIFile.cs">
+    <Compile Include="VbFileType.cs" />
+    <Compile Include="XmlConfig.cs">
       <SubType>Code</SubType>
     </Compile>
     <Content Include="OMEGA.ICO" />

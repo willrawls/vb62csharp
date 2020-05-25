@@ -1,24 +1,14 @@
 using System.Collections;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
-    /// <summary>
-    /// Summary description for Procedure.
-    /// </summary>
-    ///
-
-    public enum ProcedureType
-    {
-        ProcedureEvent = 1,
-        ProcedureSub = 2,
-        ProcedureFunction = 3
-    }
-
     public class Procedure
     {
         public string Comment { get; set; }
 
         public ArrayList LineList { get; set; }
+
+        public ArrayList BottomLineList { get; set; }
 
         public string Name { get; set; }
 
@@ -33,6 +23,7 @@ namespace VB2C
         public Procedure()
         {
             LineList = new ArrayList();
+            BottomLineList = new ArrayList();
             ParameterList = new ArrayList();
         }
     }

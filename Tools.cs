@@ -2,75 +2,11 @@ using System;
 using System.Collections;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
 using System.Xml;
 using MetX.Library;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
-    internal sealed class App
-    {
-        public const string ConfigOutPath = "OutPath";
-        public const string ConfigSetting = "Setting";
-        public static XmlConfig Config;
-        public static FrmConvert MainForm;
-
-        // configuration constants
-        private const string ConfigFile = "vb2c.xml";
-
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        private static void Main(string[] args)
-        {
-            // get current directory
-            // index 0 contain path and name of exe file
-            var sBinPath = Path.GetDirectoryName(args[0]);
-
-            var showGUI = false;
-            if (args.Length > 1)
-                showGUI = args[1].ToLower().Replace("-", "") == "gui";
-
-            // create configuration object
-            Config = new XmlConfig(sBinPath + Path.DirectorySeparatorChar + ConfigFile);
-
-            if (showGUI)
-            {
-                // create main screen
-                MainForm = new FrmConvert();
-                MainForm.Show();
-                Application.Run(MainForm);
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
-        }
-    }
-
-    internal sealed class Debug
-    {
-        public static void WriteLine(string Message)
-        {
-            MessageBox.Show(Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
-
-    /// <summary>
-    /// Summary description for Tools.
-    /// </summary>
-    internal sealed class Number
-    {
-        public static bool IsOdd(int iNumber)
-        {
-            if (iNumber != (iNumber / 2) * 2)
-            { return true; }
-            else
-            { return false; }
-        }
-    }
-
     // parse VB6 properties and values to C#
     internal sealed class Tools
     {
@@ -414,114 +350,113 @@ namespace VB2C
                 // lines
                 foreach (string Line in SourceProcedure.LineList)
                 {
-                    var Temp = Line.Trim();
-                    if (Temp.Length > 0)
+                    var tempSource = Line.Trim();
+                    if (tempSource.Length > 0)
                     {
-                        var TempLine = string.Empty;
-                        // vbNullString = String.Empty
-                        if (Temp.IndexOf("vbNullString", 0) > -1)
+                        var translatedLine = string.Empty;
+                        if (tempSource.IndexOf("vbNullString", 0) > -1)
                         {
-                            TempLine = Temp.Replace("vbNullString", "String.Empty");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("vbNullString", "String.Empty");
+                            tempSource = translatedLine;
                         }
                         // Nothing = null
-                        if (Temp.IndexOf("Nothing", 0) > -1)
+                        if (tempSource.IndexOf("Nothing", 0) > -1)
                         {
-                            TempLine = Temp
+                            translatedLine = tempSource
                                 .Replace("Set ", "")
                                 .Replace("Nothing", "null");
-                            TempLine += ";";
-                            Temp = TempLine;
+                            translatedLine += ";";
+                            tempSource = translatedLine;
                         }
                         // Set
-                        if (Temp.IndexOf("Set ", 0) > -1)
+                        if (tempSource.IndexOf("Set ", 0) > -1)
                         {
-                            TempLine = Temp.Replace("Set ", " ");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("Set ", " ");
+                            tempSource = translatedLine;
                         }
                         // remark
-                        if (Temp[0] == '\'') // '
+                        if (tempSource[0] == '\'') // '
                         {
-                            TempLine = Temp.Replace("'", "//");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("'", "//");
+                            tempSource = translatedLine;
                         }
                         // & to +
-                        if (Temp.IndexOf("&", 0) > -1)
+                        if (tempSource.IndexOf("&", 0) > -1)
                         {
-                            TempLine = Temp.Replace("&", "+");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("&", "+");
+                            tempSource = translatedLine;
                         }
                         // Select Case
-                        if (Temp.IndexOf("Select Case", 0) > -1)
+                        if (tempSource.IndexOf("Select Case", 0) > -1)
                         {
-                            TempLine = Temp.Replace("Select Case", "switch");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("Select Case", "switch");
+                            tempSource = translatedLine;
                         }
                         // End Select
-                        if (Temp.IndexOf("End Select", 0) > -1)
+                        if (tempSource.IndexOf("End Select", 0) > -1)
                         {
-                            TempLine = Temp.Replace("End Select", "}");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("End Select", "}");
+                            tempSource = translatedLine;
                         }
                         // _
-                        if (Temp.IndexOf(" _", 0) > -1)
+                        if (tempSource.IndexOf(" _", 0) > -1)
                         {
-                            TempLine = Temp.Replace(" _", "\r\n");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace(" _", "\r\n");
+                            tempSource = translatedLine;
                         }
                         // If
-                        if (Temp.IndexOf("If ", 0) > -1)
+                        if (tempSource.IndexOf("If ", 0) > -1)
                         {
-                            TempLine = Temp.Replace("If ", "if ( ");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("If ", "if ( ");
+                            tempSource = translatedLine;
                         }
                         // Not
-                        if (Temp.IndexOf("Not ", 0) > -1)
+                        if (tempSource.IndexOf("Not ", 0) > -1)
                         {
-                            TempLine = Temp.Replace("Not ", "! ");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("Not ", "! ");
+                            tempSource = translatedLine;
                         }
                         // then
-                        if (Temp.IndexOf(" Then", 0) > -1)
+                        if (tempSource.IndexOf(" Then", 0) > -1)
                         {
-                            TempLine = Temp.Replace(" Then", " )\r\n" + indent6 + "{\r\n");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace(" Then", " )\r\n" + indent6 + "{\r\n");
+                            tempSource = translatedLine;
                         }
                         // else
-                        if (Temp.IndexOf("Else", 0) > -1)
+                        if (tempSource.IndexOf("Else", 0) > -1)
                         {
-                            TempLine = Temp.Replace("Else", "}\r\n" + indent6 + "else\r\n" + indent6 + "{");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("Else", "}\r\n" + indent6 + "else\r\n" + indent6 + "{");
+                            tempSource = translatedLine;
                         }
                         // End if
-                        if (Temp.IndexOf("End If", 0) > -1)
+                        if (tempSource.IndexOf("End If", 0) > -1)
                         {
-                            TempLine = Temp.Replace("End If", "}");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("End If", "}");
+                            tempSource = translatedLine;
                         }
                         // Unload Me
-                        if (Temp.IndexOf("Unload Me", 0) > -1)
+                        if (tempSource.IndexOf("Unload Me", 0) > -1)
                         {
-                            TempLine = Temp.Replace("Unload Me", "Close()");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("Unload Me", "Close()");
+                            tempSource = translatedLine;
                         }
                         // .Caption
-                        if (Temp.IndexOf(".Caption", 0) > -1)
+                        if (tempSource.IndexOf(".Caption", 0) > -1)
                         {
-                            TempLine = Temp.Replace(".Caption", ".Text");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace(".Caption", ".Text");
+                            tempSource = translatedLine;
                         }
                         // True
-                        if (Temp.IndexOf("True", 0) > -1)
+                        if (tempSource.IndexOf("True", 0) > -1)
                         {
-                            TempLine = Temp.Replace("True", "true");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("True", "true");
+                            tempSource = translatedLine;
                         }
                         // False
-                        if (Temp.IndexOf("False", 0) > -1)
+                        if (tempSource.IndexOf("False", 0) > -1)
                         {
-                            TempLine = Temp.Replace("False", "false");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("False", "false");
+                            tempSource = translatedLine;
                         }
 
                         // New
@@ -529,25 +464,30 @@ namespace VB2C
                             && Line.Contains("Then") 
                             && Line.TokensAfter(1, "Then").Trim().Length > 0)
                         {
-                            TempLine = Temp.Replace("New", "new");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("New", "new");
+                            tempSource = translatedLine;
                         }
 
                         // New
-                        if (Temp.IndexOf("New", 0) > -1)
+                        if (tempSource.IndexOf("New", 0) > -1)
                         {
-                            TempLine = Temp.Replace("New", "new");
-                            Temp = TempLine;
+                            translatedLine = tempSource.Replace("New", "new");
+                            tempSource = translatedLine;
                         }
 
-                        if (Temp.IndexOf("On Error Resume Next", 0) > -1)
+                        if (tempSource.IndexOf("On Error Resume Next", 0) > -1)
                         {
-                            TargetProcedure.LineList.Add("~~AtBottom: catch(Exception e) { }");
-                            Temp = TempLine = "try\r\n{\r\n";
+                            TargetProcedure.BottomLineList.Add(@"
+        catch(Exception e) 
+        { 
+            /* ON ERROR RESUME NEXT (ish) */ 
+        }
+");
+                            tempSource = translatedLine = "try\r\n{\r\n";
                         }
                         else
                         {
-                            TargetProcedure.LineList.Add(TempLine == string.Empty ? Temp : TempLine);
+                            TargetProcedure.LineList.Add(translatedLine == string.Empty ? tempSource : translatedLine);
                         }
                     }
                     else
