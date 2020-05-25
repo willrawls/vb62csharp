@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Resources;
 using System.Text;
+using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
@@ -110,7 +111,7 @@ namespace MetX.VB6ToCSharp
             {
                 // check if control is container
                 // !! for menu controls
-                if ((oControl.Container) && !(oControl.Type == "MenuItem") && !(oControl.Type == "MainMenu"))
+                if (oControl.Container && oControl.Type != "MenuItem" && oControl.Type != "MainMenu")
                 {
                     if (!oControl.Valid)
                     {
@@ -437,11 +438,8 @@ namespace MetX.VB6ToCSharp
 
                 // name
                 oResult.Append(" " + oProcedure.Name);
-                // parametres
-                if (oProcedure.ParameterList.Count > 0)
-                {
-                }
-                else
+                // parameters
+                if (oProcedure.ParameterList.Count <= 0)
                 {
                     oResult.Append("()\r\n");
                 }
@@ -497,10 +495,7 @@ namespace MetX.VB6ToCSharp
                     // possible comment
                     oResult.Append(oProperty.Comment + ";\r\n");
                     // string Result = null;
-                    oResult.Append(Indent4 + oProperty.Scope + " " + oProperty.Type + " " + oProperty.Name + ";\r\n");
-                    oResult.Append(Indent4 + "{\r\n");
-                    oResult.Append(Indent6 + "get { return ; }\r\n");
-                    oResult.Append(Indent6 + "set {  = value; }\r\n");
+                    oResult.Append(Indent4 + oProperty.Scope + " " + oProperty.Type + " " + oProperty.Name + " { get; set; }\r\n");
 
                     // lines
                     foreach (string line in oProperty.LineList)
@@ -508,7 +503,7 @@ namespace MetX.VB6ToCSharp
                         var temp = line.Trim();
                         if (temp.Length > 0)
                         {
-                            oResult.Append(Indent6 + temp + ";\r\n");
+                            oResult.Append(Indent6 + temp + ";\r\n"); 
                         }
                         else
                         {
@@ -810,11 +805,7 @@ namespace MetX.VB6ToCSharp
             var bProcess = false;
             var bFinish = false;
             var bEnd = true;
-            string sLine = null;
-            string sName = null;
             string sOwner = null;
-            string sTemp = null;
-            var iTemp = 0;
             var iComment = 0;
             string sType = null;
             var iPosition = 0;
@@ -826,11 +817,12 @@ namespace MetX.VB6ToCSharp
             // parse only visual part of form
             while (!bFinish) // ( ( bFinish || (oReader.Peek() > -1)) )
             {
-                sLine = oReader.ReadLine();
+                var sLine = oReader.ReadLine();
                 sLine = sLine.Trim();
                 iPosition = 0;
                 // get first word in line
-                sTemp = GetWord(sLine, ref iPosition);
+                var sTemp = GetWord(sLine, ref iPosition);
+                string sName = null;
                 switch (sTemp)
                 {
                     case "Begin":
@@ -938,7 +930,7 @@ namespace MetX.VB6ToCSharp
                         // parse property
                         var oProperty = new ControlProperty();
 
-                        iTemp = sLine.IndexOf("=");
+                        var iTemp = sLine.IndexOf("=");
                         if (iTemp > -1)
                         {
                             oProperty.Name = sLine.Substring(0, iTemp - 1).Trim();
@@ -986,27 +978,21 @@ namespace MetX.VB6ToCSharp
 
         private bool ParseModule(StreamReader reader)
         {
-            var line = string.Empty;
-            var position = 0;
-
-            // name of module
-            // Attribute VB_Name = "ModuleName"
-
             // Start from begin again
             reader.DiscardBufferedData();
             reader.BaseStream.Seek(0, SeekOrigin.Begin);
             // search for module name
             while (reader.Peek() > -1)
             {
-                line = reader.ReadLine();
-                position = line.IndexOf('"');
+                var line = reader.ReadLine();
+                var position = line.IndexOf('"');
                 mSourceModule.Name = line.Substring(position + 1, line.Length - position - 2);
                 return true;
             }
             return false;
         }
 
-        private void ParseParametries(ArrayList parametreList, string line)
+        private void ParseParameters(ArrayList parameterList, string line)
         {
             var bFinish = false;
             var position = 0;
@@ -1055,7 +1041,7 @@ namespace MetX.VB6ToCSharp
                 tempString = GetWord(line, ref position);
                 oParameter.Type = tempString;
 
-                parametreList.Add(oParameter);
+                parameterList.Add(oParameter);
 
                 // next parameter
                 position++;
@@ -1149,7 +1135,7 @@ namespace MetX.VB6ToCSharp
                 tempString = line.Substring(start, iPosition - start);
                 var parameterList = new ArrayList();
                 // process parametres
-                ParseParametries(parameterList, tempString);
+                ParseParameters(parameterList, tempString);
                 oProcedure.ParameterList = parameterList;
             }
 
@@ -1192,19 +1178,18 @@ namespace MetX.VB6ToCSharp
                 line = reader.ReadLine();
                 iPosition = 0;
 
-                if (line != null && line != string.Empty)
+                if (line.IsNotEmpty())
                 {
                     // check if next line is same command, join it together ?
                     while (line.Substring(line.Length - 1, 1) == "_")
                     {
-                        line = line + reader.ReadLine();
+                        line += reader.ReadLine();
                     }
                 }
 
                 // get first word in line
                 tempString = GetWord(line, ref iPosition);
-                int tempResult;
-                if (int.TryParse(tempString, out tempResult))
+                if (int.TryParse(tempString, out var tempResult))
                 {
                     line = line.Substring(tempResult.ToString().Length).Trim();
                     iPosition = 0;
@@ -1431,7 +1416,7 @@ namespace MetX.VB6ToCSharp
                 tempString = line.Substring(start, iPosition - start);
                 var parameterList = new ArrayList();
                 // process parametres
-                ParseParametries(parameterList, tempString);
+                ParseParameters(parameterList, tempString);
                 oProperty.ParameterList = parameterList;
             }
 

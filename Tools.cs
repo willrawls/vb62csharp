@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using MetX.Library;
 
@@ -348,115 +349,115 @@ namespace MetX.VB6ToCSharp
                 };
                 
                 // lines
-                foreach (string line in sourceProcedure.LineList)
+                foreach (string originalLine in sourceProcedure.LineList.ToArray().Select(x => x.Trim()))
                 {
-                    var tempSource = line.Trim();
-                    if (tempSource.Length > 0)
+                    var line = originalLine.Trim();
+                    if (line.Length > 0)
                     {
                         var translatedLine = string.Empty;
-                        if (tempSource.IndexOf("vbNullString", 0) > -1)
+                        // vbNullString = string.empty
+                        if (line.IndexOf("vbNullString", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("vbNullString", "String.Empty");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("vbNullString", "string.Empty");
                         }
                         // Nothing = null
-                        if (tempSource.IndexOf("Nothing", 0) > -1)
+                        if (line.IndexOf("Nothing", 0) > -1)
                         {
-                            translatedLine = tempSource
+                            translatedLine = line
                                 .Replace("Set ", "")
                                 .Replace("Nothing", "null");
                             translatedLine += ";";
-                            tempSource = translatedLine;
+                            line = translatedLine;
                         }
                         // Set
-                        if (tempSource.IndexOf("Set ", 0) > -1)
+                        if (line.IndexOf("Set ", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("Set ", " ");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("Set ", " ");
+                            line = translatedLine;
                         }
                         // remark
-                        if (tempSource[0] == '\'') // '
+                        if (line[0] == '\'') // '
                         {
-                            translatedLine = tempSource.Replace("'", "//");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("'", "//");
+                            line = translatedLine;
                         }
                         // & to +
-                        if (tempSource.IndexOf("&", 0) > -1)
+                        if (line.IndexOf("&", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("&", "+");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("&", "+");
+                            line = translatedLine;
                         }
                         // Select Case
-                        if (tempSource.IndexOf("Select Case", 0) > -1)
+                        if (line.IndexOf("Select Case", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("Select Case", "switch");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("Select Case", "switch");
+                            line = translatedLine;
                         }
                         // End Select
-                        if (tempSource.IndexOf("End Select", 0) > -1)
+                        if (line.IndexOf("End Select", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("End Select", "}");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("End Select", "}");
+                            line = translatedLine;
                         }
                         // _
-                        if (tempSource.IndexOf(" _", 0) > -1)
+                        if (line.IndexOf(" _", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace(" _", "\r\n");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace(" _", "\r\n");
+                            line = translatedLine;
                         }
                         // If
-                        if (tempSource.IndexOf("If ", 0) > -1)
+                        if (line.IndexOf("If ", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("If ", "if ( ");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("If ", "if ( ");
+                            line = translatedLine;
                         }
                         // Not
-                        if (tempSource.IndexOf("Not ", 0) > -1)
+                        if (line.IndexOf("Not ", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("Not ", "! ");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("Not ", "! ");
+                            line = translatedLine;
                         }
                         // then
-                        if (tempSource.IndexOf(" Then", 0) > -1)
+                        if (line.IndexOf(" Then", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace(" Then", " )\r\n" + indent6 + "{\r\n");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace(" Then", " )\r\n" + indent6 + "{\r\n");
+                            line = translatedLine;
                         }
                         // else
-                        if (tempSource.IndexOf("Else", 0) > -1)
+                        if (line.IndexOf("Else", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("Else", "}\r\n" + indent6 + "else\r\n" + indent6 + "{");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("Else", "}\r\n" + indent6 + "else\r\n" + indent6 + "{");
+                            line = translatedLine;
                         }
                         // End if
-                        if (tempSource.IndexOf("End If", 0) > -1)
+                        if (line.IndexOf("End If", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("End If", "}");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("End If", "}");
+                            line = translatedLine;
                         }
                         // Unload Me
-                        if (tempSource.IndexOf("Unload Me", 0) > -1)
+                        if (line.IndexOf("Unload Me", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("Unload Me", "Close()");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("Unload Me", "Close()");
+                            line = translatedLine;
                         }
                         // .Caption
-                        if (tempSource.IndexOf(".Caption", 0) > -1)
+                        if (line.IndexOf(".Caption", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace(".Caption", ".Text");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace(".Caption", ".Text");
+                            line = translatedLine;
                         }
                         // True
-                        if (tempSource.IndexOf("True", 0) > -1)
+                        if (line.IndexOf("True", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("True", "true");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("True", "true");
+                            line = translatedLine;
                         }
                         // False
-                        if (tempSource.IndexOf("False", 0) > -1)
+                        if (line.IndexOf("False", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("False", "false");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("False", "false");
+                            line = translatedLine;
                         }
 
                         // New
@@ -464,18 +465,18 @@ namespace MetX.VB6ToCSharp
                             && line.Contains("Then") 
                             && line.TokensAfter(1, "Then").Trim().Length > 0)
                         {
-                            translatedLine = tempSource.Replace("New", "new");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("New", "new");
+                            line = translatedLine;
                         }
 
                         // New
-                        if (tempSource.IndexOf("New", 0) > -1)
+                        if (line.IndexOf("New", 0) > -1)
                         {
-                            translatedLine = tempSource.Replace("New", "new");
-                            tempSource = translatedLine;
+                            translatedLine = line.Replace("New", "new");
+                            line = translatedLine;
                         }
 
-                        if (tempSource.IndexOf("On Error Resume Next", 0) > -1)
+                        if (line.IndexOf("On Error Resume Next", 0) > -1)
                         {
                             targetProcedure.BottomLineList.Add(@"
         catch(Exception e) 
@@ -483,11 +484,11 @@ namespace MetX.VB6ToCSharp
             /* ON ERROR RESUME NEXT (ish) */ 
         }
 ");
-                            tempSource = translatedLine = "try\r\n{\r\n";
+                            line = translatedLine = "try\r\n{\r\n";
                         }
                         else
                         {
-                            targetProcedure.LineList.Add(translatedLine == string.Empty ? tempSource : translatedLine);
+                            targetProcedure.LineList.Add(translatedLine == string.Empty ? line : translatedLine);
                         }
                     }
                     else
