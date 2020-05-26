@@ -93,6 +93,35 @@ namespace MetX.VB6ToCSharp
 
         public void Convert(IAmAProperty sourceProperty)
         {
+            var localSourceProperty = (Property) sourceProperty;
+            var result = new StringBuilder();
+            CSharpPropertyPart targetPart;
+
+            if(localSourceProperty.Direction == "Get")
+            {
+                targetPart = Get;
+                targetPart.ParameterList = localSourceProperty.Parameters;
+                targetPart.Encountered = true;
+                
+            }
+            else
+            {
+                targetPart = Set;
+            }
+
+            foreach (var originalLine in localSourceProperty.LineList)
+            {
+                var line = originalLine.Trim();
+                if(line.IsNotEmpty())
+                { <<<< Maybe start here. Detect property name and later generated code for get/set
+                    Tools.ConvertLineOfCode(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
+                    if(translatedLine.IsNotEmpty())
+                        targetPart.LineList.Add(translatedLine);
+                    if (placeAtBottom.IsNotEmpty())
+                        targetPart.BottomLineList.Add(placeAtBottom);
+                }
+            }
+
             throw new NotImplementedException();
         }
     }

@@ -176,7 +176,11 @@ namespace MetX.VB6ToCSharp
             targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
         }
 
-        public static void ConvertLineOfCode(string originalLine, out string translatedLine, out string placeAtBottom)
+        public static void ConvertLineOfCode(
+            string originalLine, 
+            out string translatedLine, 
+            out string placeAtBottom,
+            IAmAProperty sourceProperty)
         {
             placeAtBottom = string.Empty;
             var line = originalLine.Trim();
@@ -812,7 +816,7 @@ namespace MetX.VB6ToCSharp
                 // lines
                 foreach (var originalLine in sourceProcedure.LineList)
                 {
-                    ConvertLineOfCode(originalLine, out var convertedLine, out var placeAtBottom);
+                    ConvertLineOfCode(originalLine, out var convertedLine, out var placeAtBottom, null); 
                     targetProcedure.LineList.Add(convertedLine);
                     if (placeAtBottom.IsNotEmpty())
                         targetProcedure.BottomLineList.Add(placeAtBottom);
