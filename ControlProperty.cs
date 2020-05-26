@@ -1,24 +1,34 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 
 namespace MetX.VB6ToCSharp
 {
     /// <summary>
-    /// Summary description for Property.
+    ///     Summary description for Property.
     /// </summary>
-    public class ControlProperty
+    public class ControlProperty : IAmAProperty
     {
-        public string Comment;
-        public string Name;
+        public string Comment { get; set; }
 
-        public List<ControlProperty> PropertyList;
-        public bool Valid;
-        public string Value;
+        public string Name { get; set; }
+
+        public bool Valid { get; set; }
+
+        public string Value { get; set; }
+
+        public string Type { get; set; }
+
+        public List<IAmAProperty> PropertyList;
 
         public ControlProperty()
         {
-            PropertyList = new List<ControlProperty>();
-            Valid = false;
+            PropertyList = new List<IAmAProperty>();
         }
+
+        public string GenerateTargetCode()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }
