@@ -18,6 +18,8 @@ namespace MetX.VB6ToCSharp
 
         public string Type { get; set; }
 
+        public string Scope { get; set; }
+
         public List<IAmAProperty> PropertyList;
 
         public ControlProperty()
@@ -30,5 +32,9 @@ namespace MetX.VB6ToCSharp
             throw new NotImplementedException();
         }
 
+        public void Convert(IAmAProperty sourceProperty)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

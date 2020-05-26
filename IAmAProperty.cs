@@ -7,7 +7,9 @@ namespace MetX.VB6ToCSharp
         bool Valid { get; set; }
         string Value { get; set; }
         string Type { get; set; }
-
+        string Scope { get; set; }
+        
         string GenerateTargetCode();
+        void Convert(IAmAProperty sourceProperty);
     }
 }

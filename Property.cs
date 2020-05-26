@@ -15,13 +15,22 @@ namespace MetX.VB6ToCSharp
         public bool Valid { get; set; }
         public string Value { get; set; }
         public string Type { get; set; }
+        public string Scope { get; set; }
+
+        public List<Parameter> Parameters { get; set; }
 
         public Property()
         {
             LineList = new List<string>();
+            Parameters = new List<Parameter>();
         }
 
         public string GenerateTargetCode()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void Convert(IAmAProperty sourceProperty)
         {
             throw new System.NotImplementedException();
         }

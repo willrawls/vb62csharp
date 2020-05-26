@@ -5,7 +5,7 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Module.
     /// </summary>
-    public class Module<TProperty> where TProperty : class
+    public class Module
     {
         public string Comment;
         public List<Control> ControlList;

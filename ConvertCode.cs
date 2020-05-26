@@ -23,8 +23,8 @@ namespace MetX.VB6ToCSharp
         public const string ModuleFirstLine = "ATTRIBUTE";
         public readonly List<string> OwnerStock;
         public VbFileType FileType;
-        public Module<Property> SourceModule;
-        public Module<ControlProperty> TargetModule;
+        public Module SourceModule;
+        public Module TargetModule;
         public string ActionResult;
 
         public string Code;
@@ -386,7 +386,7 @@ namespace MetX.VB6ToCSharp
             var result = new StringBuilder();
 
             // convert source to target
-            TargetModule = new Module<ControlProperty>();
+            TargetModule = new Module();
             Tools.ParseModule(SourceModule, TargetModule);
 
             // ********************************************************
@@ -721,7 +721,7 @@ namespace MetX.VB6ToCSharp
                     return false;
                 }
 
-                SourceModule = new Module<Property>
+                SourceModule = new Module
                 {
                     Version = version ?? "1.0",
                     FileName = filename
@@ -1292,8 +1292,10 @@ namespace MetX.VB6ToCSharp
 
         //public mlID As Long
 
-        public void ParsePropertyName(Property property, string line)
+        public void ParsePropertyName(IAmAProperty property, string line)
         {
+            var localProperty = ((Property) property);
+
             var iPosition = 0;
             var start = 0;
             var status = false;
@@ -1326,7 +1328,7 @@ namespace MetX.VB6ToCSharp
             // direction Let, Get, Set
             iPosition++;
             parameters = GetWord(line, ref iPosition);
-            property.Direction = parameters;
+            localProperty.Direction = parameters;
 
             //Public Property Let ParentID(ByVal lValue As Long)
 
@@ -1344,7 +1346,7 @@ namespace MetX.VB6ToCSharp
             {
                 parameters = line.Substring(start, iPosition - start);
                 // process parameters
-                ParseParameters(property.ParameterList, parameters);
+                ParseParameters(localProperty.Parameters, parameters);
             }
 
             // As
@@ -1401,7 +1403,7 @@ namespace MetX.VB6ToCSharp
             variable.Type = tempString == "String" ? "string" : tempString;
         }
 
-        public bool WriteImage(Module<Property> sourceModule, string resourceName, string value, string outPath)
+        public bool WriteImage(Module sourceModule, string resourceName, string value, string outPath)
         {
             var temp = string.Empty;
             var offset = 0;

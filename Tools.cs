@@ -538,10 +538,11 @@ namespace MetX.VB6ToCSharp
             return widthValue.ToString() + ", " + heightValue.ToString();
         }
 
-        public static bool ParseClassProperties(List<Property> sourceProperties, List<CSharpProperty> targetProperties)
+        public static bool ParseClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties)
         {
             foreach (var sourceProperty in sourceProperties)
             {
+                var localSourceProperty = (Property) sourceProperty;
                 var processingGet = true;
                 var targetProperty = new CSharpProperty
                 {
@@ -551,7 +552,7 @@ namespace MetX.VB6ToCSharp
                     Type = VariableTypeConvert(sourceProperty.Type),
                 };
 
-                switch (sourceProperty.Direction)
+                switch (localSourceProperty.Direction)
                 {
                     case "Get":
                         processingGet = true;
@@ -564,23 +565,13 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // lines
-                foreach (var line in sourceProperty.LineList)
-                {
-                    if (line.Trim().IsEmpty()) continue;
-
-                    if(processingGet)
-                        targetProperty.Get.LineList.Add(line);
-                    else
-                        targetProperty.Set.LineList.Add(line);
-                }
-
-                targetProperties.Add(targetProperty);
+                targetProperty.Convert(sourceProperty);
             }
             return true;
         }
 
         public static bool ParseControlProperties(
-            Module<ControlProperty> module, 
+            Module module, 
             Control control,
             List<ControlProperty> sourcePropertyList,
             List<ControlProperty> targetPropertyList)
@@ -612,7 +603,7 @@ namespace MetX.VB6ToCSharp
         }
 
         public static bool ParseControls(
-            Module<ControlProperty> module, 
+            Module module, 
             List<Control> sourceControlList,
             List<Control> targetControlList)
         {
@@ -647,7 +638,7 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseModule(Module<Property> sourceModule, Module<ControlProperty> targetModule)
+        public static bool ParseModule(Module sourceModule, Module targetModule)
         {
             // module name
             targetModule.Name = sourceModule.Name;
@@ -780,7 +771,7 @@ namespace MetX.VB6ToCSharp
         }
 
         public static bool ParseModuleProperties(
-            Module<ControlProperty> oModule,
+            Module oModule,
             List<ControlProperty> sourcePropertyList,
             List<ControlProperty> targetPropertyList)
         {
@@ -802,7 +793,7 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseProcedures(Module<Property> sourceModule, List<Procedure> targetProcedures)
+        public static bool ParseProcedures(Module sourceModule, List<Procedure> targetProcedures)
         {
             const string indent6 = "      ";
 

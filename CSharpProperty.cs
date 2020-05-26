@@ -8,7 +8,7 @@ namespace MetX.VB6ToCSharp
     public class CSharpProperty : IAmAProperty
     {
         public string Direction;
-        public string Scope;
+        public string Scope { get; set; }
 
         public string Comment { get; set; }
         public string Name { get; set; }
@@ -89,6 +89,11 @@ namespace MetX.VB6ToCSharp
             */
 
             return result.ToString();
+        }
+
+        public void Convert(IAmAProperty sourceProperty)
+        {
+            throw new NotImplementedException();
         }
     }
 }
