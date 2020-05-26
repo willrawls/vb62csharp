@@ -891,7 +891,7 @@ namespace MetX.VB6ToCSharp
                         else
                         {
                             // to controls
-                            control.PropertyAdd(oNestedProperty);
+                            control.PropertyList.Add(oNestedProperty);
                         }
                         break;
 
@@ -924,7 +924,7 @@ namespace MetX.VB6ToCSharp
                                 if (iLevel > 1)
                                 {
                                     // add property to control
-                                    control.PropertyAdd(property);
+                                    control.PropertyList.Add(property);
                                 }
                                 else
                                 {
@@ -1335,7 +1335,7 @@ namespace MetX.VB6ToCSharp
             // name
             start = iPosition;
             iPosition = line.IndexOf("(", start + 1);
-            property.Name = line.Substring(start, iPosition - start);
+            property.Name = line.Substring(start, iPosition - start).Trim();
 
             // + possible parameters
             iPosition++;

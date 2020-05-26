@@ -182,12 +182,22 @@ namespace MetX.VB6ToCSharp
             out string placeAtBottom,
             IAmAProperty sourceProperty)
         {
+            var localSourceProperty = (Property) sourceProperty;
             placeAtBottom = string.Empty;
             var line = originalLine.Trim();
             translatedLine = line;
 
             if (translatedLine.Length > 0)
             {
+                if(localSourceProperty.Direction == "Set"
+                    || localSourceProperty.Direction == "Let")
+                {
+                    foreach (var parameter in localSourceProperty.Parameters)
+                    {
+                        translatedLine = translatedLine.Replace(parameter.Name, "value");
+                    }
+                }
+
                 // vbNullString = string.empty
                 if (translatedLine.Contains("vbNullString"))
                 {
@@ -547,26 +557,14 @@ namespace MetX.VB6ToCSharp
             foreach (var sourceProperty in sourceProperties)
             {
                 var localSourceProperty = (Property) sourceProperty;
-                var processingGet = true;
                 var targetProperty = new CSharpProperty
                 {
-                    Name = sourceProperty.Name,
+                    Name = sourceProperty.Name.Trim(),
                     Comment = sourceProperty.Comment,
                     Scope = sourceProperty.Scope,
                     Type = VariableTypeConvert(sourceProperty.Type),
                 };
-
-                switch (localSourceProperty.Direction)
-                {
-                    case "Get":
-                        processingGet = true;
-                        break;
-
-                    case "Set":
-                    case "Let":
-                        processingGet = false;
-                        break;
-                }
+                //var processingGet = localSourceProperty.Direction.ToLower() == "get";
 
                 // lines
                 targetProperty.Convert(sourceProperty);

@@ -113,15 +113,17 @@ namespace MetX.VB6ToCSharp
             {
                 var line = originalLine.Trim();
                 if(line.IsNotEmpty())
-                { <<<< Maybe start here. Detect property name and later generated code for get/set
+                { 
                     Tools.ConvertLineOfCode(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                     if(translatedLine.IsNotEmpty())
                         targetPart.LineList.Add(translatedLine);
                     if (placeAtBottom.IsNotEmpty())
                         targetPart.BottomLineList.Add(placeAtBottom);
+                    targetPart.Encountered = true;
                 }
             }
 
+            
             throw new NotImplementedException();
         }
     }
