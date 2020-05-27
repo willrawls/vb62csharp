@@ -20,11 +20,14 @@ namespace MetX.VB6ToCSharp
 
         public string Scope { get; set; }
 
+        public int Indent { get; set; }
+
         public List<IAmAProperty> PropertyList;
 
-        public ControlProperty()
+        public ControlProperty(int parentIndent)
         {
             PropertyList = new List<IAmAProperty>();
+            Indent = parentIndent + 1;
         }
 
         public string GenerateTargetCode()
@@ -32,7 +35,7 @@ namespace MetX.VB6ToCSharp
             throw new NotImplementedException();
         }
 
-        public void Convert(IAmAProperty sourceProperty)
+        public void ParsePropertyParts(IAmAProperty sourceProperty)
         {
             throw new NotImplementedException();
         }

@@ -17,9 +17,8 @@ namespace MetX.VB6ToCSharp
     {
         public const string ClassFirstLine = "1.0 CLASS";
         public const string FormFirstLine = "VERSION 5.00";
-        public const string Indent2 = "  ";
-        public const string Indent4 = "    ";
-        public const string Indent6 = "      ";
+        public static readonly string Indent4 = Tools.Indent(3);
+        public static readonly string Indent6 = Tools.Indent(4);
         public const string ModuleFirstLine = "ATTRIBUTE";
         public readonly List<string> OwnerStock;
         public VbFileType FileType;
@@ -76,7 +75,7 @@ namespace MetX.VB6ToCSharp
                     result.Append("//");
                 }
 
-                result.Append(Indent2 + " public System.Windows.Forms." + control.Type + " " + control.Name + ";\r\n");
+                result.Append(Tools.Indent(2) + " public System.Windows.Forms." + control.Type + " " + control.Name + ";\r\n");
             }
 
             result.Append(Indent4 + "/// <summary>\r\n");
@@ -411,19 +410,19 @@ namespace MetX.VB6ToCSharp
             result.Append("{\r\n");
             if (!string.IsNullOrEmpty(SourceModule.Comment))
             {
-                result.Append(Indent2 + "/// <summary>\r\n");
-                result.Append(Indent2 + "///   " + SourceModule.Comment + ".\r\n");
-                result.Append(Indent2 + "/// </summary>\r\n");
+                result.Append(Tools.Indent(2) + "/// <summary>\r\n");
+                result.Append(Tools.Indent(2) + "///   " + SourceModule.Comment + ".\r\n");
+                result.Append(Tools.Indent(2) + "/// </summary>\r\n");
             }
-
+            
             switch (TargetModule.Type)
             {
                 case "form":
-                    result.AppendLine(Indent2 + "public class " + SourceModule.Name + " : System.Windows.Forms.Form");
+                    result.AppendLine(Tools.Indent(2) + "public class " + SourceModule.Name + " : System.Windows.Forms.Form");
                     break;
 
                 case "module":
-                    result.AppendLine(Indent2 + "class " + SourceModule.Name);
+                    result.AppendLine(Tools.Indent(2) + "class " + SourceModule.Name);
                     // all procedures must be static
                     break;
 
@@ -431,11 +430,11 @@ namespace MetX.VB6ToCSharp
                     //if (SourceModule.Name.ToUpper().StartsWith("I")) 
                     //    TargetModule.Type = "interface";
 
-                    result.AppendLine($"{Indent2}public {TargetModule.Type} {SourceModule.Name}");
+                    result.AppendLine($"{Tools.Indent(2)}public {TargetModule.Type} {SourceModule.Name}");
                     break;
             }
             // start class region
-            result.Append(Indent2 + "{\r\n");
+            result.Append(Tools.Indent(2) + "{\r\n");
 
             // ********************************************************
             // only form class
@@ -483,7 +482,7 @@ namespace MetX.VB6ToCSharp
             }
 
             // end class
-            result.Append(Indent2 + "}\r\n");
+            result.Append(Tools.Indent(2) + "}\r\n");
             // end namespace
             result.Append("}\r\n");
 
@@ -784,7 +783,7 @@ namespace MetX.VB6ToCSharp
             var bNestedProperty = false;
 
             // parse only visual part of form
-            while (!bFinish) // ( ( bFinish || (oReader.Peek() > -1)) )
+            while (!bFinish)
             {
                 var sLine = oReader.ReadLine();
                 sLine = sLine.Trim();
@@ -872,7 +871,7 @@ namespace MetX.VB6ToCSharp
                     case "BeginProperty":
                         bNestedProperty = true;
 
-                        oNestedProperty = new ControlProperty();
+                        oNestedProperty = new ControlProperty(1);
                         // next word - nested property name
                         iPosition++;
                         sName = GetWord(sLine, ref iPosition);
@@ -897,7 +896,7 @@ namespace MetX.VB6ToCSharp
 
                     default:
                         // parse property
-                        var property = new ControlProperty();
+                        var property = new ControlProperty(2);
 
                         var iTemp = sLine.IndexOf("=");
                         if (iTemp > -1)
@@ -1182,7 +1181,7 @@ namespace MetX.VB6ToCSharp
                                 break;
 
                             case "Property":
-                                property = new Property();
+                                property = new Property(1);
                                 property.Comment = sComments ?? string.Empty;
                                 sComments = string.Empty;
                                 ParsePropertyName(property, line);

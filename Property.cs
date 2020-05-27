@@ -16,13 +16,15 @@ namespace MetX.VB6ToCSharp
         public string Value { get; set; }
         public string Type { get; set; }
         public string Scope { get; set; }
+        public int Indent { get; set; }
 
         public List<Parameter> Parameters { get; set; }
 
-        public Property()
+        public Property(int parentIndent)
         {
             LineList = new List<string>();
             Parameters = new List<Parameter>();
+            Indent = parentIndent + 1;
         }
 
         public string GenerateTargetCode()
@@ -30,7 +32,7 @@ namespace MetX.VB6ToCSharp
             throw new System.NotImplementedException();
         }
 
-        public void Convert(IAmAProperty sourceProperty)
+        public void ParsePropertyParts(IAmAProperty sourceProperty)
         {
             throw new System.NotImplementedException();
         }

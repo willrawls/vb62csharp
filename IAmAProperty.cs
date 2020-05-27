@@ -8,8 +8,9 @@ namespace MetX.VB6ToCSharp
         string Value { get; set; }
         string Type { get; set; }
         string Scope { get; set; }
-        
+        int Indent { get; set; }
+
         string GenerateTargetCode();
-        void Convert(IAmAProperty sourceProperty);
+        void ParsePropertyParts(IAmAProperty sourceProperty);
     }
 }

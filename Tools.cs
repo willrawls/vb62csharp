@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
     // parse VB6 properties and values to C#
-    public class Tools
+    public static class Tools
     {
         public static readonly Dictionary<string, string> BlanketReplacements = new Dictionary<string, string>();
         public static readonly Dictionary<string, string> EndsWithReplacements = new Dictionary<string, string>();
@@ -18,6 +20,8 @@ namespace MetX.VB6ToCSharp
         static Tools()
         {
             BlanketReplacements.Add("Exit Property", "return; // ???");
+            BlanketReplacements.Add("Exit Function", "return; // ???");
+            BlanketReplacements.Add("Exit Sub", "return;");
             BlanketReplacements.Add("For Each ", "foreach( var ");
             BlanketReplacements.Add(" In ", " in ");
             BlanketReplacements.Add(";;", ";");
@@ -27,6 +31,7 @@ namespace MetX.VB6ToCSharp
             BlanketReplacements.Add("Collection", "Dictionary<string,string>()");
             BlanketReplacements.Add("True", "true");
             BlanketReplacements.Add("False", "false");
+            BlanketReplacements.Add("private ", "public ");
 
             StartsWithReplacements.Add("' ", "// ");
             StartsWithReplacements.Add("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. ");
@@ -189,8 +194,8 @@ namespace MetX.VB6ToCSharp
 
             if (translatedLine.Length > 0)
             {
-                if(localSourceProperty.Direction == "Set"
-                    || localSourceProperty.Direction == "Let")
+                if( localSourceProperty != null &&
+                    (localSourceProperty.Direction == "Set" || localSourceProperty.Direction == "Let"))
                 {
                     foreach (var parameter in localSourceProperty.Parameters)
                     {
@@ -557,17 +562,25 @@ namespace MetX.VB6ToCSharp
             foreach (var sourceProperty in sourceProperties)
             {
                 var localSourceProperty = (Property) sourceProperty;
-                var targetProperty = new CSharpProperty
-                {
-                    Name = sourceProperty.Name.Trim(),
-                    Comment = sourceProperty.Comment,
-                    Scope = sourceProperty.Scope,
-                    Type = VariableTypeConvert(sourceProperty.Type),
-                };
-                //var processingGet = localSourceProperty.Direction.ToLower() == "get";
+                CSharpProperty targetProperty = null;
 
-                // lines
-                targetProperty.Convert(sourceProperty);
+                targetProperty = targetProperties.Cast<CSharpProperty>()
+                    .FirstOrDefault(x => x
+                        .Name.ToLower() == sourceProperty
+                        .Name.ToLower());
+
+                if(targetProperty == null)
+                {
+                    targetProperty = new CSharpProperty(2)
+                    {
+                        Name = sourceProperty.Name.Trim(),
+                        Comment = sourceProperty.Comment,
+                        Scope = sourceProperty.Scope,
+                        Type = VariableTypeConvert(sourceProperty.Type),
+                    };
+                    targetProperties.Add(targetProperty);
+                }
+                targetProperty.ParsePropertyParts(sourceProperty);
             }
             return true;
         }
@@ -588,7 +601,7 @@ namespace MetX.VB6ToCSharp
                 }
                 else
                 {
-                    var targetProperty = new ControlProperty();
+                    var targetProperty = new ControlProperty(2);
                     if (ParseProperties(control.Type, sourceProperty, targetProperty, sourcePropertyList))
                     {
                         if (targetProperty.Name == "Image")
@@ -703,19 +716,19 @@ namespace MetX.VB6ToCSharp
                                 // add some necessary properties
                                 PropertyList = new List<ControlProperty>
                                 {
-                                    new ControlProperty
+                                    new ControlProperty(2)
                                     {
                                         Name = "Location", Value = "new System.Drawing.Point(4, 22)", Valid = true
                                     },
-                                    new ControlProperty
+                                    new ControlProperty(2)
                                     {
                                         Name = "Size", Value = "new System.Drawing.Size(477, 374)", Valid = true
                                     },
-                                    new ControlProperty
+                                    new ControlProperty(2)
                                     {
                                         Name = "Text", Value = targetProperty.Value, Valid = true
                                     },
-                                    new ControlProperty
+                                    new ControlProperty(2)
                                     {
                                         Name = "TabIndex", Value = index.ToString(), Valid = true
                                     }
@@ -780,7 +793,7 @@ namespace MetX.VB6ToCSharp
             // each property
             foreach (var sourceProperty in sourcePropertyList)
             {
-                var targetProperty = new ControlProperty();
+                var targetProperty = new ControlProperty(2);
                 if (ParseProperties(oModule.Type, sourceProperty, targetProperty, sourcePropertyList))
                 {
                     if (targetProperty.Name == "BackgroundImage" || targetProperty.Name == "Icon")
@@ -814,16 +827,36 @@ namespace MetX.VB6ToCSharp
                 // lines
                 foreach (var originalLine in sourceProcedure.LineList)
                 {
-                    ConvertLineOfCode(originalLine, out var convertedLine, out var placeAtBottom, null); 
+                    ConvertLineOfCode(originalLine, out var convertedLine, out var placeAtBottom, null);
+
                     targetProcedure.LineList.Add(convertedLine);
                     if (placeAtBottom.IsNotEmpty())
                         targetProcedure.BottomLineList.Add(placeAtBottom);
                 }
+                DetermineWhichLinesGetASemicolon(targetProcedure.LineList);
+                DetermineWhichLinesGetASemicolon(targetProcedure.BottomLineList);
 
                 targetProcedures.Add(targetProcedure);
             }
 
             return true;
+        }
+
+        private static void DetermineWhichLinesGetASemicolon(IList<string> lines)
+        {
+            if (lines.IsEmpty())
+                return;
+
+            if (lines.Count == 1)
+            {
+                lines[0] += ";";
+                return;
+            }
+
+            for (var i = 0; i < lines.Count; i++)
+            {
+                lines[i] += ";";
+            }
         }
 
         public static bool ParseProperties(string type,
@@ -1504,6 +1537,13 @@ namespace MetX.VB6ToCSharp
                 lineOfCode = "}\r\n";
 
             return lineOfCode.Trim();
+        }
+
+        public static string Indent(int indent)
+        {
+            return indent < 1 
+                ? string.Empty 
+                : new string('\t', indent);
         }
     }
 }

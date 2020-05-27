@@ -10,11 +10,11 @@ namespace MetX.VB6ToCSharp
 
         public static int Main(string[] args)
         {
-            ConvertAll();
+            ConvertAllFiles();
             return 0;
         }
 
-        public static void ConvertAll()
+        public static void ConvertAllFiles()
         {
             // Delete previous run
             foreach (var fileToDelete in Directory.EnumerateFiles(OutputFolderPath))

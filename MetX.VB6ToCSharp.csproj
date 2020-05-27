@@ -125,6 +125,7 @@
     <Compile Include="Property.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PropertyPartType.cs" />
     <Compile Include="Tools.cs">
       <SubType>Code</SubType>
     </Compile>

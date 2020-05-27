@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
 using MetX.Library;
 
@@ -7,48 +6,87 @@ namespace MetX.VB6ToCSharp
 {
     public class CSharpProperty : IAmAProperty
     {
-        public string Direction;
-        public string Scope { get; set; }
+        public CSharpPropertyPart Get;
+        public CSharpPropertyPart Let;
+        public CSharpPropertyPart Set;
 
         public string Comment { get; set; }
         public string Name { get; set; }
+        public string Scope { get; set; }
+        public int Indent { get; set; }
+        public string Type { get; set; }
         public bool Valid { get; set; }
         public string Value { get; set; }
-        public string Type { get; set; }
 
-        public CSharpPropertyPart Get = new CSharpPropertyPart();
-        public CSharpPropertyPart Set = new CSharpPropertyPart();
+        public CSharpProperty(int parentIndent)
+        {
+            Get = new CSharpPropertyPart(this, PropertyPartType.Get);
+            Set = new CSharpPropertyPart(this, PropertyPartType.Set);
+            Let = new CSharpPropertyPart(this, PropertyPartType.Let);
+            Indent = parentIndent + 1;
+
+        }
+
+        public void ParsePropertyParts(IAmAProperty sourceProperty)
+        {
+            var localSourceProperty = (Property) sourceProperty;
+            CSharpPropertyPart targetPart;
+
+            if (localSourceProperty.Direction == "Get")
+                targetPart = Get;
+            else if (localSourceProperty.Direction == "Let")
+                targetPart = Let;
+            else
+                targetPart = Set;
+
+            targetPart.ParameterList = localSourceProperty.Parameters;
+            targetPart.Encountered = true;
+
+            foreach (var originalLine in localSourceProperty.LineList)
+            {
+                var line = originalLine.Trim();
+                if (line.IsNotEmpty())
+                {
+                    Tools.ConvertLineOfCode(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
+                    if (translatedLine.IsNotEmpty())
+                        targetPart.LineList.Add(translatedLine);
+                    if (placeAtBottom.IsNotEmpty())
+                        targetPart.BottomLineList.Add(placeAtBottom);
+                    targetPart.Encountered = true;
+                }
+            }
+        }
 
         public string GenerateTargetCode()
         {
             var result = new StringBuilder();
 
             // possible comment
-            if(Comment.IsNotEmpty() && Comment != "'\r\n")
-                result.AppendLine("// " + Comment + ";");
+            if (Comment.IsNotEmpty() && Comment != "'\r\n")
+                result.AppendLine(Tools.Indent(Indent) + "// " + Comment + ";");
 
-            if (Get.Encountered && Set.Encountered)
+            var letSet = Set.Encountered ? Set : Let;
+
+            if (Get.Encountered && letSet.Encountered)
             {
-                result.AppendLine("{");
+                result.AppendLine(Tools.Indent(Indent) + $"public {Type} {Name}");
+                result.AppendLine(Tools.Indent(Indent) + "{");
                 result.AppendLine(Get.GenerateCode());
-                result.AppendLine(Set.GenerateCode());
-                result.AppendLine("}");
+                result.AppendLine(letSet.GenerateCode());
+                result.AppendLine(Tools.Indent(Indent) + "}");
             }
             else if (Get.Encountered)
             {
-                result.AppendLine("{");
+                result.AppendLine(Tools.Indent(Indent) + $"public {Type} {Name}");
+                result.AppendLine(Tools.Indent(Indent) + "{");
                 result.AppendLine(Get.GenerateCode());
-                result.AppendLine("}");
+                result.AppendLine(Tools.Indent(Indent) + "}");
             }
-            else if (Set.Encountered)
+            else if (letSet.Encountered)
             {
-                result.AppendLine("{");
-                result.AppendLine(Set.GenerateCode());
-                result.AppendLine("}");
-            }
-            else
-            {
-                throw new NotSupportedException();
+                result.AppendLine(Tools.Indent(Indent) + "{");
+                result.AppendLine(Tools.Indent(Indent) + letSet.GenerateCode());
+                result.AppendLine(Tools.Indent(Indent) + "}");
             }
 
             /*
@@ -89,42 +127,6 @@ namespace MetX.VB6ToCSharp
             */
 
             return result.ToString();
-        }
-
-        public void Convert(IAmAProperty sourceProperty)
-        {
-            var localSourceProperty = (Property) sourceProperty;
-            var result = new StringBuilder();
-            CSharpPropertyPart targetPart;
-
-            if(localSourceProperty.Direction == "Get")
-            {
-                targetPart = Get;
-                targetPart.ParameterList = localSourceProperty.Parameters;
-                targetPart.Encountered = true;
-                
-            }
-            else
-            {
-                targetPart = Set;
-            }
-
-            foreach (var originalLine in localSourceProperty.LineList)
-            {
-                var line = originalLine.Trim();
-                if(line.IsNotEmpty())
-                { 
-                    Tools.ConvertLineOfCode(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
-                    if(translatedLine.IsNotEmpty())
-                        targetPart.LineList.Add(translatedLine);
-                    if (placeAtBottom.IsNotEmpty())
-                        targetPart.BottomLineList.Add(placeAtBottom);
-                    targetPart.Encountered = true;
-                }
-            }
-
-            
-            throw new NotImplementedException();
         }
     }
 }
