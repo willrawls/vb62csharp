@@ -842,21 +842,23 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        private static void DetermineWhichLinesGetASemicolon(IList<string> lines)
+        public static IList<string> DetermineWhichLinesGetASemicolon(IList<string> lines)
         {
             if (lines.IsEmpty())
-                return;
+                return lines;
 
             if (lines.Count == 1)
             {
                 lines[0] += ";";
-                return;
+                return lines;
             }
 
             for (var i = 0; i < lines.Count; i++)
             {
                 lines[i] += ";";
             }
+
+            return lines;
         }
 
         public static bool ParseProperties(string type,

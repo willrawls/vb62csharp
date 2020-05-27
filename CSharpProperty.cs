@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Text;
 using MetX.Library;
 
@@ -69,62 +70,39 @@ namespace MetX.VB6ToCSharp
 
             if (Get.Encountered && letSet.Encountered)
             {
-                result.AppendLine(Tools.Indent(Indent) + $"public {Type} {Name}");
-                result.AppendLine(Tools.Indent(Indent) + "{");
-                result.AppendLine(Get.GenerateCode());
-                result.AppendLine(letSet.GenerateCode());
-                result.AppendLine(Tools.Indent(Indent) + "}");
+                result.AppendLine(Tools.Indent(Indent) + $"public {Type ?? "object"} {Name}");
+                if (Get.IsEmpty && letSet.IsEmpty)
+                {
+                    result.AppendLine(Tools.Indent(Indent + 1) + "{ get; set; }");
+                }
+                else
+                {
+                    result.AppendLine(Tools.Indent(Indent) + "{");
+                    result.AppendLine(Get.GenerateCode());
+                    result.AppendLine(letSet.GenerateCode());
+                    result.AppendLine(Tools.Indent(Indent) + "}");
+                }
             }
             else if (Get.Encountered)
             {
                 result.AppendLine(Tools.Indent(Indent) + $"public {Type} {Name}");
                 result.AppendLine(Tools.Indent(Indent) + "{");
+                if(Get.IsEmpty)
+                    result.AppendLine(Tools.Indent(Indent + 1) + "get; set; // Was get only");
+                else
                 result.AppendLine(Get.GenerateCode());
+
                 result.AppendLine(Tools.Indent(Indent) + "}");
             }
             else if (letSet.Encountered)
             {
                 result.AppendLine(Tools.Indent(Indent) + "{");
-                result.AppendLine(Tools.Indent(Indent) + letSet.GenerateCode());
+                if(letSet.IsEmpty)
+                    result.AppendLine(Tools.Indent(Indent + 1) + " get; set; // Was set only");
+                else
+                    result.AppendLine(Tools.Indent(Indent) + letSet.GenerateCode());
                 result.AppendLine(Tools.Indent(Indent) + "}");
             }
-
-            /*
-            result.AppendLine($"{ConvertCode.Indent4}public {Type} {Name}");
-            if (LineList.Count == 0)
-            {
-                result.AppendLine($"{ConvertCode.Indent6}{{ get; ");
-            }
-            else
-            {
-                result.AppendLine($"{ConvertCode.Indent6}{{ get {{");
-            }
-
-            // lines
-            var atBottom = new List<string>();
-            foreach (var originalLine in LineList)
-            {
-                var line = originalLine.Trim();
-                if (line.Length > 0)
-                {
-                    Tools.ConvertLineOfCode(line, out var convertedLineOfCode, out var placeAtBottom);
-                    if (convertedLineOfCode.IsNotEmpty())
-                        convertedLineOfCode = ConvertCode.Indent6 + convertedLineOfCode + ";";
-                    result.AppendLine(convertedLineOfCode);
-                    if (placeAtBottom.IsNotEmpty())
-                        atBottom.Add(placeAtBottom);
-                }
-                else
-                {
-                    result.AppendLine();
-                }
-            }
-
-            foreach (var line in atBottom)
-                result.AppendLine(line);
-
-            result.Append(ConvertCode.Indent4 + "}\r\n");
-            */
 
             return result.ToString();
         }

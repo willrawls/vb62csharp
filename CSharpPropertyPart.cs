@@ -14,6 +14,8 @@ namespace MetX.VB6ToCSharp
         public List<string> BottomLineList = new List<string>();
         public List<Parameter> ParameterList = new List<Parameter>();
         public PropertyPartType PartType;
+        public bool IsEmpty => (LineList.Where(x => x.Trim().Length > 0).ToList().Count
+                              + BottomLineList.Where(x => x.Trim().Length > 0).ToList().Count) == 0;
 
         public CSharpPropertyPart(IAmAProperty parent, PropertyPartType propertyPartType)
         {
@@ -25,20 +27,18 @@ namespace MetX.VB6ToCSharp
         {
             var finalPartType = PartType.ToString().ToLower().Replace("let", "set");
 
-            if (LineList.Where(x => x.Trim().Length > 0).ToList().Count
-                + BottomLineList.Where(x => x.Trim().Length > 0).ToList().Count
-                == 0)
+            if (IsEmpty)
                 return Tools.Indent(Parent.Indent + 1) + $"{finalPartType};";
 
             var result = new StringBuilder();
 
             result.AppendLine($"{Tools.Indent(Parent.Indent + 1)}{finalPartType}");
             result.AppendLine($"{Tools.Indent(Parent.Indent + 1)}{{");
-            foreach(var line in LineList)
+            foreach(var line in Tools.DetermineWhichLinesGetASemicolon(LineList))
             {
                 result.AppendLine(Tools.Indent(Parent.Indent + 2) + line);
             }
-            foreach(var line in BottomLineList)
+            foreach(var line in Tools.DetermineWhichLinesGetASemicolon(BottomLineList))
             {
                 result.AppendLine(Tools.Indent(Parent.Indent + 2) + line);
             }
