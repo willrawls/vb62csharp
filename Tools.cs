@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,9 @@ namespace MetX.VB6ToCSharp
             BlanketReplacements.Add("True", "true");
             BlanketReplacements.Add("False", "false");
             BlanketReplacements.Add("private ", "public ");
+            BlanketReplacements.Add("Err.Clear", "");
+            BlanketReplacements.Add("Err.Number", "ex");
+            BlanketReplacements.Add("Me.", "this.");
 
             StartsWithReplacements.Add("' ", "// ");
             StartsWithReplacements.Add("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. ");
@@ -194,6 +198,12 @@ namespace MetX.VB6ToCSharp
 
             if (translatedLine.Length > 0)
             {
+                if (translatedLine.Trim().StartsWith("'"))
+                {
+                    translatedLine = "// " + translatedLine.Substring(1);
+                    return;
+                }
+
                 if( localSourceProperty != null &&
                     (localSourceProperty.Direction == "Set" || localSourceProperty.Direction == "Let"))
                 {
@@ -237,6 +247,13 @@ namespace MetX.VB6ToCSharp
                 if (translatedLine.Contains("Set "))
                 {
                     translatedLine = translatedLine.Replace("Set ", " ");
+                }
+
+                if (translatedLine.Contains("Dim") && translatedLine.Contains("As"))
+                {
+                    // Dim x As string
+                    // string x;
+                    translatedLine = $"{translatedLine.TokenAt(4)} {translatedLine.TokenAt(2)} ";
                 }
 
                 // remark
@@ -855,7 +872,12 @@ namespace MetX.VB6ToCSharp
 
             for (var i = 0; i < lines.Count; i++)
             {
-                lines[i] += ";";
+                if(lines[i].IsNotEmpty() 
+                   && !lines[i].EndsWith(";")
+                   && !lines[i].EndsWith("{")
+                   && !lines[i].EndsWith("}")
+                   )
+                    lines[i] += ";";
             }
 
             return lines;

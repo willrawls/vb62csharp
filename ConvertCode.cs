@@ -1,12 +1,11 @@
+using MetX.Library;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Text;
-using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
@@ -414,7 +413,7 @@ namespace MetX.VB6ToCSharp
                 result.Append(Tools.Indent(2) + "///   " + SourceModule.Comment + ".\r\n");
                 result.Append(Tools.Indent(2) + "/// </summary>\r\n");
             }
-            
+
             switch (TargetModule.Type)
             {
                 case "form":
@@ -487,7 +486,8 @@ namespace MetX.VB6ToCSharp
             result.Append("}\r\n");
 
             // return result
-            return result.ToString();
+            
+            return Tools.BlanketReplaceNow(result.ToString());
         }
 
         public void GetPropertyRow(StringBuilder result, string type, string name, ControlProperty controlProperty, string outPath)
@@ -974,20 +974,23 @@ namespace MetX.VB6ToCSharp
             {
                 var part = parts[index];
                 var parameter = new Parameter();
-                
+
                 parameter.Optional = part.StartsWith("Optional");
                 part = part.Replace("Optional", "").Trim();
-                
+
                 parameter.Pass = part.StartsWith("ByVal") ? "ByVal" : "ByRef";
                 part = part.Replace("ByRef ", "");
                 part = part.Replace("ByVal ", "").Trim();
                 parameter.Name = part.TokenAt(1, " As ").Trim();
                 var type = part.TokenAt(2, " As ").Trim().TokenAt(1).Trim();
-                parameter.Type = type;
-                var left = part.TokenAt(2, " As ").Replace(type, "");
-                if (left.IsNotEmpty())
+                parameter.Type = "/* unknown */";
+                if(type != string.Empty)
                 {
-                    parameter.DefaultValue = left.Replace("= ", "");
+                    var left = part.TokenAt(2, " As ").Replace(type, "");
+                    if (left.IsNotEmpty())
+                    {
+                        parameter.DefaultValue = left.Replace("= ", "");
+                    }
                 }
 
                 parameterList.Add(parameter);
@@ -1293,7 +1296,7 @@ namespace MetX.VB6ToCSharp
 
         public void ParsePropertyName(IAmAProperty property, string line)
         {
-            var localProperty = ((Property) property);
+            var localProperty = ((Property)property);
 
             var iPosition = 0;
             var start = 0;
@@ -1361,17 +1364,17 @@ namespace MetX.VB6ToCSharp
 
         public void ParseVariableDeclaration(Variable variable, string line)
         {
-            var tempString = string.Empty;
+            var scope = string.Empty;
             var iPosition = 0;
             var status = false;
 
             // next word - control type
-            tempString = GetWord(line, ref iPosition);
-            switch (tempString)
+            scope = GetWord(line, ref iPosition);
+            switch (scope)
             {
                 case "Dim":
                 case "Private":
-                    variable.Scope = "private";
+                    variable.Scope = "public"; // "private";
                     break;
 
                 case "Public":
@@ -1379,9 +1382,8 @@ namespace MetX.VB6ToCSharp
                     break;
 
                 default:
-                    variable.Scope = "private";
-                    // variable name
-                    variable.Name = tempString;
+                    variable.Scope = "public"; // "private";
+                    variable.Name = variable.Scope;
                     status = true;
                     break;
             }
@@ -1390,16 +1392,16 @@ namespace MetX.VB6ToCSharp
             if (!status)
             {
                 iPosition++;
-                tempString = GetWord(line, ref iPosition);
-                variable.Name = tempString;
+                scope = GetWord(line, ref iPosition);
+                variable.Name = scope;
             }
             // As
             iPosition++;
-            tempString = GetWord(line, ref iPosition);
+            scope = GetWord(line, ref iPosition);
             // variable type
             iPosition++;
-            tempString = GetWord(line, ref iPosition);
-            variable.Type = tempString == "String" ? "string" : tempString;
+            scope = GetWord(line, ref iPosition);
+            variable.Type = scope == "String" ? "string" : scope;
         }
 
         public bool WriteImage(Module sourceModule, string resourceName, string value, string outPath)
