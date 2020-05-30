@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp
@@ -15,11 +12,7 @@ namespace MetX.VB6ToCSharp
     {
         public static string WithCurrentlyIn = "";
 
-        static Tools()
-        {
-        }
-
-        public static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
+        public static void ConvertControlPropertyFont(ControlProperty sourceProperty, ControlProperty targetProperty)
         {
             var fontName = string.Empty;
             var fontSize = 0;
@@ -102,48 +95,48 @@ namespace MetX.VB6ToCSharp
             {
                 if (temp != string.Empty)
                 {
-                    temp = temp + " | ";
+                    temp += " | ";
                 }
 
-                temp = temp + "System.Drawing.FontStyle.Italic";
+                temp += "System.Drawing.FontStyle.Italic";
             }
 
             if (fontUnderline)
             {
                 if (temp != string.Empty)
                 {
-                    temp = temp + " | ";
+                    temp += " | ";
                 }
 
-                temp = temp + "System.Drawing.FontStyle.Underline";
+                temp += "System.Drawing.FontStyle.Underline";
             }
 
             if (fontStrikethrough)
             {
                 if (temp != string.Empty)
                 {
-                    temp = temp + " | ";
+                    temp += " | ";
                 }
 
-                temp = temp + "System.Drawing.FontStyle.Strikeout";
+                temp += "System.Drawing.FontStyle.Strikeout";
             }
 
             if (temp == string.Empty)
             {
-                targetProperty.Value = targetProperty.Value + " System.Drawing.FontStyle.Regular,";
+                targetProperty.Value += " System.Drawing.FontStyle.Regular,";
             }
             else
             {
                 targetProperty.Value = targetProperty.Value + " ( " + temp + " ),";
             }
 
-            targetProperty.Value = targetProperty.Value + " System.Drawing.GraphicsUnit.Point, ";
+            targetProperty.Value += " System.Drawing.GraphicsUnit.Point, ";
             targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
         }
 
         public static void ConvertLineOfCode(
-            string originalLine, 
-            out string translatedLine, 
+            string originalLine,
+            out string translatedLine,
             out string placeAtBottom,
             IAmAProperty sourceProperty)
         {
@@ -160,7 +153,7 @@ namespace MetX.VB6ToCSharp
                     return;
                 }
 
-                if( localSourceProperty != null &&
+                if (localSourceProperty != null &&
                     (localSourceProperty.Direction == "Set" || localSourceProperty.Direction == "Let"))
                 {
                     foreach (var parameter in localSourceProperty.Parameters)
@@ -186,7 +179,7 @@ namespace MetX.VB6ToCSharp
 
                 if (WithCurrentlyIn.IsNotEmpty())
                 {
-                    if(translatedLine.StartsWith("."))
+                    if (translatedLine.StartsWith("."))
                         translatedLine = WithCurrentlyIn + translatedLine;
                     if (translatedLine.Contains(" ."))
                     {
@@ -198,13 +191,13 @@ namespace MetX.VB6ToCSharp
                                 words[i] = WithCurrentlyIn + words[i];
                             }
                         }
+
                         translatedLine = string.Join(" ", words);
 
                         /*
                         translatedLine = translatedLine.FirstToken(" .") + " " + WithCurrentlyIn + "." +
                                          translatedLine.TokensAfterFirst(" .");
                                          */
-
                     }
                 }
 
@@ -352,283 +345,7 @@ namespace MetX.VB6ToCSharp
         //      Replace all instances of Y with Z
         //      Append A
 
-        public static string GetBool(string value)
-        {
-            if (int.Parse(value) == 0)
-            {
-                return "false";
-            }
-            else
-            {
-                return "true";
-            }
-        }
-
-        public static string GetColor(string value)
-        {
-            Color color;
-
-            if (value.Length < 3)
-            {
-                var colorValue = "0x" + value;
-                color = ColorTranslator.FromWin32(Convert.ToInt32(colorValue, 16));
-            }
-            else if (value.StartsWith("&"))
-            {
-                value = value
-                        .Replace("&H", "")
-                        .Replace("&", "")
-                    ;
-                color = ColorTranslator.FromHtml("#" + value);
-            }
-            else
-            {
-                color = Color.FromArgb(Convert.ToInt32(value));
-
-                //Color = System.Drawing.ColorTranslator.FromWin32(System.Convert.ToInt32(Value, 16));
-            }
-
-            if (!color.IsSystemColor)
-            {
-                if (color.IsNamedColor)
-                {
-                    // System.Drawing.Color.Yellow;
-                    return "System.Drawing.Color." + color.Name;
-                }
-                else
-                {
-                    return "System.Drawing.Color.FromArgb(" + color.ToArgb() + ")";
-                }
-            }
-            else
-            {
-                return "System.Drawing.SystemColors." + color.Name;
-            }
-        }
-
-        // return control name
-        public static string GetControlIndexName(string tabName)
-        {
-            //  this.SSTab1.(Tab(1).Control(4) = "Option1(0)";
-            var start = 0;
-            var end = 0;
-
-            start = tabName.IndexOf("(");
-            if (start > -1)
-            {
-                end = tabName.IndexOf(")");
-                return tabName.Substring(0, start) + tabName.Substring(start + 1, end - start - 1);
-            }
-            else
-            {
-                return tabName;
-            }
-        }
-
-        public static int GetFontSizeInt(string value)
-        {
-            var position = 0;
-
-            position = value.IndexOf(",");
-            if (position > -1)
-            {
-                return int.Parse(value.Substring(0, position));
-            }
-
-            position = value.IndexOf(".");
-            if (position > 0)
-            {
-                return int.Parse(value.Substring(0, position));
-            }
-
-            return int.Parse(value);
-        }
-
-        public static void GetFrxImage(string imageFile, int imageOffset, out byte[] imageString)
-        {
-            byte[] header;
-            var bytesToRead = 0;
-
-            // open file
-            var stream = new FileStream(imageFile, FileMode.Open, FileAccess.Read);
-            var reader = new BinaryReader(stream);
-            // Start from offset
-            reader.BaseStream.Seek(imageOffset, SeekOrigin.Begin);
-            // Get the four byte header
-            header = new byte[4];
-            header = reader.ReadBytes(4);
-            // Convert This Header Into The Number Of Bytes
-            // To Read For This Image
-            bytesToRead = header[0];
-            bytesToRead = bytesToRead + (header[1] * 0x100);
-            bytesToRead = bytesToRead + (header[2] * 0x10000);
-            bytesToRead = bytesToRead + (header[3] * 0x1000000);
-            // Get image information
-            imageString = new byte[bytesToRead];
-            imageString = reader.ReadBytes(bytesToRead);
-
-            //      Stream = new FileStream( @"C:\temp\test\Ba.bmp", FileMode.CreateNew, FileAccess.Write );
-            //      BinaryWriter Writer = new BinaryWriter( Stream );
-            //      Writer.Write(ImageString, 8, ImageString.GetLength(0) - 8);
-            //      Stream.Close();
-            //      Writer.Close();
-
-            //  FileStream inFile = new FileStream(@"C:\WINdows\Blue Lace 16.bmp", FileMode.Open, FileAccess.Read);
-            //  ReturnImage = Image.FromStream(inFile, false);
-
-            stream.Close();
-            reader.Close();
-        }
-
-        public static string GetLocation(List<ControlProperty> propertyList)
-        {
-            var left = 0;
-            var top = 0;
-
-            // each property
-            foreach (var property in propertyList)
-            {
-                if (property.Name == "Left")
-                {
-                    left = int.Parse(property.Value);
-                    if (left < 0)
-                    {
-                        left = 75000 + left;
-                    }
-
-                    left = left / 15;
-                }
-
-                if (property.Name == "Top")
-                {
-                    top = int.Parse(property.Value) / 15;
-                }
-            }
-
-            // 616, 520
-            return left.ToString() + ", " + top.ToString();
-        }
-
-        public static string GetSize(string height, string width, List<ControlProperty> propertyList)
-        {
-            var heightValue = 0;
-            var widthValue = 0;
-
-            // each property
-            foreach (var property in propertyList)
-            {
-                if (property.Name == height)
-                {
-                    heightValue = int.Parse(property.Value) / 15;
-                }
-
-                if (property.Name == width)
-                {
-                    widthValue = int.Parse(property.Value) / 15;
-                }
-            }
-
-            // 0, 120
-            return widthValue.ToString() + ", " + heightValue.ToString();
-        }
-
-        public static bool ParseClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties)
-        {
-            foreach (var sourceProperty in sourceProperties)
-            {
-                var localSourceProperty = (Property) sourceProperty;
-                CSharpProperty targetProperty = null;
-
-                targetProperty = targetProperties.Cast<CSharpProperty>()
-                    .FirstOrDefault(x => x
-                        .Name.ToLower() == sourceProperty
-                        .Name.ToLower());
-
-                if(targetProperty == null)
-                {
-                    targetProperty = new CSharpProperty(2)
-                    {
-                        Name = sourceProperty.Name.Trim(),
-                        Comment = sourceProperty.Comment,
-                        Scope = sourceProperty.Scope,
-                        Type = VariableTypeConvert(sourceProperty.Type),
-                    };
-                    targetProperties.Add(targetProperty);
-                }
-                targetProperty.ParsePropertyParts(sourceProperty);
-            }
-            return true;
-        }
-
-        public static bool ParseControlProperties(
-            Module module, 
-            Control control,
-            List<ControlProperty> sourcePropertyList,
-            List<ControlProperty> targetPropertyList)
-        {
-            // each property
-            foreach (var sourceProperty in sourcePropertyList)
-            {
-                if (sourceProperty.Name == "Index")
-                {
-                    // Index           =   3
-                    control.Name = control.Name + sourceProperty.Value;
-                }
-                else
-                {
-                    var targetProperty = new ControlProperty(2);
-                    if (ParseProperties(control.Type, sourceProperty, targetProperty, sourcePropertyList))
-                    {
-                        if (targetProperty.Name == "Image")
-                        {
-                            module.ImagesUsed = true;
-                        }
-
-                        targetPropertyList.Add(targetProperty);
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        public static bool ParseControls(
-            Module module, 
-            List<Control> sourceControlList,
-            List<Control> targetControlList)
-        {
-            var type = string.Empty;
-
-            foreach (var sourceControl in sourceControlList)
-            {
-                var targetControl = new Control
-                {
-                    Name = sourceControl.Name,
-                    Owner = sourceControl.Owner,
-                    Container = sourceControl.Container,
-                    Valid = true
-                };
-
-                type = sourceControl.Type;
-
-                targetControl.Type = type;
-                ParseControlProperties(module, targetControl, sourceControl.PropertyList, targetControl.PropertyList);
-
-                targetControlList.Add(targetControl);
-            }
-
-            return true;
-        }
-
-        public static bool ParseEnums(List<Enum> sourceEnums, List<Enum> targetEnums)
-        {
-            foreach (var sourceEnum in sourceEnums) 
-                targetEnums.Add(sourceEnum);
-
-            return true;
-        }
-
-        public static bool ParseModule(Module sourceModule, Module targetModule)
+        public static bool ConvertModule(Module sourceModule, Module targetModule)
         {
             // module name
             targetModule.Name = sourceModule.Name;
@@ -639,9 +356,9 @@ namespace MetX.VB6ToCSharp
             // version
             targetModule.Version = sourceModule.Version;
             // process own properties - forms
-            ParseModuleProperties(targetModule, sourceModule.FormPropertyList, targetModule.FormPropertyList);
+            ConvertSourceModuleProperties(targetModule, sourceModule.FormPropertyList, targetModule.FormPropertyList);
             // process controls - form
-            ParseControls(targetModule, sourceModule.ControlList, targetModule.ControlList);
+            ConvertSourceControls(targetModule, sourceModule.ControlList, targetModule.ControlList);
 
             // special exception for menu
             if (targetModule.MenuUsed)
@@ -749,41 +466,318 @@ namespace MetX.VB6ToCSharp
             }
 
             // process enums
-            ParseEnums(sourceModule.EnumList, targetModule.EnumList);
+            ConvertSourceEnums(sourceModule.EnumList, targetModule.EnumList);
             // process variables
-            ParseVariables(sourceModule.VariableList, targetModule.VariableList);
+            ConvertSourceVariables(sourceModule.VariableList, targetModule.VariableList);
             // process properties
-            ParseClassProperties(sourceModule.PropertyList, targetModule.PropertyList);
+            ConvertSourceClassProperties(sourceModule.PropertyList, targetModule.PropertyList);
             // process procedures
-            ParseProcedures(sourceModule, targetModule.ProcedureList);
+            ConvertSourceProcedures(sourceModule, targetModule.ProcedureList);
 
             return true;
         }
 
-        public static bool ParseModuleProperties(
+        public static string GetBool(string value)
+        {
+            return value.IsEmpty() || (int.Parse(value) == 0)
+                ? "false" 
+                : "true";
+        }
+
+        public static bool ConvertSourceModuleProperties(
             Module oModule,
+            List<ControlProperty> sourcePropertyList,
+            List<ControlProperty> targetPropertyList)
+        {
+            foreach (var sourceProperty in sourcePropertyList)
+            {
+                var targetProperty = new ControlProperty(2);
+                if (!ConvertSourceControlProperties(oModule.Type, sourceProperty, targetProperty, sourcePropertyList)) 
+                    continue;
+
+                if (targetProperty.Name == "BackgroundImage" || targetProperty.Name == "Icon")
+                    oModule.ImagesUsed = true;
+
+                targetPropertyList.Add(targetProperty);
+            }
+            return true;
+        }
+
+        public static string GetColor(string value)
+        {
+            Color color;
+
+            if (value.Length < 3)
+            {
+                var colorValue = "0x" + value;
+                color = ColorTranslator.FromWin32(Convert.ToInt32(colorValue, 16));
+            }
+            else if (value.StartsWith("&"))
+            {
+                value = value
+                        .Replace("&H", "")
+                        .Replace("&", "")
+                    ;
+                color = ColorTranslator.FromHtml("#" + value);
+            }
+            else
+            {
+                color = Color.FromArgb(Convert.ToInt32(value));
+
+                //Color = System.Drawing.ColorTranslator.FromWin32(System.Convert.ToInt32(Value, 16));
+            }
+
+            if (!color.IsSystemColor)
+            {
+                if (color.IsNamedColor)
+                {
+                    // System.Drawing.Color.Yellow;
+                    return "System.Drawing.Color." + color.Name;
+                }
+                else
+                {
+                    return "System.Drawing.Color.FromArgb(" + color.ToArgb() + ")";
+                }
+            }
+            else
+            {
+                return "System.Drawing.SystemColors." + color.Name;
+            }
+        }
+
+        // return control name
+        public static string GetControlIndexName(string tabName)
+        {
+            //  this.SSTab1.(Tab(1).Control(4) = "Option1(0)";
+            var start = 0;
+            var end = 0;
+
+            start = tabName.IndexOf("(");
+            if (start > -1)
+            {
+                end = tabName.IndexOf(")");
+                return tabName.Substring(0, start) + tabName.Substring(start + 1, end - start - 1);
+            }
+            else
+            {
+                return tabName;
+            }
+        }
+
+        public static int GetFontSizeInt(string value)
+        {
+            var position = 0;
+
+            position = value.IndexOf(",");
+            if (position > -1)
+            {
+                return int.Parse(value.Substring(0, position));
+            }
+
+            position = value.IndexOf(".");
+            if (position > 0)
+            {
+                return int.Parse(value.Substring(0, position));
+            }
+
+            return int.Parse(value);
+        }
+
+        public static void GetFrxImage(string imageFile, int imageOffset, out byte[] imageString)
+        {
+            byte[] header;
+            var bytesToRead = 0;
+
+            // open file
+            var stream = new FileStream(imageFile, FileMode.Open, FileAccess.Read);
+            var reader = new BinaryReader(stream);
+            // Start from offset
+            reader.BaseStream.Seek(imageOffset, SeekOrigin.Begin);
+            // Get the four byte header
+            header = new byte[4];
+            header = reader.ReadBytes(4);
+            // Convert This Header Into The Number Of Bytes
+            // To Read For This Image
+            bytesToRead = header[0];
+            bytesToRead += (header[1] * 0x100);
+            bytesToRead += (header[2] * 0x10000);
+            bytesToRead += (header[3] * 0x1000000);
+            // Get image information
+            imageString = new byte[bytesToRead];
+            imageString = reader.ReadBytes(bytesToRead);
+
+            //      Stream = new FileStream( @"C:\temp\test\Ba.bmp", FileMode.CreateNew, FileAccess.Write );
+            //      BinaryWriter Writer = new BinaryWriter( Stream );
+            //      Writer.Write(ImageString, 8, ImageString.GetLength(0) - 8);
+            //      Stream.Close();
+            //      Writer.Close();
+
+            //  FileStream inFile = new FileStream(@"C:\WINdows\Blue Lace 16.bmp", FileMode.Open, FileAccess.Read);
+            //  ReturnImage = Image.FromStream(inFile, false);
+
+            stream.Close();
+            reader.Close();
+        }
+
+        public static string GetLocation(List<ControlProperty> propertyList)
+        {
+            var left = 0;
+            var top = 0;
+
+            // each property
+            foreach (var property in propertyList)
+            {
+                if (property.Name == "Left")
+                {
+                    left = int.Parse(property.Value);
+                    if (left < 0)
+                    {
+                        left = 75000 + left;
+                    }
+
+                    left /= 15;
+                }
+
+                if (property.Name == "Top")
+                {
+                    top = int.Parse(property.Value) / 15;
+                }
+            }
+
+            // 616, 520
+            return left.ToString() + ", " + top.ToString();
+        }
+
+        public static string GetSize(string height, string width, List<ControlProperty> propertyList)
+        {
+            var heightValue = 0;
+            var widthValue = 0;
+
+            // each property
+            foreach (var property in propertyList)
+            {
+                if (property.Name == height)
+                {
+                    heightValue = int.Parse(property.Value) / 15;
+                }
+
+                if (property.Name == width)
+                {
+                    widthValue = int.Parse(property.Value) / 15;
+                }
+            }
+
+            // 0, 120
+            return widthValue.ToString() + ", " + heightValue.ToString();
+        }
+
+        public static string Indent(int indent)
+        {
+            return indent < 1
+                ? string.Empty
+                : new string('\t', indent);
+        }
+
+        public static bool ConvertSourceClassProperties(List<IAmAProperty> sourceProperties,
+            List<IAmAProperty> targetProperties)
+        {
+            foreach (var sourceProperty in sourceProperties)
+            {
+                var localSourceProperty = (Property) sourceProperty;
+                CSharpProperty targetProperty = null;
+
+                targetProperty = targetProperties.Cast<CSharpProperty>()
+                    .FirstOrDefault(x => x
+                        .Name.ToLower() == sourceProperty
+                        .Name.ToLower());
+
+                if (targetProperty == null)
+                {
+                    targetProperty = new CSharpProperty(2)
+                    {
+                        Name = sourceProperty.Name.Trim(),
+                        Comment = sourceProperty.Comment,
+                        Scope = sourceProperty.Scope,
+                        Type = VariableTypeConvert(sourceProperty.Type),
+                    };
+                    targetProperties.Add(targetProperty);
+                }
+
+                targetProperty.ParsePropertyParts(sourceProperty);
+            }
+
+            return true;
+        }
+
+        public static bool ParseControlProperties(
+            Module module,
+            Control control,
             List<ControlProperty> sourcePropertyList,
             List<ControlProperty> targetPropertyList)
         {
             // each property
             foreach (var sourceProperty in sourcePropertyList)
             {
-                var targetProperty = new ControlProperty(2);
-                if (ParseProperties(oModule.Type, sourceProperty, targetProperty, sourcePropertyList))
+                if (sourceProperty.Name == "Index")
                 {
-                    if (targetProperty.Name == "BackgroundImage" || targetProperty.Name == "Icon")
+                    // Index           =   3
+                    control.Name += sourceProperty.Value;
+                }
+                else
+                {
+                    var targetProperty = new ControlProperty(2);
+                    if (ConvertSourceControlProperties(control.Type, sourceProperty, targetProperty, sourcePropertyList))
                     {
-                        oModule.ImagesUsed = true;
-                    }
+                        if (targetProperty.Name == "Image")
+                        {
+                            module.ImagesUsed = true;
+                        }
 
-                    targetPropertyList.Add(targetProperty);
+                        targetPropertyList.Add(targetProperty);
+                    }
                 }
             }
 
             return true;
         }
 
-        public static bool ParseProcedures(Module sourceModule, List<Procedure> targetProcedures)
+        public static bool ConvertSourceControls(
+            Module module,
+            List<Control> sourceControlList,
+            List<Control> targetControlList)
+        {
+            var type = string.Empty;
+
+            foreach (var sourceControl in sourceControlList)
+            {
+                var targetControl = new Control
+                {
+                    Name = sourceControl.Name,
+                    Owner = sourceControl.Owner,
+                    Container = sourceControl.Container,
+                    Valid = true
+                };
+
+                type = sourceControl.Type;
+
+                targetControl.Type = type;
+                ParseControlProperties(module, targetControl, sourceControl.PropertyList, targetControl.PropertyList);
+
+                targetControlList.Add(targetControl);
+            }
+
+            return true;
+        }
+
+        public static bool ConvertSourceEnums(List<Enum> sourceEnums, List<Enum> targetEnums)
+        {
+            foreach (var sourceEnum in sourceEnums)
+                targetEnums.Add(sourceEnum);
+
+            return true;
+        }
+
+        public static bool ConvertSourceProcedures(Module sourceModule, List<Procedure> targetProcedures)
         {
             const string indent6 = "      ";
 
@@ -818,7 +812,7 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseProperties(string type,
+        public static bool ConvertSourceControlProperties(string type,
             ControlProperty sourceProperty,
             ControlProperty targetProperty,
             List<ControlProperty> sourcePropertyList)
@@ -852,16 +846,16 @@ namespace MetX.VB6ToCSharp
                     switch (sourceProperty.Value)
                     {
                         case "0":
-                            targetProperty.Value = targetProperty.Value + "TopLeft";
+                            targetProperty.Value += "TopLeft";
                             break;
 
                         case "1":
-                            targetProperty.Value = targetProperty.Value + "TopRight";
+                            targetProperty.Value += "TopRight";
                             break;
 
                         case "2":
                         default:
-                            targetProperty.Value = targetProperty.Value + "TopCenter";
+                            targetProperty.Value += "TopCenter";
                             break;
                     }
 
@@ -898,28 +892,28 @@ namespace MetX.VB6ToCSharp
                         switch (sourceProperty.Value)
                         {
                             case "0":
-                                targetProperty.Value = targetProperty.Value + "None";
+                                targetProperty.Value += "None";
                                 break;
 
                             default:
                             case "1":
-                                targetProperty.Value = targetProperty.Value + "FixedSingle";
+                                targetProperty.Value += "FixedSingle";
                                 break;
 
                             case "2":
-                                targetProperty.Value = targetProperty.Value + "Sizable";
+                                targetProperty.Value += "Sizable";
                                 break;
 
                             case "3":
-                                targetProperty.Value = targetProperty.Value + "FixedDialog";
+                                targetProperty.Value += "FixedDialog";
                                 break;
 
                             case "4":
-                                targetProperty.Value = targetProperty.Value + "FixedToolWindow";
+                                targetProperty.Value += "FixedToolWindow";
                                 break;
 
                             case "5":
-                                targetProperty.Value = targetProperty.Value + "SizableToolWindow";
+                                targetProperty.Value += "SizableToolWindow";
                                 break;
                         }
                     }
@@ -930,16 +924,16 @@ namespace MetX.VB6ToCSharp
                         switch (sourceProperty.Value)
                         {
                             case "0":
-                                targetProperty.Value = targetProperty.Value + "None";
+                                targetProperty.Value += "None";
                                 break;
 
                             case "1":
-                                targetProperty.Value = targetProperty.Value + "FixedSingle";
+                                targetProperty.Value += "FixedSingle";
                                 break;
 
                             case "2":
                             default:
-                                targetProperty.Value = targetProperty.Value + "Fixed3D";
+                                targetProperty.Value += "Fixed3D";
                                 break;
                         }
                     }
@@ -1002,7 +996,7 @@ namespace MetX.VB6ToCSharp
                     break;
 
                 case "Font":
-                    ConvertFont(sourceProperty, targetProperty);
+                    ConvertControlPropertyFont(sourceProperty, targetProperty);
                     break;
                 // end common properties
 
@@ -1039,22 +1033,22 @@ namespace MetX.VB6ToCSharp
                             {
                                 default:
                                 case "0":
-                                    targetProperty.Value = targetProperty.Value + "Unchecked";
+                                    targetProperty.Value += "Unchecked";
                                     break;
 
                                 case "1":
-                                    targetProperty.Value = targetProperty.Value + "Checked";
+                                    targetProperty.Value += "Checked";
                                     break;
 
                                 case "2":
-                                    targetProperty.Value = targetProperty.Value + "Indeterminate";
+                                    targetProperty.Value += "Indeterminate";
                                     break;
                             }
 
                             break;
 
                         default:
-                            targetProperty.Value = targetProperty.Value + "Both";
+                            targetProperty.Value += "Both";
                             break;
                     }
 
@@ -1177,19 +1171,19 @@ namespace MetX.VB6ToCSharp
                     {
                         default:
                         case "0":
-                            targetProperty.Value = targetProperty.Value + "None";
+                            targetProperty.Value += "None";
                             break;
 
                         case "1":
-                            targetProperty.Value = targetProperty.Value + "Horizontal";
+                            targetProperty.Value += "Horizontal";
                             break;
 
                         case "2":
-                            targetProperty.Value = targetProperty.Value + "Vertical";
+                            targetProperty.Value += "Vertical";
                             break;
 
                         case "3":
-                            targetProperty.Value = targetProperty.Value + "Both";
+                            targetProperty.Value += "Both";
                             break;
                     }
 
@@ -1203,19 +1197,19 @@ namespace MetX.VB6ToCSharp
                     {
                         default:
                         case "0":
-                            targetProperty.Value = targetProperty.Value + "Top";
+                            targetProperty.Value += "Top";
                             break;
 
                         case "1":
-                            targetProperty.Value = targetProperty.Value + "Bottom";
+                            targetProperty.Value += "Bottom";
                             break;
 
                         case "2":
-                            targetProperty.Value = targetProperty.Value + "Left";
+                            targetProperty.Value += "Left";
                             break;
 
                         case "3":
-                            targetProperty.Value = targetProperty.Value + "Right";
+                            targetProperty.Value += "Right";
                             break;
                     }
 
@@ -1238,20 +1232,20 @@ namespace MetX.VB6ToCSharp
                     switch (sourceProperty.Value)
                     {
                         case "0":
-                            targetProperty.Value = targetProperty.Value + "Details";
+                            targetProperty.Value += "Details";
                             break;
 
                         case "1":
-                            targetProperty.Value = targetProperty.Value + "LargeIcon";
+                            targetProperty.Value += "LargeIcon";
                             break;
 
                         case "2":
-                            targetProperty.Value = targetProperty.Value + "SmallIcon";
+                            targetProperty.Value += "SmallIcon";
                             break;
 
                         case "3":
                         default:
-                            targetProperty.Value = targetProperty.Value + "List";
+                            targetProperty.Value += "List";
                             break;
                     }
 
@@ -1340,15 +1334,15 @@ namespace MetX.VB6ToCSharp
                     {
                         case "0":
                         default:
-                            targetProperty.Value = targetProperty.Value + "Normal";
+                            targetProperty.Value += "Normal";
                             break;
 
                         case "1":
-                            targetProperty.Value = targetProperty.Value + "Minimized";
+                            targetProperty.Value += "Minimized";
                             break;
 
                         case "2":
-                            targetProperty.Value = targetProperty.Value + "Maximized";
+                            targetProperty.Value += "Maximized";
                             break;
                     }
 
@@ -1364,20 +1358,20 @@ namespace MetX.VB6ToCSharp
                     switch (sourceProperty.Value)
                     {
                         case "0":
-                            targetProperty.Value = targetProperty.Value + "Manual";
+                            targetProperty.Value += "Manual";
                             break;
 
                         case "1":
-                            targetProperty.Value = targetProperty.Value + "CenterParent";
+                            targetProperty.Value += "CenterParent";
                             break;
 
                         case "2":
-                            targetProperty.Value = targetProperty.Value + "CenterScreen";
+                            targetProperty.Value += "CenterScreen";
                             break;
 
                         case "3":
                         default:
-                            targetProperty.Value = targetProperty.Value + "WindowsDefaultLocation";
+                            targetProperty.Value += "WindowsDefaultLocation";
                             break;
                     }
 
@@ -1402,7 +1396,7 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool ParseVariables(List<Variable> sourceVariableList, List<Variable> targetVariableList)
+        public static bool ConvertSourceVariables(List<Variable> sourceVariableList, List<Variable> targetVariableList)
         {
             // each property
             foreach (var sourceVariable in sourceVariableList)
@@ -1467,13 +1461,6 @@ namespace MetX.VB6ToCSharp
             }
 
             return targetType;
-        }
-
-        public static string Indent(int indent)
-        {
-            return indent < 1 
-                ? string.Empty 
-                : new string('\t', indent);
         }
     }
 }

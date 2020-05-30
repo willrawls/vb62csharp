@@ -377,20 +377,20 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        // generate result file
-        // OutPath for pictures
         public string GetCode(string outPath)
         {
             var result = new StringBuilder();
 
             // convert source to target
             TargetModule = new Module();
-            Tools.ParseModule(SourceModule, TargetModule);
+            Tools.ConvertModule(SourceModule, TargetModule);
 
             // ********************************************************
             // common class
             // ********************************************************
             result.Append("using System;\r\n");
+            result.Append("using System.Collections;\r\n");
+            result.Append("using System.Collections.Generic;\r\n");
 
             // ********************************************************
             // only form class
@@ -398,7 +398,6 @@ namespace MetX.VB6ToCSharp
             if (TargetModule.Type == "form")
             {
                 result.Append("using System.Drawing;\r\n");
-                result.Append("using System.Collections;\r\n");
                 result.Append("using System.ComponentModel;\r\n");
                 result.Append("using System.Windows.Forms;\r\n");
             }

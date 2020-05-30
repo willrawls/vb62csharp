@@ -6,16 +6,20 @@ namespace MetX.VB6ToCSharp
 {
     public static class Massage
     {
-        // When line starts with X and ends with Y
-        //      Remove X and Y
-        //      Add Z as a line above the beginning
-        //      Add A as a line below the end
+        /// <summary>
+        /// When line starts with X and ends with Y:
+        ///      Remove X and Y
+        ///      Add Z as a line above the beginning
+        ///      Add A as a line below the end
+        /// </summary>
         public static List<Alice> AboveAndBelowReplacements { get; set; } = new List<Alice>
         {
         };
 
-        // When line contains X
-        //      Replace with Y
+        /// <summary>
+        /// When line contains X:
+        ///      Replace with Y
+        /// </summary>
         public static List<Alice> BlanketReplacements { get; set; } = new List<Alice>
         {
             new Alice("Exit Property", "return; // ???"),
@@ -37,42 +41,48 @@ namespace MetX.VB6ToCSharp
             new Alice("Me.", "this."),
         };
 
-        // When line ends with X
-        //      Replace X with Y
+        /// <summary>
+        /// When line ends with X:
+        ///      Replace X with Y
+        /// </summary>
         public static List<Alice> EndsWithReplacements { get; set; } = new List<Alice>
         {
             new Alice(";;", ";"),
         };
 
-        // When line starts with X and ends with Y
-        //      Replace Z with A
+        /// <summary>
+        /// When line starts with X and ends with Y:
+        ///      Replace Z with A
+        /// </summary>
         public static List<Alice> StartsAndEndsWithReplacements { get; set; } = new List<Alice>()
         {
             new Alice("Set", "Nothing", "Set", ""),
 
         };
 
-        // When line starts with X
-        //      Replace X with Y
-        //      Replace Z with A
+        /// <summary>
+        /// When line starts with X, Replace X with Y, Replace Z with A
+        /// </summary>
         public static List<Alice> StartsWithReplacements { get; set; } = new List<Alice>
         {
             new Alice("' ", "// "),
             new Alice("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. "),
         };
 
-        // When a line starts with X
-        //      Replace Y with Z
-        //      Append A
+        /// <summary>
+        /// When a line starts with X, Replace Y with Z, Append A
+        /// </summary>
         public static List<Alice> WhenStartsWithReplaceOtherReplacements { get; set; } = new List<Alice>()
         {
             new Alice("foreach(", null, null, " )"),
         };
 
-        // When line starts with X and ends with Y
-        //      Remove X and Y
-        //      Add Z as a line above the beginning
-        //      Add A as a line below the end
+        /// <summary>
+        /// When line starts with X and ends with Y:
+        ///      Remove X and Y, 
+        ///      Add Z as a line above the beginning, 
+        ///      Add A as a line below the end
+        /// </summary>
         public static string AboveAndBelowWithReplaceNow(string originalLineOfCode)
         {
             if (originalLineOfCode.IsEmpty())
@@ -115,6 +125,11 @@ namespace MetX.VB6ToCSharp
             return lineOfCode;
         }
 
+        /// <summary>
+        /// Special case replacements
+        /// </summary>
+        /// <param name="lineOfCode"></param>
+        /// <returns></returns>
         public static string CleanupTranslatedLineOfCode(string lineOfCode)
         {
             if (lineOfCode.Contains("foreach(") && !lineOfCode.Contains(")"))
@@ -129,6 +144,11 @@ namespace MetX.VB6ToCSharp
             return lineOfCode.Trim();
         }
 
+        /// <summary>
+        /// Adds semicolon to end of appropriate lines
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
         public static IList<string> DetermineWhichLinesGetASemicolon(IList<string> lines)
         {
             if (lines.IsEmpty())
@@ -153,8 +173,12 @@ namespace MetX.VB6ToCSharp
             return lines;
         }
 
-        // When line ends with X
-        //      Replace X with Z
+        /// <summary>
+        /// When line ends with X
+        ///      Replace X with Z
+        /// </summary>
+        /// <param name="originalLineOfCode"></param>
+        /// <returns></returns>
         public static string EndsWithReplaceNow(string originalLineOfCode)
         {
             if (originalLineOfCode.IsEmpty())
@@ -169,7 +193,11 @@ namespace MetX.VB6ToCSharp
             return lineOfCode;
         }
 
-        // Run all blanket and specialized replacements now
+        /// <summary>
+        /// Run all blanket and specialized replacements now
+        /// </summary>
+        /// <param name="translatedLine"></param>
+        /// <returns></returns>
         public static string Now(string translatedLine)
         {
             translatedLine = BlanketReplaceNow(translatedLine);
@@ -186,8 +214,10 @@ namespace MetX.VB6ToCSharp
             return translatedLine;
         }
 
-        // When line starts with X and ends with Y
-        //      Replace Z with A
+        /// <summary>
+        /// When line starts with X and ends with Y
+        ///      Replace Z with A
+        /// </summary>
         public static string StartsAndEndsWithReplaceNow(string originalLineOfCode)
         {
             if (originalLineOfCode.IsEmpty())
@@ -201,9 +231,9 @@ namespace MetX.VB6ToCSharp
             return lineOfCode;
         }
         
-        // When line starts with X
-        //      Replace X with Y
-        //      Replace Z with A
+        /// <summary>
+        /// When line starts with X, Replace X with Y, Replace Z with A
+        /// </summary>
         public static string StartsWithReplaceNow(string originalLineOfCode)
         {
             if (originalLineOfCode.IsEmpty())
@@ -227,9 +257,9 @@ namespace MetX.VB6ToCSharp
             return lineOfCode;
         }
 
-        // When a line starts with X
-        //      Replace Y with Z
-        //      Append A
+        /// <summary>
+        /// When a line starts with X, Replace Y with Z, Append A
+        /// </summary>
         public static string WhenStartsWithReplaceOtherAndAppendNow(string originalLineOfCode)
         {
             if (originalLineOfCode.IsEmpty())
