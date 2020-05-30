@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp
@@ -193,6 +195,21 @@ namespace MetX.VB6ToCSharp
             return lineOfCode;
         }
 
+        public static string AllLinesNow(string translatedLine)
+        {
+            if (translatedLine.IsEmpty())
+                return string.Empty;
+
+            StringBuilder result = new StringBuilder();
+            List<string> lines = translatedLine
+                .Replace("\r", string.Empty)
+                .Split('\n').ToList();
+
+            foreach (var line in lines) 
+                result.AppendLine(Now(line));
+            var code = result.ToString();
+            return code;
+        }
         /// <summary>
         /// Run all blanket and specialized replacements now
         /// </summary>

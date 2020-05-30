@@ -307,7 +307,7 @@ namespace MetX.VB6ToCSharp
             return result.ToString();
         }
 
-        public string ConvertPropertyCode(int indentLevel)
+        public string ConvertSourceProperties(int indentLevel)
         {
             if (TargetModule.PropertyList.Count <= 0) 
                 return string.Empty;
@@ -317,7 +317,11 @@ namespace MetX.VB6ToCSharp
 
             result.AppendLine();
             foreach (var property in TargetModule.PropertyList) 
-                result.AppendLine(firstIndent + property.GenerateTargetCode());
+                result.AppendLine(
+                    firstIndent +
+                    Massage.AllLinesNow(
+                        property.GenerateTargetCode())
+                    );
 
             var code = result.ToString();
             return code;
@@ -422,18 +426,14 @@ namespace MetX.VB6ToCSharp
             // ********************************************************
 
             if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
-            {
-                result.AppendLine(ConvertPropertyCode(3));
-            }
+                result.AppendLine(ConvertSourceProperties(3));
 
             // ********************************************************
             // procedures
             // ********************************************************
 
-            if (TargetModule.ProcedureList.Count > 0)
-            {
+            if (TargetModule.ProcedureList.Count > 0) 
                 result.Append(ConvertAllProcedures(3));
-            }
 
             // end class
             result.AppendLine($"{firstIndent}}}");
@@ -716,10 +716,8 @@ namespace MetX.VB6ToCSharp
             File.WriteAllText(outFileName, code);
 
             // generate resx file if source form contain any images
-            if ((TargetModule.ImagesUsed))
-            {
+            if ((TargetModule.ImagesUsed)) 
                 WriteResX(TargetModule.ImageList, outputPath, TargetModule.Name);
-            }
 
             return result;
         }
@@ -731,7 +729,7 @@ namespace MetX.VB6ToCSharp
             var bEnd = true;
             string sOwner = null;
             var iComment = 0;
-            string sType = null;
+            string sType;
             var iPosition = 0;
             var iLevel = 0;
             Control control = null;
