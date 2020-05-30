@@ -64,7 +64,7 @@ namespace MetX.VB6ToCSharp
 
             // possible comment
             if (Comment.IsNotEmpty() && Comment != "'\r\n")
-                result.AppendLine(Tools.Indent(Indent) + "// " + Comment + ";");
+                result.AppendLine(Tools.Indent(Indent) + "// " + Comment.Substring(1) + ";");
 
             var letSet = Set.Encountered ? Set : Let;
 

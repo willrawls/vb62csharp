@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -12,55 +13,10 @@ namespace MetX.VB6ToCSharp
     // parse VB6 properties and values to C#
     public static class Tools
     {
-        public static readonly Dictionary<string, string> BlanketReplacements = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> EndsWithReplacements = new Dictionary<string, string>();
-        public static readonly Dictionary<string, string> StartsWithReplacements = new Dictionary<string, string>();
-        public static readonly Dictionary<string, Dictionary<string, string>> StartsAndEndsWithReplacements = new Dictionary<string, Dictionary<string, string>>();
         public static string WithCurrentlyIn = "";
 
         static Tools()
         {
-            BlanketReplacements.Add("Exit Property", "return; // ???");
-            BlanketReplacements.Add("Exit Function", "return; // ???");
-            BlanketReplacements.Add("Exit Sub", "return;");
-            BlanketReplacements.Add("For Each ", "foreach( var ");
-            BlanketReplacements.Add(" In ", " in ");
-            BlanketReplacements.Add(";;", ";");
-            BlanketReplacements.Add("; = ", " = ");
-            BlanketReplacements.Add("{ get; set; }", ";");
-            BlanketReplacements.Add("Static", "static");
-            BlanketReplacements.Add("Collection", "Dictionary<string,string>()");
-            BlanketReplacements.Add("True", "true");
-            BlanketReplacements.Add("False", "false");
-            BlanketReplacements.Add("private ", "public ");
-            BlanketReplacements.Add("Err.Clear", "");
-            BlanketReplacements.Add("Err.Number", "ex");
-            BlanketReplacements.Add("Me.", "this.");
-
-            StartsWithReplacements.Add("' ", "// ");
-            StartsWithReplacements.Add("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. ");
-
-            EndsWithReplacements.Add(";;", ";");
-
-            var doWhile = new Dictionary<string, string>();
-            doWhile.Add(";", ")");
-
-            StartsAndEndsWithReplacements.Add("Do While ", doWhile);
-        }
-
-        public static string BlanketReplaceNow(string originalLineOfCode)
-        {
-            if (originalLineOfCode.IsEmpty())
-                return originalLineOfCode;
-
-            var lineOfCode = originalLineOfCode;
-            foreach (var entry in BlanketReplacements)
-            {
-                while (lineOfCode.Contains(entry.Key))
-                    lineOfCode = lineOfCode.Replace(entry.Key, entry.Value);
-            }
-
-            return lineOfCode;
         }
 
         public static void ConvertFont(ControlProperty sourceProperty, ControlProperty targetProperty)
@@ -233,7 +189,23 @@ namespace MetX.VB6ToCSharp
                     if(translatedLine.StartsWith("."))
                         translatedLine = WithCurrentlyIn + translatedLine;
                     if (translatedLine.Contains(" ."))
-                        translatedLine = translatedLine.FirstToken(" .") + " " + WithCurrentlyIn + "." + translatedLine.TokensAfterFirst(" .");
+                    {
+                        var words = translatedLine.Split(' ');
+                        for (var i = 0; i < words.Length; i++)
+                        {
+                            if (words[i].StartsWith("."))
+                            {
+                                words[i] = WithCurrentlyIn + words[i];
+                            }
+                        }
+                        translatedLine = string.Join(" ", words);
+
+                        /*
+                        translatedLine = translatedLine.FirstToken(" .") + " " + WithCurrentlyIn + "." +
+                                         translatedLine.TokensAfterFirst(" .");
+                                         */
+
+                    }
                 }
 
                 // Begin With
@@ -372,27 +344,13 @@ namespace MetX.VB6ToCSharp
 
             if (translatedLine.IsNotEmpty())
             {
-                translatedLine = BlanketReplaceNow(translatedLine);
-                translatedLine = StartsWithReplaceNow(translatedLine);
-                translatedLine = EndsWithReplaceNow(translatedLine);
-                translatedLine = CleanupTranslatedLineOfCode(translatedLine);
+                translatedLine = Massage.Now(translatedLine);
             }
         }
 
-        public static string EndsWithReplaceNow(string originalLineOfCode)
-        {
-            if (originalLineOfCode.IsEmpty())
-                return originalLineOfCode;
-
-            var lineOfCode = originalLineOfCode;
-            foreach (var entry in EndsWithReplacements)
-            {
-                while (lineOfCode.EndsWith(entry.Key))
-                    lineOfCode = lineOfCode.Replace(entry.Key, entry.Value);
-            }
-
-            return lineOfCode;
-        }
+        // When line starts with X
+        //      Replace all instances of Y with Z
+        //      Append A
 
         public static string GetBool(string value)
         {
@@ -850,37 +808,14 @@ namespace MetX.VB6ToCSharp
                     if (placeAtBottom.IsNotEmpty())
                         targetProcedure.BottomLineList.Add(placeAtBottom);
                 }
-                DetermineWhichLinesGetASemicolon(targetProcedure.LineList);
-                DetermineWhichLinesGetASemicolon(targetProcedure.BottomLineList);
+
+                Massage.DetermineWhichLinesGetASemicolon(targetProcedure.LineList);
+                Massage.DetermineWhichLinesGetASemicolon(targetProcedure.BottomLineList);
 
                 targetProcedures.Add(targetProcedure);
             }
 
             return true;
-        }
-
-        public static IList<string> DetermineWhichLinesGetASemicolon(IList<string> lines)
-        {
-            if (lines.IsEmpty())
-                return lines;
-
-            if (lines.Count == 1)
-            {
-                lines[0] += ";";
-                return lines;
-            }
-
-            for (var i = 0; i < lines.Count; i++)
-            {
-                if(lines[i].IsNotEmpty() 
-                   && !lines[i].EndsWith(";")
-                   && !lines[i].EndsWith("{")
-                   && !lines[i].EndsWith("}")
-                   )
-                    lines[i] += ";";
-            }
-
-            return lines;
         }
 
         public static bool ParseProperties(string type,
@@ -1482,21 +1417,6 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static string StartsWithReplaceNow(string originalLineOfCode)
-        {
-            if (originalLineOfCode.IsEmpty())
-                return originalLineOfCode;
-
-            var lineOfCode = originalLineOfCode;
-            foreach (var entry in StartsWithReplacements)
-            {
-                while (lineOfCode.StartsWith(entry.Key))
-                    lineOfCode = lineOfCode.Replace(entry.Key, entry.Value);
-            }
-
-            return lineOfCode;
-        }
-
         public static string VariableTypeConvert(string sourceType)
         {
             string targetType;
@@ -1547,20 +1467,6 @@ namespace MetX.VB6ToCSharp
             }
 
             return targetType;
-        }
-
-        private static string CleanupTranslatedLineOfCode(string lineOfCode)
-        {
-            if (lineOfCode.Contains("foreach(") && !lineOfCode.Contains(")"))
-                lineOfCode += " )";
-
-            if (lineOfCode.Contains("foreach(") && lineOfCode.EndsWith(");"))
-                lineOfCode = lineOfCode.FirstToken(");") + ")";
-
-            if (lineOfCode.StartsWith("Next "))
-                lineOfCode = "}\r\n";
-
-            return lineOfCode.Trim();
         }
 
         public static string Indent(int indent)

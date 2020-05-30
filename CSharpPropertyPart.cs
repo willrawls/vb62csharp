@@ -34,11 +34,11 @@ namespace MetX.VB6ToCSharp
 
             result.AppendLine($"{Tools.Indent(Parent.Indent + 1)}{finalPartType}");
             result.AppendLine($"{Tools.Indent(Parent.Indent + 1)}{{");
-            foreach(var line in Tools.DetermineWhichLinesGetASemicolon(LineList))
+            foreach(var line in Massage.DetermineWhichLinesGetASemicolon(LineList))
             {
                 result.AppendLine(Tools.Indent(Parent.Indent + 2) + line);
             }
-            foreach(var line in Tools.DetermineWhichLinesGetASemicolon(BottomLineList))
+            foreach(var line in Massage.DetermineWhichLinesGetASemicolon(BottomLineList))
             {
                 result.AppendLine(Tools.Indent(Parent.Indent + 2) + line);
             }

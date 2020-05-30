@@ -487,7 +487,7 @@ namespace MetX.VB6ToCSharp
 
             // return result
             
-            return Tools.BlanketReplaceNow(result.ToString());
+            return Massage.BlanketReplaceNow(result.ToString());
         }
 
         public void GetPropertyRow(StringBuilder result, string type, string name, ControlProperty controlProperty, string outPath)
