@@ -6,10 +6,16 @@ namespace MetX.VB6ToCSharp
 {
     public static class Massage
     {
+        // When line starts with X and ends with Y
+        //      Remove X and Y
+        //      Add Z as a line above the beginning
+        //      Add A as a line below the end
         public static List<Alice> AboveAndBelowReplacements { get; set; } = new List<Alice>
         {
         };
 
+        // When line contains X
+        //      Replace with Y
         public static List<Alice> BlanketReplacements { get; set; } = new List<Alice>
         {
             new Alice("Exit Property", "return; // ???"),
@@ -31,21 +37,33 @@ namespace MetX.VB6ToCSharp
             new Alice("Me.", "this."),
         };
 
+        // When line ends with X
+        //      Replace X with Y
         public static List<Alice> EndsWithReplacements { get; set; } = new List<Alice>
         {
             new Alice(";;", ";"),
         };
 
+        // When line starts with X and ends with Y
+        //      Replace Z with A
         public static List<Alice> StartsAndEndsWithReplacements { get; set; } = new List<Alice>()
         {
+            new Alice("Set", "Nothing", "Set", ""),
+
         };
 
+        // When line starts with X
+        //      Replace X with Y
+        //      Replace Z with A
         public static List<Alice> StartsWithReplacements { get; set; } = new List<Alice>
         {
             new Alice("' ", "// "),
             new Alice("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. "),
         };
 
+        // When a line starts with X
+        //      Replace Y with Z
+        //      Append A
         public static List<Alice> WhenStartsWithReplaceOtherReplacements { get; set; } = new List<Alice>()
         {
             new Alice("foreach(", null, null, " )"),
@@ -76,8 +94,11 @@ namespace MetX.VB6ToCSharp
             return lineOfCode;
         }
 
-        // When line contains X
-        //      Replace with Y
+        /// <summary>
+        /// When line contains X, replace with Y
+        /// </summary>
+        /// <param name="originalLineOfCode"></param>
+        /// <returns></returns>
         public static string BlanketReplaceNow(string originalLineOfCode)
         {
             if (originalLineOfCode.IsEmpty())
