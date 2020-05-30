@@ -28,7 +28,7 @@ namespace MetX.VB6ToCSharp
 
         }
 
-        public void ParsePropertyParts(IAmAProperty sourceProperty)
+        public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
         {
             var localSourceProperty = (Property) sourceProperty;
             CSharpPropertyPart targetPart;
@@ -48,7 +48,7 @@ namespace MetX.VB6ToCSharp
                 var line = originalLine.Trim();
                 if (line.IsNotEmpty())
                 {
-                    Tools.ConvertLineOfCode(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
+                    ConvertSource.ConvertLineOfCode(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                     if (translatedLine.IsNotEmpty())
                         targetPart.LineList.Add(translatedLine);
                     if (placeAtBottom.IsNotEmpty())

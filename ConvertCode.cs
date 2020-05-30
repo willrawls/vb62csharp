@@ -16,16 +16,14 @@ namespace MetX.VB6ToCSharp
     {
         public const string ClassFirstLine = "1.0 CLASS";
         public const string FormFirstLine = "VERSION 5.00";
-        public static readonly string Indent4 = Tools.Indent(3);
-        public static readonly string Indent6 = Tools.Indent(4);
+        public static readonly string Indent2 = Tools.Indent(2);
+        public static readonly string Indent3 = Tools.Indent(3);
         public const string ModuleFirstLine = "ATTRIBUTE";
         public readonly List<string> OwnerStock;
         public VbFileType FileType;
         public Module SourceModule;
         public Module TargetModule;
         public string ActionResult;
-
-        public string Code;
 
         public string ProjectNamespace = "MetX.SliceAndDice";
 
@@ -34,19 +32,20 @@ namespace MetX.VB6ToCSharp
             OwnerStock = new List<string>();
         }
 
-        public void ConvertEnumCode(StringBuilder result)
+        public string ConvertEnumCode(int indentLevel)
         {
+            var result = new StringBuilder();
             result.AppendLine();
             foreach (var enumItems in TargetModule.EnumList)
             {
                 // public enum VB_FILE_TYPE
-                result.Append(Indent4 + enumItems.Scope + " enum " + enumItems.Name + "\r\n");
-                result.Append(Indent4 + "{\r\n");
+                result.Append(Indent2 + enumItems.Scope + " enum " + enumItems.Name + "\r\n");
+                result.Append(Indent2 + "{\r\n");
 
                 foreach (var enumItem in enumItems.ItemList)
                 {
                     // name
-                    result.Append(Indent6 + enumItem.Name);
+                    result.Append(Indent3 + enumItem.Name);
 
                     if (enumItem.Value != string.Empty)
                     {
@@ -60,8 +59,11 @@ namespace MetX.VB6ToCSharp
                 // remove last comma, keep CRLF
                 result.Remove(result.Length - 3, 1);
                 // end enum
-                result.Append(Indent4 + "};\r\n");
+                result.Append(Indent2 + "};\r\n");
             }
+
+            var code = result.ToString();
+            return code;
         }
 
         public void ConvertFormCode(string outPath, StringBuilder result)
@@ -77,47 +79,47 @@ namespace MetX.VB6ToCSharp
                 result.Append(Tools.Indent(2) + " public System.Windows.Forms." + control.Type + " " + control.Name + ";\r\n");
             }
 
-            result.Append(Indent4 + "/// <summary>\r\n");
-            result.Append(Indent4 + "/// Required designer variable.\r\n");
-            result.Append(Indent4 + "/// </summary>\r\n");
-            result.Append(Indent4 + "public System.ComponentModel.Container components = null;\r\n");
+            result.Append(Indent2 + "/// <summary>\r\n");
+            result.Append(Indent2 + "/// Required designer variable.\r\n");
+            result.Append(Indent2 + "/// </summary>\r\n");
+            result.Append(Indent2 + "public System.ComponentModel.Container components = null;\r\n");
             result.AppendLine();
-            result.Append(Indent4 + "public " + SourceModule.Name + "()\r\n");
-            result.Append(Indent4 + "{\r\n");
-            result.Append(Indent6 + "// Required for Windows Form Designer support\r\n");
-            result.Append(Indent6 + "InitializeComponent();\r\n");
+            result.Append(Indent2 + "public " + SourceModule.Name + "()\r\n");
+            result.Append(Indent2 + "{\r\n");
+            result.Append(Indent3 + "// Required for Windows Form Designer support\r\n");
+            result.Append(Indent3 + "InitializeComponent();\r\n");
             result.AppendLine();
-            result.Append(Indent6 + "// TODO: Add any constructor code after InitializeComponent call\r\n");
-            result.Append(Indent4 + "}\r\n");
+            result.Append(Indent3 + "// TODO: Add any constructor code after InitializeComponent call\r\n");
+            result.Append(Indent2 + "}\r\n");
 
-            result.Append(Indent4 + "/// <summary>\r\n");
-            result.Append(Indent4 + "/// Clean up any resources being used.\r\n");
-            result.Append(Indent4 + "/// </summary>\r\n");
-            result.Append(Indent4 + "protected override void Dispose( bool disposing )\r\n");
-            result.Append(Indent4 + "{\r\n");
-            result.Append(Indent6 + "if( disposing )\r\n");
-            result.Append(Indent6 + "{\r\n");
-            result.Append(Indent6 + "  if (components != null)\r\n");
-            result.Append(Indent6 + "  {\r\n");
-            result.Append(Indent6 + "    components.Dispose();\r\n");
-            result.Append(Indent6 + "  }\r\n");
-            result.Append(Indent6 + "}\r\n");
-            result.Append(Indent6 + "base.Dispose( disposing );\r\n");
-            result.Append(Indent4 + "}\r\n");
+            result.Append(Indent2 + "/// <summary>\r\n");
+            result.Append(Indent2 + "/// Clean up any resources being used.\r\n");
+            result.Append(Indent2 + "/// </summary>\r\n");
+            result.Append(Indent2 + "protected override void Dispose( bool disposing )\r\n");
+            result.Append(Indent2 + "{\r\n");
+            result.Append(Indent3 + "if( disposing )\r\n");
+            result.Append(Indent3 + "{\r\n");
+            result.Append(Indent3 + "  if (components != null)\r\n");
+            result.Append(Indent3 + "  {\r\n");
+            result.Append(Indent3 + "    components.Dispose();\r\n");
+            result.Append(Indent3 + "  }\r\n");
+            result.Append(Indent3 + "}\r\n");
+            result.Append(Indent3 + "base.Dispose( disposing );\r\n");
+            result.Append(Indent2 + "}\r\n");
 
-            result.Append(Indent4 + "#region Windows Form Designer generated code\r\n");
-            result.Append(Indent4 + "/// <summary>\r\n");
-            result.Append(Indent4 + "/// Required method for Designer support - do not modify\r\n");
-            result.Append(Indent4 + "/// the contents of this method with the code editor.\r\n");
-            result.Append(Indent4 + "/// </summary>\r\n");
-            result.Append(Indent4 + "public void InitializeComponent()\r\n");
-            result.Append(Indent4 + "{\r\n");
+            result.Append(Indent2 + "#region Windows Form Designer generated code\r\n");
+            result.Append(Indent2 + "/// <summary>\r\n");
+            result.Append(Indent2 + "/// Required method for Designer support - do not modify\r\n");
+            result.Append(Indent2 + "/// the contents of this method with the code editor.\r\n");
+            result.Append(Indent2 + "/// </summary>\r\n");
+            result.Append(Indent2 + "public void InitializeComponent()\r\n");
+            result.Append(Indent2 + "{\r\n");
 
             // if form contain images
             if (TargetModule.ImagesUsed)
             {
                 // System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(Form1));
-                result.Append(Indent6 + "System.Resources.ResourceManager resources = " +
+                result.Append(Indent3 + "System.Resources.ResourceManager resources = " +
                                "new System.Resources.ResourceManager(typeof(" + TargetModule.Name + "));\r\n");
             }
 
@@ -128,13 +130,13 @@ namespace MetX.VB6ToCSharp
                     result.Append("//");
                 }
 
-                result.Append(Indent6 + "this." + control.Name
+                result.Append(Indent3 + "this." + control.Name
                                + " = new System.Windows.Forms." + control.Type
                                + "();\r\n");
             }
 
             // SuspendLayout part
-            result.Append(Indent6 + "this.SuspendLayout();\r\n");
+            result.Append(Indent3 + "this.SuspendLayout();\r\n");
             // this.Frame1.ResumeLayout(false);
             // resume layout for each container
             foreach (var control in TargetModule.ControlList)
@@ -148,16 +150,16 @@ namespace MetX.VB6ToCSharp
                         result.Append("//");
                     }
 
-                    result.Append(Indent6 + "this." + control.Name + ".SuspendLayout();\r\n");
+                    result.Append(Indent3 + "this." + control.Name + ".SuspendLayout();\r\n");
                 }
             }
 
             // each controls and his property
             foreach (var control in TargetModule.ControlList)
             {
-                result.Append(Indent6 + "//\r\n");
-                result.Append(Indent6 + "// " + control.Name + "\r\n");
-                result.Append(Indent6 + "//\r\n");
+                result.Append(Indent3 + "//\r\n");
+                result.Append(Indent3 + "// " + control.Name + "\r\n");
+                result.Append(Indent3 + "//\r\n");
 
                 // unsupported control
                 if (!control.Valid)
@@ -170,7 +172,7 @@ namespace MetX.VB6ToCSharp
                                                    && (control.Type != "MenuItem") && (control.Type != "MainMenu"))
                 {
                     // control name
-                    result.Append(Indent6 + "this." + control.Name + ".Name = "
+                    result.Append(Indent3 + "this." + control.Name + ".Name = "
                                    + (char)34 + control.Name + (char)34 + ";\r\n");
                 }
 
@@ -187,7 +189,7 @@ namespace MetX.VB6ToCSharp
                     // all controls ownered by current control
                     if ((oControl1.Owner == control.Name) && (!oControl1.InvisibleAtRuntime))
                     {
-                        temp += Indent6 + Indent6 + "this." + oControl1.Name + ",\r\n";
+                        temp += Indent3 + Indent3 + "this." + oControl1.Name + ",\r\n";
                     }
                 }
 
@@ -197,22 +199,22 @@ namespace MetX.VB6ToCSharp
                     if (control.Type == "MainMenu" || control.Type == "MenuItem")
                     {
                         // this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-                        result.Append(Indent6 + "this." + control.Name
+                        result.Append(Indent3 + "this." + control.Name
                                        + ".MenuItems.AddRange(new System.Windows.Forms.MenuItem[]\r\n");
                     }
                     else
                     {
                         // this. + control.Name + .Controls.AddRange(new System.Windows.Forms.Control[]
-                        result.Append(Indent6 + "this." + control.Name
+                        result.Append(Indent3 + "this." + control.Name
                                        + ".Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
                     }
 
-                    result.Append(Indent6 + "{\r\n");
+                    result.Append(Indent3 + "{\r\n");
                     result.Append((string)temp);
                     // remove last comma, keep CRLF
                     result.Remove(result.Length - 3, 1);
                     // close addrange part
-                    result.Append(Indent6 + "});\r\n");
+                    result.Append(Indent3 + "});\r\n");
                 }
 
                 // unsupported control
@@ -222,11 +224,11 @@ namespace MetX.VB6ToCSharp
                 }
             }
 
-            result.Append(Indent6 + "//\r\n");
-            result.Append(Indent6 + "// " + SourceModule.Name + "\r\n");
-            result.Append(Indent6 + "//\r\n");
-            result.Append(Indent6 + "this.Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
-            result.Append(Indent6 + "{\r\n");
+            result.Append(Indent3 + "//\r\n");
+            result.Append(Indent3 + "// " + SourceModule.Name + "\r\n");
+            result.Append(Indent3 + "//\r\n");
+            result.Append(Indent3 + "this.Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
+            result.Append(Indent3 + "{\r\n");
 
             // add control range to form
             foreach (var control in TargetModule.ControlList)
@@ -239,17 +241,17 @@ namespace MetX.VB6ToCSharp
                 // all controls ownered by main form
                 if ((control.Owner == SourceModule.Name) && (!control.InvisibleAtRuntime))
                 {
-                    result.Append(Indent6 + "      this." + control.Name + ",\r\n");
+                    result.Append(Indent3 + "      this." + control.Name + ",\r\n");
                 }
             }
 
             // remove last comma, keep CRLF
             result.Remove(result.Length - 3, 1);
             // close addrange part
-            result.Append(Indent6 + "});\r\n");
+            result.Append(Indent3 + "});\r\n");
 
             // form name
-            result.Append(Indent6 + "this.Name = " + (char)34 + TargetModule.Name + (char)34 + ";\r\n");
+            result.Append(Indent3 + "this.Name = " + (char)34 + TargetModule.Name + (char)34 + ";\r\n");
             // exception for menu
             // this.Menu = this.mainMenu1;
             if (TargetModule.MenuUsed)
@@ -258,7 +260,7 @@ namespace MetX.VB6ToCSharp
                 {
                     if (control.Type == "MainMenu")
                     {
-                        result.Append(Indent6 + "      this.Menu = " + control.Name + ";\r\n");
+                        result.Append(Indent3 + "      this.Menu = " + control.Name + ";\r\n");
                     }
                 }
             }
@@ -285,96 +287,55 @@ namespace MetX.VB6ToCSharp
                         result.Append("//");
                     }
 
-                    result.Append(Indent6 + "this." + control.Name + ".ResumeLayout(false);\r\n");
+                    result.Append(Indent3 + "this." + control.Name + ".ResumeLayout(false);\r\n");
                 }
             }
 
             // form
-            result.Append(Indent6 + "this.ResumeLayout(false);\r\n");
+            result.Append(Indent3 + "this.ResumeLayout(false);\r\n");
 
-            result.Append(Indent4 + "}\r\n");
-            result.Append(Indent4 + "#endregion\r\n");
+            result.Append(Indent2 + "}\r\n");
+            result.Append(Indent2 + "#endregion\r\n");
         }
 
-        public void ConvertProcedureCode(StringBuilder result)
+        public string ConvertAllProcedures(int indentLevel)
         {
-            result.AppendLine();
+            var result = new StringBuilder();
             foreach (var procedure in TargetModule.ProcedureList)
-            {
-                // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
-                result.Append(Indent4 + procedure.Scope + " ");
-                switch (procedure.Type)
-                {
-                    case ProcedureType.ProcedureSub:
-                        result.Append("void");
-                        break;
+                result.AppendLine(procedure.GenerateCode(indentLevel));
 
-                    case ProcedureType.ProcedureFunction:
-                        result.Append(procedure.ReturnType);
-                        break;
-
-                    case ProcedureType.ProcedureEvent:
-                        result.Append("void");
-                        break;
-                }
-
-                // name
-                result.Append(" " + procedure.Name);
-                // parameters
-                if (procedure.ParameterList.Count == 0)
-                {
-                    result.AppendLine("()");
-                }
-
-                // start body
-                result.AppendLine(Indent4 + "{");
-
-                foreach (var line in procedure.LineList.Select(l => l.Trim()))
-                    if (line.Length > 0)
-                        result.AppendLine(Indent6 + line + ";");
-                    else
-                        result.AppendLine();
-
-                foreach (var line in procedure.BottomLineList.Select(l => l.Trim()))
-                    if (line.Length > 0)
-                        result.AppendLine($"{Indent6}{line};");
-                    else
-                        result.AppendLine();
-
-                // end procedure
-                result.AppendLine(Indent4 + "}");
-            }
+            return result.ToString();
         }
 
-        public void ConvertPropertyCode(StringBuilder result)
+        public string ConvertPropertyCode(int indentLevel)
         {
-            // properties
-            if (TargetModule.PropertyList.Count > 0)
-            {
-                // new line
-                result.AppendLine();
-                //public string Comment
-                //{
-                //  get { return mComment; }
-                //  set { mComment = value; }
-                //}
-                foreach (var property in TargetModule.PropertyList)
-                {
-                    result.AppendLine(property.GenerateTargetCode());
-                }
-            }
+            if (TargetModule.PropertyList.Count <= 0) 
+                return string.Empty;
+
+            var result = new StringBuilder();
+            var firstIndent = Tools.Indent(indentLevel);
+
+            result.AppendLine();
+            foreach (var property in TargetModule.PropertyList) 
+                result.AppendLine(firstIndent + property.GenerateTargetCode());
+
+            var code = result.ToString();
+            return code;
         }
 
-        public void ConvertVariablesInCode(StringBuilder result)
+        public string ConvertVariablesInCode(int indentLevel)
         {
+            var result = new StringBuilder();
             result.AppendLine();
 
             foreach (var variable in TargetModule.VariableList)
             {
                 // string Result = null;
                 // All public cause I really don't like anything but public stuff
-                result.AppendLine(Indent4 + "public " + variable.Type + " " + variable.Name + ";");
+                result.AppendLine(Indent2 + "public " + (variable.Type.IsEmpty() ? "object" : variable.Type) + " " + variable.Name + ";");
             }
+            var code = result.ToString();
+            return code;
         }
 
         public string GetCode(string outPath)
@@ -383,7 +344,7 @@ namespace MetX.VB6ToCSharp
 
             // convert source to target
             TargetModule = new Module();
-            Tools.ConvertModule(SourceModule, TargetModule);
+            ConvertSource.Module(SourceModule, TargetModule);
 
             // ********************************************************
             // common class
@@ -406,21 +367,22 @@ namespace MetX.VB6ToCSharp
             result.AppendLine($"namespace {ProjectNamespace}");
             // start namepsace region
             result.Append("{\r\n");
+            var firstIndent = Tools.Indent(2);
             if (!string.IsNullOrEmpty(SourceModule.Comment))
             {
-                result.Append(Tools.Indent(2) + "/// <summary>\r\n");
-                result.Append(Tools.Indent(2) + "///   " + SourceModule.Comment + ".\r\n");
-                result.Append(Tools.Indent(2) + "/// </summary>\r\n");
+                result.Append($"{firstIndent}/// <summary>\r\n");
+                result.Append($"{firstIndent}///   {SourceModule.Comment}.\r\n");
+                result.Append($"{firstIndent}/// </summary>\r\n");
             }
 
             switch (TargetModule.Type)
             {
                 case "form":
-                    result.AppendLine(Tools.Indent(2) + "public class " + SourceModule.Name + " : System.Windows.Forms.Form");
+                    result.AppendLine($"{firstIndent}public class {SourceModule.Name} : System.Windows.Forms.Form");
                     break;
 
                 case "module":
-                    result.AppendLine(Tools.Indent(2) + "class " + SourceModule.Name);
+                    result.AppendLine($"{firstIndent}class {SourceModule.Name}");
                     // all procedures must be static
                     break;
 
@@ -428,38 +390,32 @@ namespace MetX.VB6ToCSharp
                     //if (SourceModule.Name.ToUpper().StartsWith("I")) 
                     //    TargetModule.Type = "interface";
 
-                    result.AppendLine($"{Tools.Indent(2)}public {TargetModule.Type} {SourceModule.Name}");
+                    result.AppendLine($"{firstIndent}public {TargetModule.Type} {SourceModule.Name}");
                     break;
             }
             // start class region
-            result.Append(Tools.Indent(2) + "{\r\n");
+            result.AppendLine($"{firstIndent}{{");
 
             // ********************************************************
             // only form class
             // ********************************************************
 
-            if (TargetModule.Type == "form")
-            {
+            if (TargetModule.Type == "form") 
                 ConvertFormCode(outPath, result);
-            }
 
             // ********************************************************
             // enums
             // ********************************************************
 
-            if (TargetModule.EnumList.Count > 0)
-            {
-                ConvertEnumCode(result);
-            }
+            if (TargetModule.EnumList.Count > 0) 
+                result.AppendLine(ConvertEnumCode(3));
 
             // ********************************************************
             //  variables for al module types
             // ********************************************************
 
             if (TargetModule.VariableList.Count > 0)
-            {
-                ConvertVariablesInCode(result);
-            }
+                result.AppendLine(ConvertVariablesInCode(3));
 
             // ********************************************************
             // properties has only forms and classes
@@ -467,7 +423,7 @@ namespace MetX.VB6ToCSharp
 
             if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
             {
-                ConvertPropertyCode(result);
+                result.AppendLine(ConvertPropertyCode(3));
             }
 
             // ********************************************************
@@ -476,17 +432,17 @@ namespace MetX.VB6ToCSharp
 
             if (TargetModule.ProcedureList.Count > 0)
             {
-                ConvertProcedureCode(result);
+                result.Append(ConvertAllProcedures(3));
             }
 
             // end class
-            result.Append(Tools.Indent(2) + "}\r\n");
-            // end namespace
-            result.Append("}\r\n");
+            result.AppendLine($"{firstIndent}}}");
 
-            // return result
-            
-            return Massage.BlanketReplaceNow(result.ToString());
+            // end namespace
+            result.AppendLine("    }");
+
+            var code = Massage.BlanketReplaceNow(result.ToString());
+            return code; 
         }
 
         public void GetPropertyRow(StringBuilder result, string type, string name, ControlProperty controlProperty, string outPath)
@@ -517,19 +473,19 @@ namespace MetX.VB6ToCSharp
                 switch (controlProperty.Name)
                 {
                     case "BackgroundImage":
-                        result.Append(Indent6 + "this."
+                        result.Append(Indent3 + "this."
                                                + controlProperty.Name + " = ((System.Drawing.Bitmap)(resources.GetObject("
                                                + (char)34 + "$this.BackgroundImage" + (char)34 + ")));\r\n");
                         break;
 
                     case "Icon":
-                        result.Append(Indent6 + "this."
+                        result.Append(Indent3 + "this."
                                                + controlProperty.Name + " = ((System.Drawing.Icon)(resources.GetObject("
                                                + (char)34 + "$this.Icon" + (char)34 + ")));\r\n");
                         break;
 
                     case "Image":
-                        result.Append(Indent6 + "this." + name + "."
+                        result.Append(Indent3 + "this." + name + "."
                                        + controlProperty.Name + " = ((System.Drawing.Bitmap)(resources.GetObject("
                                        + (char)34 + name + ".Image" + (char)34 + ")));\r\n");
                         break;
@@ -545,13 +501,13 @@ namespace MetX.VB6ToCSharp
                 if (type == "form")
                 {
                     // form properties
-                    result.Append(Indent6 + "this."
+                    result.Append(Indent3 + "this."
                       + controlProperty.Name + " = " + controlProperty.Value + ";\r\n");
                 }
                 else
                 {
                     // control properties
-                    result.Append(Indent6 + "this." + name + "."
+                    result.Append(Indent3 + "this." + name + "."
                       + controlProperty.Name + " = " + controlProperty.Value + ";\r\n");
                 }
             }
@@ -651,7 +607,7 @@ namespace MetX.VB6ToCSharp
             enumItem.Value = GetWord(line, ref iPosition);
         }
 
-        public bool ParseFile(string filename, string outputPath)
+        public bool ConvertFile(string filename, string outputPath)
         {
             var version = string.Empty;
             bool result;
@@ -747,16 +703,17 @@ namespace MetX.VB6ToCSharp
                 // parse remain - variables, functions, procedures
                 result = ParseProcedures(reader);
 
+                stream.Flush(); 
                 stream.Close();
                 reader.Close();
             }
 
             // generate output file
-            Code = GetCode(outputPath);
+            var code = GetCode(outputPath);
 
             // save result
             var outFileName = outputPath + TargetModule.FileName;
-            File.WriteAllText(outFileName, Code);
+            File.WriteAllText(outFileName, code);
 
             // generate resx file if source form contain any images
             if ((TargetModule.ImagesUsed))

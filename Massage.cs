@@ -117,7 +117,7 @@ namespace MetX.VB6ToCSharp
             var lineOfCode = originalLineOfCode;
             foreach (var entry in BlanketReplacements)
             {
-                int iterations = 0;
+                var iterations = 0;
                 while (++iterations < 100 && lineOfCode.ToLower().Contains(entry.X.ToLower()))
                     lineOfCode = lineOfCode.Replace(entry.X, entry.Y);
             }

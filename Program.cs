@@ -18,12 +18,14 @@ namespace MetX.VB6ToCSharp
         public static void ConvertAllFiles()
         {
             if(ClearOutputFolder)
+            {
                 // Delete previous run
                 foreach (var fileToDelete in Directory.EnumerateFiles(OutputFolderPath))
                 {
                     File.SetAttributes(fileToDelete, FileAttributes.Normal);
                     File.Delete(fileToDelete);
                 }
+            }
 
             var fileSets = new List<IEnumerable<string>>
             {
@@ -33,9 +35,10 @@ namespace MetX.VB6ToCSharp
             };
 
             foreach (var fileSet in fileSets)
-            foreach (var clsFile in fileSet)
+            foreach (var file in fileSet)
             {
-                new ConvertCode().ParseFile(clsFile, OutputFolderPath);
+                new ConvertCode()
+                    .ConvertFile(file, OutputFolderPath);
             }
         }
     }

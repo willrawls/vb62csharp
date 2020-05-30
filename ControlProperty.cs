@@ -35,7 +35,7 @@ namespace MetX.VB6ToCSharp
             throw new NotImplementedException();
         }
 
-        public void ParsePropertyParts(IAmAProperty sourceProperty)
+        public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
         {
             throw new NotImplementedException();
         }

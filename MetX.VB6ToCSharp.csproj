@@ -101,6 +101,7 @@
     <Compile Include="ConvertCode.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ConvertSource.cs" />
     <Compile Include="CSharpProperty.cs" />
     <Compile Include="CSharpPropertyPart.cs" />
     <Compile Include="Debug.cs" />

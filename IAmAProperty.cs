@@ -11,6 +11,6 @@ namespace MetX.VB6ToCSharp
         int Indent { get; set; }
 
         string GenerateTargetCode();
-        void ParsePropertyParts(IAmAProperty sourceProperty);
+        void ConvertSourcePropertyParts(IAmAProperty sourceProperty);
     }
 }
