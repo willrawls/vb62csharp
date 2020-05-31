@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp
@@ -248,6 +249,20 @@ namespace MetX.VB6ToCSharp
             }
 
             return targetType;
+        }
+
+        public static string Blockify(string blockName, int indentLevel, Func<StringBuilder, string> action)
+        {
+            var indentation = Indent(indentLevel);
+            var block = new StringBuilder();
+            block.AppendLine(indentation + blockName.Trim());
+            block.AppendLine(indentation + "{");
+            var blockLines = action.Invoke(block);
+            var lines = blockLines.Indent(indentLevel + 1);
+            block.AppendLine(lines);
+            block.AppendLine(indentation +"}");
+            var code = block.ToString(); // .Indent();
+            return code;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace MetX.VB6ToCSharp
 
         public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
         {
-            var localSourceProperty = (Property) sourceProperty;
+            var localSourceProperty = (Property)sourceProperty;
             CSharpPropertyPart targetPart;
 
             if (localSourceProperty.Direction == "Get")
@@ -48,7 +48,7 @@ namespace MetX.VB6ToCSharp
                 var line = originalLine.Trim();
                 if (line.IsNotEmpty())
                 {
-                    ConvertSource.ConvertLineOfCode(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
+                    ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                     if (translatedLine.IsNotEmpty())
                         targetPart.LineList.Add(translatedLine);
                     if (placeAtBottom.IsNotEmpty())
@@ -58,53 +58,68 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        public string GenerateTargetCode()
+        public string GenerateCode()
         {
             var result = new StringBuilder();
 
             // possible comment
-            if (Comment.IsNotEmpty() && Comment != "'\r\n")
-                result.AppendLine(Tools.Indent(Indent) + "// " + Comment.Substring(1) + ";");
+            if (Comment.IsNotEmpty())
+                if (!Comment.Contains("\n"))
+                    result.AppendLine(Tools.Indent(Indent) + "// " + Comment.Substring(1) + ";");
+                else
+                {
+                    result.AppendLine();
+                    result.AppendLine(Tools.Indent(Indent) + "/*");
+                    result.AppendLine(Tools.Indent(Indent) + Comment.Replace("' ", ""));
+                    result.AppendLine(Tools.Indent(Indent) + "*/");
+                    result.AppendLine();
+                }
+
 
             var letSet = Set.Encountered ? Set : Let;
 
             if (Get.Encountered && letSet.Encountered)
             {
-                result.AppendLine(Tools.Indent(Indent) + $"public {Type ?? "object"} {Name}");
+                var blockName = $"public {Type ?? "object"} {Name}";
                 if (Get.IsEmpty && letSet.IsEmpty)
                 {
-                    result.AppendLine(Tools.Indent(Indent + 1) + "{ get; set; }");
+                    result.AppendLine(Tools.Indent(Indent + 1) + blockName + "{ get; set; }");
                 }
                 else
                 {
-                    result.AppendLine(Tools.Indent(Indent) + "{");
-                    result.AppendLine(Get.GenerateCode());
-                    result.AppendLine(letSet.GenerateCode());
-                    result.AppendLine(Tools.Indent(Indent) + "}");
+                    result.AppendLine(
+                        Tools.Blockify(blockName, Indent, block => 
+                        {
+                            block.AppendLine(Get.GenerateCode());
+                            block.AppendLine(letSet.GenerateCode());
+                            var codeBlock = block.ToString();
+                            return codeBlock;
+                        }));
                 }
             }
             else if (Get.Encountered)
             {
                 result.AppendLine(Tools.Indent(Indent) + $"public {Type} {Name}");
                 result.AppendLine(Tools.Indent(Indent) + "{");
-                if(Get.IsEmpty)
+                if (Get.IsEmpty)
                     result.AppendLine(Tools.Indent(Indent + 1) + "get; set; // Was get only");
                 else
-                result.AppendLine(Get.GenerateCode());
+                    result.AppendLine(Get.GenerateCode());
 
                 result.AppendLine(Tools.Indent(Indent) + "}");
             }
             else if (letSet.Encountered)
             {
                 result.AppendLine(Tools.Indent(Indent) + "{");
-                if(letSet.IsEmpty)
+                if (letSet.IsEmpty)
                     result.AppendLine(Tools.Indent(Indent + 1) + " get; set; // Was set only");
                 else
                     result.AppendLine(Tools.Indent(Indent) + letSet.GenerateCode());
                 result.AppendLine(Tools.Indent(Indent) + "}");
             }
 
-            return result.ToString();
+            var code = result.ToString();
+            return code;
         }
     }
 }

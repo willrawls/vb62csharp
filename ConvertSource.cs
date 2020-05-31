@@ -130,7 +130,7 @@ namespace MetX.VB6ToCSharp
             targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
         }
 
-        public static void ConvertLineOfCode(
+        public static void GetPropertyLine(
             string originalLine,
             out string translatedLine,
             out string placeAtBottom,
@@ -326,10 +326,8 @@ namespace MetX.VB6ToCSharp
                 }
             }
 
-            if (translatedLine.IsNotEmpty())
-            {
+            if (translatedLine.IsNotEmpty()) 
                 translatedLine = Massage.Now(translatedLine);
-            }
         }
 
         public static bool Module(Module sourceModule, Module targetModule)
@@ -603,7 +601,7 @@ namespace MetX.VB6ToCSharp
                 // lines
                 foreach (var originalLine in sourceProcedure.LineList)
                 {
-                    ConvertLineOfCode(originalLine, out var convertedLine, out var placeAtBottom, null);
+                    GetPropertyLine(originalLine, out var convertedLine, out var placeAtBottom, null);
 
                     targetProcedure.LineList.Add(convertedLine);
                     if (placeAtBottom.IsNotEmpty())

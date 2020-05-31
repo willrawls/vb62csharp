@@ -10,7 +10,7 @@ namespace MetX.VB6ToCSharp
         string Scope { get; set; }
         int Indent { get; set; }
 
-        string GenerateTargetCode();
+        string GenerateCode();
         void ConvertSourcePropertyParts(IAmAProperty sourceProperty);
     }
 }

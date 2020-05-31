@@ -50,6 +50,7 @@ namespace MetX.VB6ToCSharp
         public static List<Alice> EndsWithReplacements { get; set; } = new List<Alice>
         {
             new Alice(";;", ";"),
+            new Alice(":;", "~~~"),
         };
 
         /// <summary>
@@ -132,8 +133,14 @@ namespace MetX.VB6ToCSharp
         /// </summary>
         /// <param name="lineOfCode"></param>
         /// <returns></returns>
-        public static string CleanupTranslatedLineOfCode(string lineOfCode)
+        public static string CleanupTranslatedLineOfCode(string originalLineOfCode)
         {
+            var lineOfCode = originalLineOfCode;
+            if (lineOfCode.TokenCount() == 4 && lineOfCode.TokenAt(3) == "As")
+            {
+                lineOfCode = $"{lineOfCode.TokenAt(4)} {lineOfCode.TokenAt(2)};";
+            }
+
             if (lineOfCode.Contains("foreach(") && !lineOfCode.Contains(")"))
                 lineOfCode += " )";
 
@@ -143,7 +150,32 @@ namespace MetX.VB6ToCSharp
             if (lineOfCode.StartsWith("Next "))
                 lineOfCode = "}\r\n";
 
+            if (lineOfCode == "'" || lineOfCode == ";" || lineOfCode == "End With")
+                lineOfCode = "";
+
+            lineOfCode = lineOfCode
+                .Replace("\r", "")
+                .Replace("\n\n", "\n")
+                .Replace("\n\n", "\n")
+                .Replace("\n\n", "\n");
+
             return lineOfCode.Trim();
+        }
+
+        /// <summary>
+        /// Adds semicolon to end of appropriate lines
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
+        public static string DetermineIfLineGetsASemicolon(string line)
+        {
+            if (line.IsEmpty() || line.EndsWith(";"))
+                return line;
+
+            if (!line.Trim().EndsWith(";") && !line.Trim().EndsWith("{") && !line.Trim().EndsWith("}"))
+                line += ";";
+
+            return line;
         }
 
         /// <summary>
@@ -200,8 +232,8 @@ namespace MetX.VB6ToCSharp
             if (translatedLine.IsEmpty())
                 return string.Empty;
 
-            StringBuilder result = new StringBuilder();
-            List<string> lines = translatedLine
+            var result = new StringBuilder();
+            var lines = translatedLine
                 .Replace("\r", string.Empty)
                 .Split('\n').ToList();
 
@@ -227,8 +259,9 @@ namespace MetX.VB6ToCSharp
             translatedLine = WhenStartsWithReplaceOtherAndAppendNow(translatedLine);
 
             translatedLine = CleanupTranslatedLineOfCode(translatedLine);
+            translatedLine = DetermineIfLineGetsASemicolon(translatedLine);
 
-            return translatedLine;
+            return translatedLine.Trim();
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace MetX.VB6ToCSharp
             Indent = parentIndent + 1;
         }
 
-        public string GenerateTargetCode()
+        public string GenerateCode()
         {
             throw new NotImplementedException();
         }

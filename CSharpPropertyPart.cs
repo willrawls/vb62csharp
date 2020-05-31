@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using MetX.Library;
 
@@ -25,26 +26,34 @@ namespace MetX.VB6ToCSharp
 
         public string GenerateCode()
         {
+            var firstIndent = Tools.Indent(Parent.Indent + 1);
             var finalPartType = PartType.ToString().ToLower().Replace("let", "set");
 
             if (IsEmpty)
-                return Tools.Indent(Parent.Indent + 1) + $"{finalPartType};";
+                return firstIndent + $"{finalPartType};";
 
             var result = new StringBuilder();
 
-            result.AppendLine($"{Tools.Indent(Parent.Indent + 1)}{finalPartType}");
-            result.AppendLine($"{Tools.Indent(Parent.Indent + 1)}{{");
-            foreach(var line in Massage.DetermineWhichLinesGetASemicolon(LineList))
+            result.AppendLine(Tools.Blockify($"{firstIndent}{finalPartType}", Parent.Indent + 1, builder =>
             {
-                result.AppendLine(Tools.Indent(Parent.Indent + 2) + line);
-            }
-            foreach(var line in Massage.DetermineWhichLinesGetASemicolon(BottomLineList))
-            {
-                result.AppendLine(Tools.Indent(Parent.Indent + 2) + line);
-            }
-            result.AppendLine($"{Tools.Indent(Parent.Indent + 1)}}}");
+                var blockBuilder = new StringBuilder();
+                foreach (var line in Massage
+                    .DetermineWhichLinesGetASemicolon(LineList)
+                    .Where(x => x.Trim() != "")
+                    .Select(x => Massage.Now(x)))
+                    blockBuilder.AppendLine(line);
 
-            return result.ToString();
+                foreach (var line in Massage
+                    .DetermineWhichLinesGetASemicolon(BottomLineList)
+                    .Where(x => x.Trim() != "")) 
+                    blockBuilder.AppendLine(line.Trim());
+
+                var blockCode = blockBuilder.ToString();
+                return blockCode;
+            }));
+
+            var code = result.ToString();
+            return code;
         }
     }
 }

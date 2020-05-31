@@ -320,7 +320,7 @@ namespace MetX.VB6ToCSharp
                 result.AppendLine(
                     firstIndent +
                     Massage.AllLinesNow(
-                        property.GenerateTargetCode())
+                        property.GenerateCode())
                     );
 
             var code = result.ToString();
