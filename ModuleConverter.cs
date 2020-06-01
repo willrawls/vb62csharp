@@ -1,4 +1,3 @@
-using MetX.Library;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -6,31 +5,25 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Text;
+using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
     /// <summary>
-    /// Summary description for Convert.
+    ///     Summary description for Convert.
     /// </summary>
-    public class ConvertCode
+    public class ModuleConverter
     {
         public const string ClassFirstLine = "1.0 CLASS";
-        public const string FormFirstLine = "VERSION 5.00";
+        public const string ModuleFirstLine = "ATTRIBUTE";
         public static readonly string Indent2 = Tools.Indent(2);
         public static readonly string Indent3 = Tools.Indent(3);
-        public const string ModuleFirstLine = "ATTRIBUTE";
-        public readonly List<string> OwnerStock;
+        public readonly List<string> OwnerStock = new List<string>();
+        public string ActionResult;
         public VbFileType FileType;
+        public string ProjectNamespace = "MetX.SliceAndDice";
         public Module SourceModule;
         public Module TargetModule;
-        public string ActionResult;
-
-        public string ProjectNamespace = "MetX.SliceAndDice";
-
-        public ConvertCode()
-        {
-            OwnerStock = new List<string>();
-        }
 
         public string ConvertEnumCode(int indentLevel)
         {
@@ -64,547 +57,6 @@ namespace MetX.VB6ToCSharp
 
             var code = result.ToString();
             return code;
-        }
-
-        public void ConvertFormCode(string outPath, StringBuilder result)
-        {
-            // list of controls
-            foreach (var control in TargetModule.ControlList)
-            {
-                if (!control.Valid)
-                {
-                    result.Append("//");
-                }
-
-                result.Append(Tools.Indent(2) + " public System.Windows.Forms." + control.Type + " " + control.Name + ";\r\n");
-            }
-
-            result.Append(Indent2 + "/// <summary>\r\n");
-            result.Append(Indent2 + "/// Required designer variable.\r\n");
-            result.Append(Indent2 + "/// </summary>\r\n");
-            result.Append(Indent2 + "public System.ComponentModel.Container components = null;\r\n");
-            result.AppendLine();
-            result.Append(Indent2 + "public " + SourceModule.Name + "()\r\n");
-            result.Append(Indent2 + "{\r\n");
-            result.Append(Indent3 + "// Required for Windows Form Designer support\r\n");
-            result.Append(Indent3 + "InitializeComponent();\r\n");
-            result.AppendLine();
-            result.Append(Indent3 + "// TODO: Add any constructor code after InitializeComponent call\r\n");
-            result.Append(Indent2 + "}\r\n");
-
-            result.Append(Indent2 + "/// <summary>\r\n");
-            result.Append(Indent2 + "/// Clean up any resources being used.\r\n");
-            result.Append(Indent2 + "/// </summary>\r\n");
-            result.Append(Indent2 + "protected override void Dispose( bool disposing )\r\n");
-            result.Append(Indent2 + "{\r\n");
-            result.Append(Indent3 + "if( disposing )\r\n");
-            result.Append(Indent3 + "{\r\n");
-            result.Append(Indent3 + "  if (components != null)\r\n");
-            result.Append(Indent3 + "  {\r\n");
-            result.Append(Indent3 + "    components.Dispose();\r\n");
-            result.Append(Indent3 + "  }\r\n");
-            result.Append(Indent3 + "}\r\n");
-            result.Append(Indent3 + "base.Dispose( disposing );\r\n");
-            result.Append(Indent2 + "}\r\n");
-
-            result.Append(Indent2 + "#region Windows Form Designer generated code\r\n");
-            result.Append(Indent2 + "/// <summary>\r\n");
-            result.Append(Indent2 + "/// Required method for Designer support - do not modify\r\n");
-            result.Append(Indent2 + "/// the contents of this method with the code editor.\r\n");
-            result.Append(Indent2 + "/// </summary>\r\n");
-            result.Append(Indent2 + "public void InitializeComponent()\r\n");
-            result.Append(Indent2 + "{\r\n");
-
-            // if form contain images
-            if (TargetModule.ImagesUsed)
-            {
-                // System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(Form1));
-                result.Append(Indent3 + "System.Resources.ResourceManager resources = " +
-                               "new System.Resources.ResourceManager(typeof(" + TargetModule.Name + "));\r\n");
-            }
-
-            foreach (var control in TargetModule.ControlList)
-            {
-                if (!control.Valid)
-                {
-                    result.Append("//");
-                }
-
-                result.Append(Indent3 + "this." + control.Name
-                               + " = new System.Windows.Forms." + control.Type
-                               + "();\r\n");
-            }
-
-            // SuspendLayout part
-            result.Append(Indent3 + "this.SuspendLayout();\r\n");
-            // this.Frame1.ResumeLayout(false);
-            // resume layout for each container
-            foreach (var control in TargetModule.ControlList)
-            {
-                // check if control is container
-                // !! for menu controls
-                if (control.Container && control.Type != "MenuItem" && control.Type != "MainMenu")
-                {
-                    if (!control.Valid)
-                    {
-                        result.Append("//");
-                    }
-
-                    result.Append(Indent3 + "this." + control.Name + ".SuspendLayout();\r\n");
-                }
-            }
-
-            // each controls and his property
-            foreach (var control in TargetModule.ControlList)
-            {
-                result.Append(Indent3 + "//\r\n");
-                result.Append(Indent3 + "// " + control.Name + "\r\n");
-                result.Append(Indent3 + "//\r\n");
-
-                // unsupported control
-                if (!control.Valid)
-                {
-                    result.Append("/*");
-                }
-
-                // ImageList, Timer, Menu has't name property
-                if ((control.Type != "ImageList") && (control.Type != "Timer")
-                                                   && (control.Type != "MenuItem") && (control.Type != "MainMenu"))
-                {
-                    // control name
-                    result.Append(Indent3 + "this." + control.Name + ".Name = "
-                                   + (char)34 + control.Name + (char)34 + ";\r\n");
-                }
-
-                // write properties
-                foreach (var property in control.PropertyList)
-                {
-                    GetPropertyRow(result, control.Type, control.Name, property, outPath);
-                }
-
-                // if control is container for other controls
-                var temp = string.Empty;
-                foreach (var oControl1 in TargetModule.ControlList)
-                {
-                    // all controls ownered by current control
-                    if ((oControl1.Owner == control.Name) && (!oControl1.InvisibleAtRuntime))
-                    {
-                        temp += Indent3 + Indent3 + "this." + oControl1.Name + ",\r\n";
-                    }
-                }
-
-                if (temp != string.Empty)
-                {
-                    // exception for menu controls
-                    if (control.Type == "MainMenu" || control.Type == "MenuItem")
-                    {
-                        // this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-                        result.Append(Indent3 + "this." + control.Name
-                                       + ".MenuItems.AddRange(new System.Windows.Forms.MenuItem[]\r\n");
-                    }
-                    else
-                    {
-                        // this. + control.Name + .Controls.AddRange(new System.Windows.Forms.Control[]
-                        result.Append(Indent3 + "this." + control.Name
-                                       + ".Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
-                    }
-
-                    result.Append(Indent3 + "{\r\n");
-                    result.Append((string)temp);
-                    // remove last comma, keep CRLF
-                    result.Remove(result.Length - 3, 1);
-                    // close addrange part
-                    result.Append(Indent3 + "});\r\n");
-                }
-
-                // unsupported control
-                if (!control.Valid)
-                {
-                    result.Append("*/");
-                }
-            }
-
-            result.Append(Indent3 + "//\r\n");
-            result.Append(Indent3 + "// " + SourceModule.Name + "\r\n");
-            result.Append(Indent3 + "//\r\n");
-            result.Append(Indent3 + "this.Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
-            result.Append(Indent3 + "{\r\n");
-
-            // add control range to form
-            foreach (var control in TargetModule.ControlList)
-            {
-                if (!control.Valid)
-                {
-                    result.Append("//");
-                }
-
-                // all controls ownered by main form
-                if ((control.Owner == SourceModule.Name) && (!control.InvisibleAtRuntime))
-                {
-                    result.Append(Indent3 + "      this." + control.Name + ",\r\n");
-                }
-            }
-
-            // remove last comma, keep CRLF
-            result.Remove(result.Length - 3, 1);
-            // close addrange part
-            result.Append(Indent3 + "});\r\n");
-
-            // form name
-            result.Append(Indent3 + "this.Name = " + (char)34 + TargetModule.Name + (char)34 + ";\r\n");
-            // exception for menu
-            // this.Menu = this.mainMenu1;
-            if (TargetModule.MenuUsed)
-            {
-                foreach (var control in TargetModule.ControlList)
-                {
-                    if (control.Type == "MainMenu")
-                    {
-                        result.Append(Indent3 + "      this.Menu = " + control.Name + ";\r\n");
-                    }
-                }
-            }
-
-            // form properties
-            foreach (var property in TargetModule.FormPropertyList)
-            {
-                if (!property.Valid)
-                {
-                    result.Append("//");
-                }
-
-                GetPropertyRow(result, TargetModule.Type, "", property, outPath);
-            }
-
-            // resume layout for each container
-            foreach (var control in TargetModule.ControlList)
-            {
-                // check if control is container
-                if ((control.Container) && !(control.Type == "MenuItem") && !(control.Type == "MainMenu"))
-                {
-                    if (!control.Valid)
-                    {
-                        result.Append("//");
-                    }
-
-                    result.Append(Indent3 + "this." + control.Name + ".ResumeLayout(false);\r\n");
-                }
-            }
-
-            // form
-            result.Append(Indent3 + "this.ResumeLayout(false);\r\n");
-
-            result.Append(Indent2 + "}\r\n");
-            result.Append(Indent2 + "#endregion\r\n");
-        }
-
-        public string ConvertAllProcedures(int indentLevel)
-        {
-            var result = new StringBuilder();
-            foreach (var procedure in TargetModule.ProcedureList)
-                result.AppendLine(procedure.GenerateCode(indentLevel));
-
-            return result.ToString();
-        }
-
-        public string ConvertSourceProperties(int indentLevel)
-        {
-            if (TargetModule.PropertyList.Count <= 0) 
-                return string.Empty;
-
-            var result = new StringBuilder();
-            var firstIndent = Tools.Indent(indentLevel);
-
-            result.AppendLine();
-            foreach (var property in TargetModule.PropertyList) 
-                result.AppendLine(
-                    firstIndent +
-                    Massage.AllLinesNow(
-                        property.GenerateCode())
-                    );
-
-            var code = result.ToString();
-            return code;
-        }
-
-        public string ConvertVariablesInCode(int indentLevel)
-        {
-            var result = new StringBuilder();
-            result.AppendLine();
-
-            foreach (var variable in TargetModule.VariableList)
-            {
-                // string Result = null;
-                // All public cause I really don't like anything but public stuff
-                result.AppendLine(Indent2 + "public " + (variable.Type.IsEmpty() ? "object" : variable.Type) + " " + variable.Name + ";");
-            }
-            var code = result.ToString();
-            return code;
-        }
-
-        public string GetCode(string outPath)
-        {
-            var result = new StringBuilder();
-
-            // convert source to target
-            TargetModule = new Module();
-            ConvertSource.Module(SourceModule, TargetModule);
-
-            // ********************************************************
-            // common class
-            // ********************************************************
-            result.Append("using System;\r\n");
-            result.Append("using System.Collections;\r\n");
-            result.Append("using System.Collections.Generic;\r\n");
-
-            // ********************************************************
-            // only form class
-            // ********************************************************
-            if (TargetModule.Type == "form")
-            {
-                result.Append("using System.Drawing;\r\n");
-                result.Append("using System.ComponentModel;\r\n");
-                result.Append("using System.Windows.Forms;\r\n");
-            }
-
-            result.AppendLine();
-            result.AppendLine($"namespace {ProjectNamespace}");
-            // start namepsace region
-            result.Append("{\r\n");
-            var firstIndent = Tools.Indent(2);
-            if (!string.IsNullOrEmpty(SourceModule.Comment))
-            {
-                result.Append($"{firstIndent}/// <summary>\r\n");
-                result.Append($"{firstIndent}///   {SourceModule.Comment}.\r\n");
-                result.Append($"{firstIndent}/// </summary>\r\n");
-            }
-
-            switch (TargetModule.Type)
-            {
-                case "form":
-                    result.AppendLine($"{firstIndent}public class {SourceModule.Name} : System.Windows.Forms.Form");
-                    break;
-
-                case "module":
-                    result.AppendLine($"{firstIndent}class {SourceModule.Name}");
-                    // all procedures must be static
-                    break;
-
-                case "class":
-                    //if (SourceModule.Name.ToUpper().StartsWith("I")) 
-                    //    TargetModule.Type = "interface";
-
-                    result.AppendLine($"{firstIndent}public {TargetModule.Type} {SourceModule.Name}");
-                    break;
-            }
-            // start class region
-            result.AppendLine($"{firstIndent}{{");
-
-            // ********************************************************
-            // only form class
-            // ********************************************************
-
-            if (TargetModule.Type == "form") 
-                ConvertFormCode(outPath, result);
-
-            // ********************************************************
-            // enums
-            // ********************************************************
-
-            if (TargetModule.EnumList.Count > 0) 
-                result.AppendLine(ConvertEnumCode(3));
-
-            // ********************************************************
-            //  variables for al module types
-            // ********************************************************
-
-            if (TargetModule.VariableList.Count > 0)
-                result.AppendLine(ConvertVariablesInCode(3));
-
-            // ********************************************************
-            // properties has only forms and classes
-            // ********************************************************
-
-            if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
-                result.AppendLine(ConvertSourceProperties(3));
-
-            // ********************************************************
-            // procedures
-            // ********************************************************
-
-            if (TargetModule.ProcedureList.Count > 0) 
-                result.Append(ConvertAllProcedures(3));
-
-            // end class
-            result.AppendLine($"{firstIndent}}}");
-
-            // end namespace
-            result.AppendLine("    }");
-
-            var code = Massage.BlanketReplaceNow(result.ToString());
-            return code; 
-        }
-
-        public void GetPropertyRow(StringBuilder result, string type, string name, ControlProperty controlProperty, string outPath)
-        {
-            // exception for images
-            if (controlProperty.Name == "Icon" || controlProperty.Name == "Image" || controlProperty.Name == "BackgroundImage")
-            {
-                // generate resx file and write there image extracted from VB6 frx file
-                var resourceName = string.Empty;
-
-                switch (controlProperty.Name)
-                {
-                    case "BackgroundImage":
-                        resourceName = "$this.BackgroundImage";
-                        break;
-
-                    case "Icon":
-                        resourceName = "$this.Icon";
-                        break;
-
-                    case "Image":
-                        resourceName = name + ".Image";
-                        break;
-                }
-
-                if (!WriteImage(SourceModule, resourceName, controlProperty.Value, outPath)) return;
-
-                switch (controlProperty.Name)
-                {
-                    case "BackgroundImage":
-                        result.Append(Indent3 + "this."
-                                               + controlProperty.Name + " = ((System.Drawing.Bitmap)(resources.GetObject("
-                                               + (char)34 + "$this.BackgroundImage" + (char)34 + ")));\r\n");
-                        break;
-
-                    case "Icon":
-                        result.Append(Indent3 + "this."
-                                               + controlProperty.Name + " = ((System.Drawing.Icon)(resources.GetObject("
-                                               + (char)34 + "$this.Icon" + (char)34 + ")));\r\n");
-                        break;
-
-                    case "Image":
-                        result.Append(Indent3 + "this." + name + "."
-                                       + controlProperty.Name + " = ((System.Drawing.Bitmap)(resources.GetObject("
-                                       + (char)34 + name + ".Image" + (char)34 + ")));\r\n");
-                        break;
-                }
-            }
-            else
-            {
-                // unsupported property
-                if (!controlProperty.Valid)
-                {
-                    result.Append("//");
-                }
-                if (type == "form")
-                {
-                    // form properties
-                    result.Append(Indent3 + "this."
-                      + controlProperty.Name + " = " + controlProperty.Value + ";\r\n");
-                }
-                else
-                {
-                    // control properties
-                    result.Append(Indent3 + "this." + name + "."
-                      + controlProperty.Name + " = " + controlProperty.Value + ";\r\n");
-                }
-            }
-        }
-
-        public string GetWord(string line, ref int position)
-        {
-            string result = null;
-
-            if (position < line.Length)
-            {
-                // seach for first space
-                var end = line.IndexOf(" ", position);
-                if (end > -1)
-                {
-                    result = line.Substring(position, end - position);
-                    position = end;
-                }
-                else
-                {
-                    result = line.Substring(position);
-                }
-            }
-            return result;
-        }
-
-        public bool ParseClass(StreamReader reader)
-        {
-            string line = null;
-            var tempString = string.Empty;
-
-            //VERSION 1.0 CLASS
-            //BEGIN
-            //  MultiUse = -1  'True
-            //END
-            //Attribute VB_Name = "CList"
-            //Attribute VB_GlobalNameSpace = False
-            //Attribute VB_Creatable = True
-            //Attribute VB_PredeclaredId = False
-            //Attribute VB_Exposed = True
-
-            // Start from begin again
-            reader.DiscardBufferedData();
-            reader.BaseStream.Seek(0, SeekOrigin.Begin);
-            while (reader.Peek() > -1)
-            {
-                var position = 0;
-                // verify type of file based on first line
-                // form, module, class
-                line = reader.ReadLine();
-                // next word - control type
-                tempString = GetWord(line, ref position);
-                if (tempString == "Attribute")
-                {
-                    position++;
-                    tempString = GetWord(line, ref position);
-                    switch (tempString)
-                    {
-                        case "VB_Name":
-                            position++;
-                            tempString = GetWord(line, ref position);
-                            position++;
-                            SourceModule.Name = GetWord(line, ref position).Replace("\"", string.Empty);
-                            break;
-
-                        case "VB_Exposed":
-                            return true;
-
-                        case "VB_Description":
-                            position++;
-                            tempString = GetWord(line, ref position);
-                            position++;
-                            SourceModule.Comment = GetWord(line, ref position).Replace("\"", string.Empty);
-                            break;
-                    }
-                }
-            }
-            return false;
-        }
-
-        //Public Enum ENUM_BUG_LEVEL
-        //  BUG_LEVEL_PROJECT = 1
-        //  BUG_LEVEL_VERSION = 2
-        //End Enum
-        public void ParseEnumItem(EnumItem enumItem, string line)
-        {
-            var iPosition = 0;
-
-            line = line.Trim();
-            // first word is ame
-            enumItem.Name = GetWord(line, ref iPosition);
-            iPosition++;
-            // next word =
-            GetWord(line, ref iPosition);
-            iPosition++;
-            // optional
-            enumItem.Value = GetWord(line, ref iPosition);
         }
 
         public bool ConvertFile(string filename, string outputPath)
@@ -703,23 +155,574 @@ namespace MetX.VB6ToCSharp
                 // parse remain - variables, functions, procedures
                 result = ParseProcedures(reader);
 
-                stream.Flush(); 
+                stream.Flush();
                 stream.Close();
                 reader.Close();
             }
 
             // generate output file
-            var code = GetCode(outputPath);
+            var code = GetModuleCode(outputPath);
 
             // save result
             var outFileName = outputPath + TargetModule.FileName;
             File.WriteAllText(outFileName, code);
 
             // generate resx file if source form contain any images
-            if ((TargetModule.ImagesUsed)) 
+            if ((TargetModule.ImagesUsed))
                 WriteResX(TargetModule.ImageList, outputPath, TargetModule.Name);
 
             return result;
+        }
+
+        public void ConvertFormCode(string outPath, StringBuilder result)
+        {
+            // list of controls
+            foreach (var control in TargetModule.ControlList)
+            {
+                if (!control.Valid)
+                {
+                    result.Append("//");
+                }
+
+                result.Append(Tools.Indent(2) + " public System.Windows.Forms." + control.Type + " " + control.Name +
+                              ";\r\n");
+            }
+
+            result.Append(Indent2 + "/// <summary>\r\n");
+            result.Append(Indent2 + "/// Required designer variable.\r\n");
+            result.Append(Indent2 + "/// </summary>\r\n");
+            result.Append(Indent2 + "public System.ComponentModel.Container components = null;\r\n");
+            result.AppendLine();
+            result.Append(Indent2 + "public " + SourceModule.Name + "()\r\n");
+            result.Append(Indent2 + "{\r\n");
+            result.Append(Indent3 + "// Required for Windows Form Designer support\r\n");
+            result.Append(Indent3 + "InitializeComponent();\r\n");
+            result.AppendLine();
+            result.Append(Indent3 + "// TODO: Add any constructor code after InitializeComponent call\r\n");
+            result.Append(Indent2 + "}\r\n");
+
+            result.Append(Indent2 + "/// <summary>\r\n");
+            result.Append(Indent2 + "/// Clean up any resources being used.\r\n");
+            result.Append(Indent2 + "/// </summary>\r\n");
+            result.Append(Indent2 + "protected override void Dispose( bool disposing )\r\n");
+            result.Append(Indent2 + "{\r\n");
+            result.Append(Indent3 + "if( disposing )\r\n");
+            result.Append(Indent3 + "{\r\n");
+            result.Append(Indent3 + "  if (components != null)\r\n");
+            result.Append(Indent3 + "  {\r\n");
+            result.Append(Indent3 + "    components.Dispose();\r\n");
+            result.Append(Indent3 + "  }\r\n");
+            result.Append(Indent3 + "}\r\n");
+            result.Append(Indent3 + "base.Dispose( disposing );\r\n");
+            result.Append(Indent2 + "}\r\n");
+
+            result.Append(Indent2 + "#region Windows Form Designer generated code\r\n");
+            result.Append(Indent2 + "/// <summary>\r\n");
+            result.Append(Indent2 + "/// Required method for Designer support - do not modify\r\n");
+            result.Append(Indent2 + "/// the contents of this method with the code editor.\r\n");
+            result.Append(Indent2 + "/// </summary>\r\n");
+            result.Append(Indent2 + "public void InitializeComponent()\r\n");
+            result.Append(Indent2 + "{\r\n");
+
+            // if form contain images
+            if (TargetModule.ImagesUsed)
+            {
+                // System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(Form1));
+                result.Append(Indent3 + "System.Resources.ResourceManager resources = " +
+                              "new System.Resources.ResourceManager(typeof(" + TargetModule.Name + "));\r\n");
+            }
+
+            foreach (var control in TargetModule.ControlList)
+            {
+                if (!control.Valid)
+                {
+                    result.Append("//");
+                }
+
+                result.Append(Indent3 + "this." + control.Name
+                              + " = new System.Windows.Forms." + control.Type
+                              + "();\r\n");
+            }
+
+            // SuspendLayout part
+            result.Append(Indent3 + "this.SuspendLayout();\r\n");
+            // this.Frame1.ResumeLayout(false);
+            // resume layout for each container
+            foreach (var control in TargetModule.ControlList)
+            {
+                // check if control is container
+                // !! for menu controls
+                if (control.Container && control.Type != "MenuItem" && control.Type != "MainMenu")
+                {
+                    if (!control.Valid)
+                    {
+                        result.Append("//");
+                    }
+
+                    result.Append(Indent3 + "this." + control.Name + ".SuspendLayout();\r\n");
+                }
+            }
+
+            // each controls and his property
+            foreach (var control in TargetModule.ControlList)
+            {
+                result.Append(Indent3 + "//\r\n");
+                result.Append(Indent3 + "// " + control.Name + "\r\n");
+                result.Append(Indent3 + "//\r\n");
+
+                // unsupported control
+                if (!control.Valid)
+                {
+                    result.Append("/*");
+                }
+
+                // ImageList, Timer, Menu has't name property
+                if ((control.Type != "ImageList") && (control.Type != "Timer")
+                                                  && (control.Type != "MenuItem") && (control.Type != "MainMenu"))
+                {
+                    // control name
+                    result.Append(Indent3 + "this." + control.Name + ".Name = "
+                                  + (char) 34 + control.Name + (char) 34 + ";\r\n");
+                }
+
+                // write properties
+                foreach (var property in control.PropertyList)
+                {
+                    GetPropertyRow(result, control.Type, control.Name, property, outPath);
+                }
+
+                // if control is container for other controls
+                var temp = string.Empty;
+                foreach (var oControl1 in TargetModule.ControlList)
+                {
+                    // all controls ownered by current control
+                    if ((oControl1.Owner == control.Name) && (!oControl1.InvisibleAtRuntime))
+                    {
+                        temp += Indent3 + Indent3 + "this." + oControl1.Name + ",\r\n";
+                    }
+                }
+
+                if (temp != string.Empty)
+                {
+                    // exception for menu controls
+                    if (control.Type == "MainMenu" || control.Type == "MenuItem")
+                    {
+                        // this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
+                        result.Append(Indent3 + "this." + control.Name
+                                      + ".MenuItems.AddRange(new System.Windows.Forms.MenuItem[]\r\n");
+                    }
+                    else
+                    {
+                        // this. + control.Name + .Controls.AddRange(new System.Windows.Forms.Control[]
+                        result.Append(Indent3 + "this." + control.Name
+                                      + ".Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
+                    }
+
+                    result.Append(Indent3 + "{\r\n");
+                    result.Append((string) temp);
+                    // remove last comma, keep CRLF
+                    result.Remove(result.Length - 3, 1);
+                    // close addrange part
+                    result.Append(Indent3 + "});\r\n");
+                }
+
+                // unsupported control
+                if (!control.Valid)
+                {
+                    result.Append("*/");
+                }
+            }
+
+            result.Append(Indent3 + "//\r\n");
+            result.Append(Indent3 + "// " + SourceModule.Name + "\r\n");
+            result.Append(Indent3 + "//\r\n");
+            result.Append(Indent3 + "this.Controls.AddRange(new System.Windows.Forms.Control[]\r\n");
+            result.Append(Indent3 + "{\r\n");
+
+            // add control range to form
+            foreach (var control in TargetModule.ControlList)
+            {
+                if (!control.Valid)
+                {
+                    result.Append("//");
+                }
+
+                // all controls ownered by main form
+                if ((control.Owner == SourceModule.Name) && (!control.InvisibleAtRuntime))
+                {
+                    result.Append(Indent3 + "      this." + control.Name + ",\r\n");
+                }
+            }
+
+            // remove last comma, keep CRLF
+            result.Remove(result.Length - 3, 1);
+            // close addrange part
+            result.Append(Indent3 + "});\r\n");
+
+            // form name
+            result.Append(Indent3 + "this.Name = " + (char) 34 + TargetModule.Name + (char) 34 + ";\r\n");
+            // exception for menu
+            // this.Menu = this.mainMenu1;
+            if (TargetModule.MenuUsed)
+            {
+                foreach (var control in TargetModule.ControlList)
+                {
+                    if (control.Type == "MainMenu")
+                    {
+                        result.Append(Indent3 + "      this.Menu = " + control.Name + ";\r\n");
+                    }
+                }
+            }
+
+            // form properties
+            foreach (var property in TargetModule.FormPropertyList)
+            {
+                if (!property.Valid)
+                {
+                    result.Append("//");
+                }
+
+                GetPropertyRow(result, TargetModule.Type, "", property, outPath);
+            }
+
+            // resume layout for each container
+            foreach (var control in TargetModule.ControlList)
+            {
+                // check if control is container
+                if ((control.Container) && !(control.Type == "MenuItem") && !(control.Type == "MainMenu"))
+                {
+                    if (!control.Valid)
+                    {
+                        result.Append("//");
+                    }
+
+                    result.Append(Indent3 + "this." + control.Name + ".ResumeLayout(false);\r\n");
+                }
+            }
+
+            // form
+            result.Append(Indent3 + "this.ResumeLayout(false);\r\n");
+
+            result.Append(Indent2 + "}\r\n");
+            result.Append(Indent2 + "#endregion\r\n");
+        }
+
+        public string ConvertProcedures(int indentLevel)
+        {
+            var result = new StringBuilder();
+            foreach (var procedure in TargetModule.ProcedureList)
+                result.AppendLine(procedure.GenerateCode(indentLevel));
+
+            return result.ToString();
+        }
+
+        public string ConvertSourceProperties(int indentLevel)
+        {
+            if (TargetModule.PropertyList.Count <= 0)
+                return string.Empty;
+
+            var result = new StringBuilder();
+            var firstIndent = Tools.Indent(indentLevel);
+
+            result.AppendLine();
+            foreach (var property in TargetModule.PropertyList)
+                result.AppendLine(
+                    firstIndent +
+                    Massage.AllLinesNow(
+                        property.GenerateCode())
+                );
+
+            var code = result.ToString();
+            return code;
+        }
+
+        public string ConvertVariablesInCode(int indentLevel)
+        {
+            var result = new StringBuilder();
+            result.AppendLine();
+
+            foreach (var variable in TargetModule.VariableList)
+            {
+                // string Result = null;
+                // All public cause I really don't like anything but public stuff
+                result.AppendLine(Indent2 + "public " + (variable.Type.IsEmpty() ? "object" : variable.Type) + " " +
+                                  variable.Name + ";");
+            }
+
+            var code = result.ToString();
+            return code;
+        }
+
+        public string GetModuleCode(string outPath)
+        {
+            var result = new StringBuilder();
+
+            // convert source to target
+            TargetModule = new Module();
+            ConvertSource.Module(SourceModule, TargetModule);
+
+            // ********************************************************
+            // common class
+            // ********************************************************
+            result.Append("using System;\r\n");
+            result.Append("using System.Collections;\r\n");
+            result.Append("using System.Collections.Generic;\r\n");
+
+            // ********************************************************
+            // only form class
+            // ********************************************************
+            if (TargetModule.Type == "form")
+            {
+                result.Append("using System.Drawing;\r\n");
+                result.Append("using System.ComponentModel;\r\n");
+                result.Append("using System.Windows.Forms;\r\n");
+            }
+
+            result.AppendLine();
+            result.AppendLine($"namespace {ProjectNamespace}");
+            // start namepsace region
+            result.Append("{\r\n");
+            var firstIndent = Tools.Indent(2);
+            if (!string.IsNullOrEmpty(SourceModule.Comment))
+            {
+                result.Append($"{firstIndent}/// <summary>\r\n");
+                result.Append($"{firstIndent}///   {SourceModule.Comment}.\r\n");
+                result.Append($"{firstIndent}/// </summary>\r\n");
+            }
+
+            switch (TargetModule.Type)
+            {
+                case "form":
+                    result.AppendLine($"{firstIndent}public class {SourceModule.Name} : System.Windows.Forms.Form");
+                    break;
+
+                case "module":
+                    result.AppendLine($"{firstIndent}class {SourceModule.Name}");
+                    // all procedures must be static
+                    break;
+
+                case "class":
+                    //if (SourceModule.Name.ToUpper().StartsWith("I"))
+                    //    TargetModule.Type = "interface";
+
+                    result.AppendLine($"{firstIndent}public {TargetModule.Type} {SourceModule.Name}");
+                    break;
+            }
+
+            // start class region
+            result.AppendLine($"{firstIndent}{{");
+
+            // ********************************************************
+            // only form class
+            // ********************************************************
+
+            if (TargetModule.Type == "form")
+                ConvertFormCode(outPath, result);
+
+            // ********************************************************
+            // enums
+            // ********************************************************
+
+            if (TargetModule.EnumList.Count > 0)
+                result.AppendLine(ConvertEnumCode(3));
+
+            // ********************************************************
+            //  variables for al module types
+            // ********************************************************
+
+            if (TargetModule.VariableList.Count > 0)
+                result.AppendLine(ConvertVariablesInCode(3));
+
+            // ********************************************************
+            // properties has only forms and classes
+            // ********************************************************
+
+            if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
+                result.AppendLine(ConvertSourceProperties(3));
+
+            // ********************************************************
+            // procedures
+            // ********************************************************
+
+            if (TargetModule.ProcedureList.Count > 0)
+                result.Append(ConvertProcedures(3));
+
+            // end class
+            result.AppendLine($"{firstIndent}}}");
+
+            // end namespace
+            result.AppendLine("    }");
+
+            var code = Massage.BlanketReplaceNow(result.ToString());
+            return code;
+        }
+
+        public void GetPropertyRow(StringBuilder result, string type, string name, ControlProperty controlProperty,
+            string outPath)
+        {
+            // exception for images
+            if (controlProperty.Name == "Icon" || controlProperty.Name == "Image" ||
+                controlProperty.Name == "BackgroundImage")
+            {
+                // generate resx file and write there image extracted from VB6 frx file
+                var resourceName = string.Empty;
+
+                switch (controlProperty.Name)
+                {
+                    case "BackgroundImage":
+                        resourceName = "$this.BackgroundImage";
+                        break;
+
+                    case "Icon":
+                        resourceName = "$this.Icon";
+                        break;
+
+                    case "Image":
+                        resourceName = name + ".Image";
+                        break;
+                }
+
+                if (!WriteImage(SourceModule, resourceName, controlProperty.Value, outPath)) return;
+
+                switch (controlProperty.Name)
+                {
+                    case "BackgroundImage":
+                        result.Append(Indent3 + "this."
+                                              + controlProperty.Name +
+                                              " = ((System.Drawing.Bitmap)(resources.GetObject("
+                                              + (char) 34 + "$this.BackgroundImage" + (char) 34 + ")));\r\n");
+                        break;
+
+                    case "Icon":
+                        result.Append(Indent3 + "this."
+                                              + controlProperty.Name + " = ((System.Drawing.Icon)(resources.GetObject("
+                                              + (char) 34 + "$this.Icon" + (char) 34 + ")));\r\n");
+                        break;
+
+                    case "Image":
+                        result.Append(Indent3 + "this." + name + "."
+                                      + controlProperty.Name + " = ((System.Drawing.Bitmap)(resources.GetObject("
+                                      + (char) 34 + name + ".Image" + (char) 34 + ")));\r\n");
+                        break;
+                }
+            }
+            else
+            {
+                // unsupported property
+                if (!controlProperty.Valid)
+                {
+                    result.Append("//");
+                }
+
+                if (type == "form")
+                {
+                    // form properties
+                    result.Append(Indent3 + "this."
+                                          + controlProperty.Name + " = " + controlProperty.Value + ";\r\n");
+                }
+                else
+                {
+                    // control properties
+                    result.Append(Indent3 + "this." + name + "."
+                                  + controlProperty.Name + " = " + controlProperty.Value + ";\r\n");
+                }
+            }
+        }
+
+        public string GetWord(string line, ref int position)
+        {
+            string result = null;
+
+            if (position < line.Length)
+            {
+                // seach for first space
+                var end = line.IndexOf(" ", position);
+                if (end > -1)
+                {
+                    result = line.Substring(position, end - position);
+                    position = end;
+                }
+                else
+                {
+                    result = line.Substring(position);
+                }
+            }
+
+            return result;
+        }
+
+        public bool ParseClass(StreamReader reader)
+        {
+            string line = null;
+            var tempString = string.Empty;
+
+            //VERSION 1.0 CLASS
+            //BEGIN
+            //  MultiUse = -1  'True
+            //END
+            //Attribute VB_Name = "CList"
+            //Attribute VB_GlobalNameSpace = False
+            //Attribute VB_Creatable = True
+            //Attribute VB_PredeclaredId = False
+            //Attribute VB_Exposed = True
+
+            // Start from begin again
+            reader.DiscardBufferedData();
+            reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            while (reader.Peek() > -1)
+            {
+                var position = 0;
+                // verify type of file based on first line
+                // form, module, class
+                line = reader.ReadLine();
+                // next word - control type
+                tempString = GetWord(line, ref position);
+                if (tempString == "Attribute")
+                {
+                    position++;
+                    tempString = GetWord(line, ref position);
+                    switch (tempString)
+                    {
+                        case "VB_Name":
+                            position++;
+                            tempString = GetWord(line, ref position);
+                            position++;
+                            SourceModule.Name = GetWord(line, ref position).Replace("\"", string.Empty);
+                            break;
+
+                        case "VB_Exposed":
+                            return true;
+
+                        case "VB_Description":
+                            position++;
+                            tempString = GetWord(line, ref position);
+                            position++;
+                            SourceModule.Comment = GetWord(line, ref position).Replace("\"", string.Empty);
+                            break;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        //Public Enum ENUM_BUG_LEVEL
+        //  BUG_LEVEL_PROJECT = 1
+        //  BUG_LEVEL_VERSION = 2
+        //End Enum
+        public void ParseEnumItem(EnumItem enumItem, string line)
+        {
+            var iPosition = 0;
+
+            line = line.Trim();
+            // first word is ame
+            enumItem.Name = GetWord(line, ref iPosition);
+            iPosition++;
+            // next word =
+            GetWord(line, ref iPosition);
+            iPosition++;
+            // optional
+            enumItem.Value = GetWord(line, ref iPosition);
         }
 
         public bool ParseForm(StreamReader oReader)
@@ -766,14 +769,16 @@ namespace MetX.VB6ToCSharp
                                 control.Container = true;
                                 SourceModule.ControlList.Add(control);
                             }
+
                             // save name of previous control as owner for current and next controls
                             OwnerStock.Add(sOwner);
                         }
+
                         bEnd = false;
 
                         switch (sType)
                         {
-                            case "Form":            // VERSION 2.00 - VB3
+                            case "Form": // VERSION 2.00 - VB3
                             case "VB.Form":
                             case "VB.MDIForm":
                                 SourceModule.Name = sName;
@@ -790,9 +795,10 @@ namespace MetX.VB6ToCSharp
                                 // save control name for possible next controls as owner
                                 sOwner = sName;
                                 // set current container name
-                                control.Owner = (string)OwnerStock[OwnerStock.Count - 1];
+                                control.Owner = (string) OwnerStock[OwnerStock.Count - 1];
                                 break;
                         }
+
                         break;
 
                     case "End":
@@ -800,7 +806,7 @@ namespace MetX.VB6ToCSharp
                         if (bEnd)
                         {
                             // remove last item from stock
-                            OwnerStock.Remove((string)OwnerStock[OwnerStock.Count - 1]);
+                            OwnerStock.Remove((string) OwnerStock[OwnerStock.Count - 1]);
                         }
                         else
                         {
@@ -811,6 +817,7 @@ namespace MetX.VB6ToCSharp
                                 SourceModule.ControlList.Add(control);
                             }
                         }
+
                         // form or control end detected
                         bEnd = true;
                         // back to previous level
@@ -846,6 +853,7 @@ namespace MetX.VB6ToCSharp
                             // to controls
                             control.PropertyList.Add(oNestedProperty);
                         }
+
                         break;
 
                     default:
@@ -886,6 +894,7 @@ namespace MetX.VB6ToCSharp
                                 }
                             }
                         }
+
                         break;
                 }
 
@@ -895,6 +904,7 @@ namespace MetX.VB6ToCSharp
                     bFinish = true;
                 }
             }
+
             return true;
         }
 
@@ -911,6 +921,7 @@ namespace MetX.VB6ToCSharp
                 SourceModule.Name = line.Substring(position + 1, line.Length - position - 2);
                 return true;
             }
+
             return false;
         }
 
@@ -938,7 +949,7 @@ namespace MetX.VB6ToCSharp
                 parameter.Name = part.TokenAt(1, " As ").Trim();
                 var type = part.TokenAt(2, " As ").Trim().TokenAt(1).Trim();
                 parameter.Type = "/* unknown */";
-                if(type != string.Empty)
+                if (type != string.Empty)
                 {
                     var left = part.TokenAt(2, " As ").Replace(type, "");
                     if (left.IsNotEmpty())
@@ -1005,6 +1016,7 @@ namespace MetX.VB6ToCSharp
                 case "Event":
                     procedure.Type = ProcedureType.ProcedureEvent;
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -1184,31 +1196,34 @@ namespace MetX.VB6ToCSharp
                             // add item
                             enumItems.ItemList.Add(enumItem);
                         }
+
                         if (bProperty)
                         {
                             // add line of property
                             property.LineList.Add(line);
                         }
+
                         if (bProcedure)
                         {
                             procedure.LineList.Add(line);
                         }
+
                         break;
 
-                        // events
-                        //public Sub cmdCancel_Click()
-                        //  mbEdit = False
-                        //  If mbNew Then
-                        //    Unload Me
-                        //  Else
-                        //    ShowCurRec
-                        //    SetControls False
-                        //  End If
-                        //End Sub
-                        //
-                        //public Sub cmdClose_Click()
-                        //  Unload Me
-                        //End Sub
+                    // events
+                    //public Sub cmdCancel_Click()
+                    //  mbEdit = False
+                    //  If mbNew Then
+                    //    Unload Me
+                    //  Else
+                    //    ShowCurRec
+                    //    SetControls False
+                    //  End If
+                    //End Sub
+                    //
+                    //public Sub cmdClose_Click()
+                    //  Unload Me
+                    //End Sub
                 }
 
                 // if something end
@@ -1220,16 +1235,19 @@ namespace MetX.VB6ToCSharp
                         SourceModule.EnumList.Add(enumItems);
                         bEnum = false;
                     }
+
                     if (bProperty)
                     {
                         SourceModule.PropertyList.Add(property);
                         bProperty = false;
                     }
+
                     if (bProcedure)
                     {
                         SourceModule.ProcedureList.Add(procedure);
                         bProcedure = false;
                     }
+
                     bEnd = false;
                 }
                 else
@@ -1250,7 +1268,7 @@ namespace MetX.VB6ToCSharp
 
         public void ParsePropertyName(IAmAProperty property, string line)
         {
-            var localProperty = ((Property)property);
+            var localProperty = ((Property) property);
 
             var iPosition = 0;
             var start = 0;
@@ -1349,6 +1367,7 @@ namespace MetX.VB6ToCSharp
                 scope = GetWord(line, ref iPosition);
                 variable.Name = scope;
             }
+
             // As
             iPosition++;
             scope = GetWord(line, ref iPosition);
@@ -1395,7 +1414,9 @@ namespace MetX.VB6ToCSharp
                 {
                     File.Delete(outPath + resourceName);
                 }
-                FileStream stream = stream = new FileStream(outPath + resourceName, FileMode.CreateNew, FileAccess.Write);
+
+                FileStream stream =
+                    stream = new FileStream(outPath + resourceName, FileMode.CreateNew, FileAccess.Write);
                 var writer = new BinaryWriter(stream);
                 writer.Write(imageString, 8, imageString.GetLength(0) - 8);
                 stream.Close();
@@ -1473,6 +1494,7 @@ namespace MetX.VB6ToCSharp
                     {
                     }
                 }
+
                 // rsxw.Generate();
                 rsxw.Close();
 

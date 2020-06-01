@@ -37,7 +37,7 @@ namespace MetX.VB6ToCSharp
             foreach (var fileSet in fileSets)
             foreach (var file in fileSet)
             {
-                new ConvertCode()
+                new ModuleConverter()
                     .ConvertFile(file, OutputFolderPath);
             }
         }

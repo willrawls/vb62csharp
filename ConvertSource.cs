@@ -257,14 +257,14 @@ namespace MetX.VB6ToCSharp
                 // then
                 if (translatedLine.Contains(" Then"))
                 {
-                    translatedLine = translatedLine.Replace(" Then", " )\r\n" + ConvertCode.Indent3 + "{\r\n");
+                    translatedLine = translatedLine.Replace(" Then", " )\r\n" + ModuleConverter.Indent3 + "{\r\n");
                 }
 
                 // else
                 if (translatedLine.Contains("Else"))
                 {
                     translatedLine = translatedLine.Replace("Else",
-                        "}\r\n" + ConvertCode.Indent3 + "else\r\n" + ConvertCode.Indent3 + "{");
+                        "}\r\n" + ModuleConverter.Indent3 + "else\r\n" + ModuleConverter.Indent3 + "{");
                 }
 
                 // End if

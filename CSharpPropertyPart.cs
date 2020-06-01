@@ -7,14 +7,15 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public class CSharpPropertyPart
+    public class CSharpPropertyPart : IGenerate
     {
-        public IAmAProperty Parent;
+        public List<string> BottomLineList = new List<string>();
         public bool Encountered;
         public List<string> LineList = new List<string>();
-        public List<string> BottomLineList = new List<string>();
         public List<Parameter> ParameterList = new List<Parameter>();
+        public IAmAProperty Parent;
         public PropertyPartType PartType;
+
         public bool IsEmpty => (LineList.Where(x => x.Trim().Length > 0).ToList().Count
                               + BottomLineList.Where(x => x.Trim().Length > 0).ToList().Count) == 0;
 
@@ -34,19 +35,21 @@ namespace MetX.VB6ToCSharp
 
             var result = new StringBuilder();
 
-            result.AppendLine(Tools.Blockify($"{firstIndent}{finalPartType}", Parent.Indent + 1, builder =>
+            var codeBlock = new CodeBlock();
+
+            result.AppendLine(Tools.Blockify($"{firstIndent}{finalPartType}", Parent.Indent + 1, "{", "}", builder =>
             {
                 var blockBuilder = new StringBuilder();
                 foreach (var line in Massage
                     .DetermineWhichLinesGetASemicolon(LineList)
                     .Where(x => x.Trim() != "")
                     .Select(x => Massage.Now(x)))
-                    blockBuilder.AppendLine(line);
+                    blockBuilder.AppendLine(Tools.Indent(Parent.Indent + 1) + line);
 
                 foreach (var line in Massage
                     .DetermineWhichLinesGetASemicolon(BottomLineList)
-                    .Where(x => x.Trim() != "")) 
-                    blockBuilder.AppendLine(line.Trim());
+                    .Where(x => x.Trim() != ""))
+                    blockBuilder.AppendLine(Tools.Indent(Parent.Indent + 1) + line);
 
                 var blockCode = blockBuilder.ToString();
                 return blockCode;

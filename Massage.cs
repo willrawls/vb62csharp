@@ -35,12 +35,17 @@ namespace MetX.VB6ToCSharp
             new Alice("Static", "static"),
             new Alice("String", "string"),
             new Alice("Collection", "Dictionary<string,string>()"),
+            new Alice("using System.Dictionary<string,string>()s", "using System.Collections"),
             new Alice("True", "true"),
             new Alice("False", "false"),
             new Alice("private ", "public "), // Because I believe everything should be public
             new Alice("Err.Clear", string.Empty),
             new Alice("Err.Number", "ex"),
             new Alice("Me.", "this."),
+            new Alice("/*;", "/*"),
+            new Alice("*/;", "*/"),
+            new Alice("); ); )", ")"),
+            new Alice("); )", ")"),
         };
 
         /// <summary>

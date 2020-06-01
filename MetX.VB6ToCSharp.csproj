@@ -98,7 +98,9 @@
     <Compile Include="ControlProperty.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ConvertCode.cs">
+    <Compile Include="CodeBlock.cs" />
+    <Compile Include="IGenerate.cs" />
+    <Compile Include="ModuleConverter.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ConvertSource.cs" />

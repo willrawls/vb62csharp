@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 
 namespace MetX.VB6ToCSharp
 {
@@ -19,6 +20,11 @@ namespace MetX.VB6ToCSharp
 
             var code = result.ToString();
             return code;
+        }
+
+        public static bool IsNotEmpty<T>(this IList<T> target)
+        {
+            return target?.Count > 0;
         }
     }
 }

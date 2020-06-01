@@ -251,17 +251,19 @@ namespace MetX.VB6ToCSharp
             return targetType;
         }
 
-        public static string Blockify(string blockName, int indentLevel, Func<StringBuilder, string> action)
+        public static string Blockify(string blockName, int indentLevel, 
+            string preBlock,  string postBlock, 
+            Func<StringBuilder, string> action)
         {
             var indentation = Indent(indentLevel);
             var block = new StringBuilder();
             block.AppendLine(indentation + blockName.Trim());
-            block.AppendLine(indentation + "{");
+            block.AppendLine(indentation + preBlock);
             var blockLines = action.Invoke(block);
             var lines = blockLines.Indent(indentLevel + 1);
             block.AppendLine(lines);
-            block.AppendLine(indentation +"}");
-            var code = block.ToString(); // .Indent();
+            block.AppendLine(indentation + postBlock);
+            var code = block.ToString();
             return code;
         }
     }

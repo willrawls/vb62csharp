@@ -12,9 +12,9 @@ namespace MetX.VB6ToCSharp
         public CSharpPropertyPart Set;
 
         public string Comment { get; set; }
+        public int Indent { get; set; }
         public string Name { get; set; }
         public string Scope { get; set; }
-        public int Indent { get; set; }
         public string Type { get; set; }
         public bool Valid { get; set; }
         public string Value { get; set; }
@@ -25,7 +25,6 @@ namespace MetX.VB6ToCSharp
             Set = new CSharpPropertyPart(this, PropertyPartType.Set);
             Let = new CSharpPropertyPart(this, PropertyPartType.Let);
             Indent = parentIndent + 1;
-
         }
 
         public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
@@ -75,7 +74,6 @@ namespace MetX.VB6ToCSharp
                     result.AppendLine();
                 }
 
-
             var letSet = Set.Encountered ? Set : Let;
 
             if (Get.Encountered && letSet.Encountered)
@@ -88,7 +86,7 @@ namespace MetX.VB6ToCSharp
                 else
                 {
                     result.AppendLine(
-                        Tools.Blockify(blockName, Indent, block => 
+                        Tools.Blockify(blockName, Indent, "{", "}", block =>
                         {
                             block.AppendLine(Get.GenerateCode());
                             block.AppendLine(letSet.GenerateCode());
