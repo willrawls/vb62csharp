@@ -85,6 +85,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractCodeBlock.cs" />
     <Compile Include="Alice.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -100,6 +101,7 @@
     </Compile>
     <Compile Include="CodeBlock.cs" />
     <Compile Include="IGenerate.cs" />
+    <Compile Include="IHaveCodeBlockParent.cs" />
     <Compile Include="ModuleConverter.cs">
       <SubType>Code</SubType>
     </Compile>

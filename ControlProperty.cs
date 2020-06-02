@@ -35,5 +35,10 @@ namespace MetX.VB6ToCSharp
         {
             throw new NotImplementedException();
         }
+
+        public string GenerateCode(CodeBlock parent)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

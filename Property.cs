@@ -6,30 +6,21 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Property.
     /// </summary>
-    public class Property : IAmAProperty, IGenerate
+    public class Property : AbstractCodeBlock, IAmAProperty
     {
         public string Direction;
-        public List<string> LineList;
-
+        public CodeBlock LineList;
         public string Comment { get; set; }
-
-        public int Indent { get; set; }
-
         public string Name { get; set; }
-
         public List<Parameter> Parameters { get; set; }
-
         public string Scope { get; set; }
-
         public string Type { get; set; }
-
         public bool Valid { get; set; }
-
         public string Value { get; set; }
 
         public Property(int parentIndent)
         {
-            LineList = new List<string>();
+            LineList = new CodeBlock(this);
             Parameters = new List<Parameter>();
             Indent = parentIndent + 1;
         }
@@ -40,6 +31,11 @@ namespace MetX.VB6ToCSharp
         }
 
         public string GenerateCode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GenerateCode(CodeBlock parent)
         {
             throw new NotImplementedException();
         }

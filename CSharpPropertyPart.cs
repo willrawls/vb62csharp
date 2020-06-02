@@ -1,28 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public class CSharpPropertyPart : IGenerate
+    public class CSharpPropertyPart : AbstractCodeBlock, IGenerate, IHaveCodeBlockParent
     {
-        public List<string> BottomLineList = new List<string>();
+        public AbstractCodeBlock BottomLineList;
         public bool Encountered;
-        public List<string> LineList = new List<string>();
-        public List<Parameter> ParameterList = new List<Parameter>();
-        public IAmAProperty Parent;
+        public AbstractCodeBlock LineList;
+        public List<Parameter> ParameterList;
         public PropertyPartType PartType;
 
-        public bool IsEmpty => (LineList.Where(x => x.Trim().Length > 0).ToList().Count
-                              + BottomLineList.Where(x => x.Trim().Length > 0).ToList().Count) == 0;
+        public bool IsEmpty => Line.Trim().Length == 0
+                                               && LineList.Children.All(x => x.Line.Trim().IsEmpty())
+                               && BottomLineList.Children.All(x => x.Line.Trim().IsEmpty());
 
-        public CSharpPropertyPart(IAmAProperty parent, PropertyPartType propertyPartType)
+        public CSharpPropertyPart(IHaveCodeBlockParent parent, PropertyPartType propertyPartType)
         {
             Parent = parent;
             PartType = propertyPartType;
+            Indent = 2;
+            //LineList = new CodeBlock(this);
+            //BottomLineList = new CodeBlock(this);
+            ParameterList = new List<Parameter>();
         }
 
         public string GenerateCode()
@@ -33,27 +36,23 @@ namespace MetX.VB6ToCSharp
             if (IsEmpty)
                 return firstIndent + $"{finalPartType};";
 
+            Line = $"{firstIndent}{finalPartType}";
+            var indentation = Tools.Indent(Indent);
+            var childIndentation = Tools.Indent(Indent + 1);
+
             var result = new StringBuilder();
+            result.AppendLine(indentation + Line);
+            result.AppendLine(indentation + Before);
 
-            var codeBlock = new CodeBlock();
-
-            result.AppendLine(Tools.Blockify($"{firstIndent}{finalPartType}", Parent.Indent + 1, "{", "}", builder =>
+            foreach (var child in LineList.Children)
             {
-                var blockBuilder = new StringBuilder();
-                foreach (var line in Massage
-                    .DetermineWhichLinesGetASemicolon(LineList)
-                    .Where(x => x.Trim() != "")
-                    .Select(x => Massage.Now(x)))
-                    blockBuilder.AppendLine(Tools.Indent(Parent.Indent + 1) + line);
-
-                foreach (var line in Massage
-                    .DetermineWhichLinesGetASemicolon(BottomLineList)
-                    .Where(x => x.Trim() != ""))
-                    blockBuilder.AppendLine(Tools.Indent(Parent.Indent + 1) + line);
-
-                var blockCode = blockBuilder.ToString();
-                return blockCode;
-            }));
+                if (child.Line.IsNotEmpty() && child.Line.Length > 0)
+                {
+                    //string line = Massage.Now(child.Line);
+                    result.AppendLine(child.GenerateCode());
+                    //result.AppendLine(childIndentation + Line);
+                }
+            }
 
             var code = result.ToString();
             return code;

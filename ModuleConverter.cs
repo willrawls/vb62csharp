@@ -282,7 +282,7 @@ namespace MetX.VB6ToCSharp
                 {
                     // control name
                     result.Append(Indent3 + "this." + control.Name + ".Name = "
-                                  + (char) 34 + control.Name + (char) 34 + ";\r\n");
+                                  + (char)34 + control.Name + (char)34 + ";\r\n");
                 }
 
                 // write properties
@@ -319,7 +319,7 @@ namespace MetX.VB6ToCSharp
                     }
 
                     result.Append(Indent3 + "{\r\n");
-                    result.Append((string) temp);
+                    result.Append((string)temp);
                     // remove last comma, keep CRLF
                     result.Remove(result.Length - 3, 1);
                     // close addrange part
@@ -360,7 +360,7 @@ namespace MetX.VB6ToCSharp
             result.Append(Indent3 + "});\r\n");
 
             // form name
-            result.Append(Indent3 + "this.Name = " + (char) 34 + TargetModule.Name + (char) 34 + ";\r\n");
+            result.Append(Indent3 + "this.Name = " + (char)34 + TargetModule.Name + (char)34 + ";\r\n");
             // exception for menu
             // this.Menu = this.mainMenu1;
             if (TargetModule.MenuUsed)
@@ -590,19 +590,19 @@ namespace MetX.VB6ToCSharp
                         result.Append(Indent3 + "this."
                                               + controlProperty.Name +
                                               " = ((System.Drawing.Bitmap)(resources.GetObject("
-                                              + (char) 34 + "$this.BackgroundImage" + (char) 34 + ")));\r\n");
+                                              + (char)34 + "$this.BackgroundImage" + (char)34 + ")));\r\n");
                         break;
 
                     case "Icon":
                         result.Append(Indent3 + "this."
                                               + controlProperty.Name + " = ((System.Drawing.Icon)(resources.GetObject("
-                                              + (char) 34 + "$this.Icon" + (char) 34 + ")));\r\n");
+                                              + (char)34 + "$this.Icon" + (char)34 + ")));\r\n");
                         break;
 
                     case "Image":
                         result.Append(Indent3 + "this." + name + "."
                                       + controlProperty.Name + " = ((System.Drawing.Bitmap)(resources.GetObject("
-                                      + (char) 34 + name + ".Image" + (char) 34 + ")));\r\n");
+                                      + (char)34 + name + ".Image" + (char)34 + ")));\r\n");
                         break;
                 }
             }
@@ -795,7 +795,7 @@ namespace MetX.VB6ToCSharp
                                 // save control name for possible next controls as owner
                                 sOwner = sName;
                                 // set current container name
-                                control.Owner = (string) OwnerStock[OwnerStock.Count - 1];
+                                control.Owner = (string)OwnerStock[OwnerStock.Count - 1];
                                 break;
                         }
 
@@ -806,7 +806,7 @@ namespace MetX.VB6ToCSharp
                         if (bEnd)
                         {
                             // remove last item from stock
-                            OwnerStock.Remove((string) OwnerStock[OwnerStock.Count - 1]);
+                            OwnerStock.Remove((string)OwnerStock[OwnerStock.Count - 1]);
                         }
                         else
                         {
@@ -1200,7 +1200,8 @@ namespace MetX.VB6ToCSharp
                         if (bProperty)
                         {
                             // add line of property
-                            property.LineList.Add(line);
+                            property.LineList.Children.Add(
+                                new CodeBlock(property, line));
                         }
 
                         if (bProcedure)
@@ -1210,20 +1211,20 @@ namespace MetX.VB6ToCSharp
 
                         break;
 
-                    // events
-                    //public Sub cmdCancel_Click()
-                    //  mbEdit = False
-                    //  If mbNew Then
-                    //    Unload Me
-                    //  Else
-                    //    ShowCurRec
-                    //    SetControls False
-                    //  End If
-                    //End Sub
-                    //
-                    //public Sub cmdClose_Click()
-                    //  Unload Me
-                    //End Sub
+                        // events
+                        //public Sub cmdCancel_Click()
+                        //  mbEdit = False
+                        //  If mbNew Then
+                        //    Unload Me
+                        //  Else
+                        //    ShowCurRec
+                        //    SetControls False
+                        //  End If
+                        //End Sub
+                        //
+                        //public Sub cmdClose_Click()
+                        //  Unload Me
+                        //End Sub
                 }
 
                 // if something end
@@ -1268,7 +1269,7 @@ namespace MetX.VB6ToCSharp
 
         public void ParsePropertyName(IAmAProperty property, string line)
         {
-            var localProperty = ((Property) property);
+            var localProperty = ((Property)property);
 
             var iPosition = 0;
             var start = 0;

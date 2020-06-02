@@ -5,14 +5,13 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public class CSharpProperty : IAmAProperty
+    public class CSharpProperty : AbstractCodeBlock, IAmAProperty
     {
         public CSharpPropertyPart Get;
         public CSharpPropertyPart Let;
         public CSharpPropertyPart Set;
 
         public string Comment { get; set; }
-        public int Indent { get; set; }
         public string Name { get; set; }
         public string Scope { get; set; }
         public string Type { get; set; }
@@ -42,18 +41,17 @@ namespace MetX.VB6ToCSharp
             targetPart.ParameterList = localSourceProperty.Parameters;
             targetPart.Encountered = true;
 
-            foreach (var originalLine in localSourceProperty.LineList)
+            foreach (var originalLine in localSourceProperty.LineList.Children)
             {
-                var line = originalLine.Trim();
-                if (line.IsNotEmpty())
-                {
-                    ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
-                    if (translatedLine.IsNotEmpty())
-                        targetPart.LineList.Add(translatedLine);
-                    if (placeAtBottom.IsNotEmpty())
-                        targetPart.BottomLineList.Add(placeAtBottom);
-                    targetPart.Encountered = true;
-                }
+                var line = originalLine.Line.Trim();
+                if (!line.IsNotEmpty()) continue;
+
+                ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
+                if (translatedLine.IsNotEmpty())
+                    targetPart.LineList.Children.Add(new CodeBlock(this, translatedLine));
+                if (placeAtBottom.IsNotEmpty())
+                    targetPart.BottomLineList.Children.Add(new CodeBlock(this, placeAtBottom));
+                targetPart.Encountered = true;
             }
         }
 
@@ -118,6 +116,12 @@ namespace MetX.VB6ToCSharp
 
             var code = result.ToString();
             return code;
+        }
+
+        public string GenerateCode(CodeBlock parent)
+        {
+            Parent = parent;
+            return GenerateCode();
         }
     }
 }
