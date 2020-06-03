@@ -1,5 +1,6 @@
 using System;
 using System.CodeDom.Compiler;
+using System.Linq;
 using System.Text;
 using MetX.Library;
 
@@ -41,6 +42,11 @@ namespace MetX.VB6ToCSharp
             targetPart.ParameterList = localSourceProperty.Parameters;
             targetPart.Encountered = true;
 
+            if (targetPart.LineList == null)
+                targetPart.LineList = new CodeBlock(this);
+            if (targetPart.BottomLineList == null)
+                targetPart.BottomLineList = new CodeBlock(this);
+
             foreach (var originalLine in localSourceProperty.LineList.Children)
             {
                 var line = originalLine.Line.Trim();
@@ -55,66 +61,81 @@ namespace MetX.VB6ToCSharp
             }
         }
 
-        public string GenerateCode()
+        public override string GenerateCode()
         {
             var result = new StringBuilder();
+            var firstIndentation = Tools.Indent(Indent);
+            var secondIndentation = Tools.Indent(Indent + 1);
 
             // possible comment
             if (Comment.IsNotEmpty())
                 if (!Comment.Contains("\n"))
-                    result.AppendLine(Tools.Indent(Indent) + "// " + Comment.Substring(1) + ";");
+                    result.AppendLine($"{firstIndentation}// {Comment.Substring(1)}");
                 else
                 {
-                    result.AppendLine();
-                    result.AppendLine(Tools.Indent(Indent) + "/*");
-                    result.AppendLine(Tools.Indent(Indent) + Comment.Replace("' ", ""));
-                    result.AppendLine(Tools.Indent(Indent) + "*/");
-                    result.AppendLine();
+                    Comment =
+                        string.Join("\n",
+                            Comment
+                            .Replace("' ", "")
+                            .Replace("\r", "")
+                            .Split('\n')
+                            .Select(x => firstIndentation + (x.EndsWith(";") ? x.Substring(0, x.Length - 1) : x)));
+                    if (Comment.IsNotEmpty())
+                    {
+                        result.AppendLine();
+                        result.AppendLine(firstIndentation + "/*");
+                        result.AppendLine();
+                        result.AppendLine(Comment);
+                        result.AppendLine();
+                        result.AppendLine(firstIndentation + "*/");
+                        result.AppendLine();
+                    }
                 }
 
             var letSet = Set.Encountered ? Set : Let;
+            var blockName = $"public {Type ?? "object"} {Name}";
 
             if (Get.Encountered && letSet.Encountered)
             {
-                var blockName = $"public {Type ?? "object"} {Name}";
                 if (Get.IsEmpty && letSet.IsEmpty)
                 {
-                    result.AppendLine(Tools.Indent(Indent + 1) + blockName + "{ get; set; }");
+                    result.AppendLine(secondIndentation + blockName + " { get; set; }");
                 }
                 else
                 {
-                    result.AppendLine(
-                        Tools.Blockify(blockName, Indent, "{", "}", block =>
-                        {
-                            block.AppendLine(Get.GenerateCode());
-                            block.AppendLine(letSet.GenerateCode());
-                            var codeBlock = block.ToString();
-                            return codeBlock;
-                        }));
+                    result.AppendLine(Get.GenerateCode());
+                    result.AppendLine(letSet.GenerateCode());
                 }
             }
             else if (Get.Encountered)
             {
-                result.AppendLine(Tools.Indent(Indent) + $"public {Type} {Name}");
-                result.AppendLine(Tools.Indent(Indent) + "{");
+                result.AppendLine(Get.GenerateCode());
+                /*
+                result.AppendLine(firstIndentation + $"public {Type} {Name}");
+                result.AppendLine(firstIndentation + "{");
                 if (Get.IsEmpty)
-                    result.AppendLine(Tools.Indent(Indent + 1) + "get; set; // Was get only");
+                    result.AppendLine(secondIndentation + "get; set; // Was get only");
                 else
                     result.AppendLine(Get.GenerateCode());
-
-                result.AppendLine(Tools.Indent(Indent) + "}");
+                result.AppendLine(firstIndentation + "}");
+                */
             }
             else if (letSet.Encountered)
             {
-                result.AppendLine(Tools.Indent(Indent) + "{");
                 if (letSet.IsEmpty)
-                    result.AppendLine(Tools.Indent(Indent + 1) + " get; set; // Was set only");
+                    result.AppendLine(secondIndentation + " { get; set; } // Was set only");
                 else
-                    result.AppendLine(Tools.Indent(Indent) + letSet.GenerateCode());
-                result.AppendLine(Tools.Indent(Indent) + "}");
+                    result.AppendLine(letSet.GenerateCode());
             }
 
-            var code = result.ToString();
+            var code =
+                string.Join("\n",
+                    result.ToString()
+                        .Replace("\r", "")
+                        .Split('\n')
+                        .Where(x => x.Trim().IsNotEmpty())
+                        .Select(x => x)
+                );
             return code;
         }
 

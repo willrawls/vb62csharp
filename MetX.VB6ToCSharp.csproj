@@ -1,154 +1,74 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
     <ProjectType>Local</ProjectType>
-    <ProductVersion>7.0.9466</ProductVersion>
-    <SchemaVersion>1.0</SchemaVersion>
-    <ProjectGuid>{81063297-68A5-474E-94F6-B9BB45FCB443}</ProjectGuid>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>OMEGA.ICO</ApplicationIcon>
     <AssemblyKeyContainerName />
-    <AssemblyName>MetX.VB6ToCSharp</AssemblyName>
     <AssemblyOriginatorKeyFile />
     <DefaultClientScript>JScript</DefaultClientScript>
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
     <OutputType>Exe</OutputType>
-    <RootNamespace>MetX.VB6ToCSharp</RootNamespace>
     <StartupObject>MetX.VB6ToCSharp.Program</StartupObject>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
     <OldToolsVersion>0.0</OldToolsVersion>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile />
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DocumentationFile />
-    <DebugSymbols>true</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
-    <Optimize>false</Optimize>
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile />
-    <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile />
-    <DebugSymbols>false</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
-    <Optimize>true</Optimize>
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
     <DebugType>none</DebugType>
-    <ErrorReport>prompt</ErrorReport>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MetX">
-      <HintPath>..\..\..\OneDrive\data\code\xlgGallery\xlg\bin\MetX.dll</HintPath>
-    </Reference>
-    <Reference Include="System">
+    <Compile Remove="Backup\**" />
+    <Compile Remove="MetX.VB6ToCSharp.Tests\**" />
+    <EmbeddedResource Remove="Backup\**" />
+    <EmbeddedResource Remove="MetX.VB6ToCSharp.Tests\**" />
+    <None Remove="Backup\**" />
+    <None Remove="MetX.VB6ToCSharp.Tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="frmConvert.resources" />
+    <None Remove="MetX.VB6ToCSharp.sln.DotSettings" />
+    <None Remove="VB2C.cmbx" />
+    <None Remove="VB2C.prjx" />
+    <None Remove="VB2C.suo" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Update="System">
       <Name>System</Name>
     </Reference>
-    <Reference Include="System.Data">
+    <Reference Update="System.Data">
       <Name>System.Data</Name>
     </Reference>
-    <Reference Include="System.Drawing">
+    <Reference Update="System.Drawing">
       <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="MetX">
+      <HintPath>..\xlgGallery\xlg\bin\MetX.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms">
       <Name>System.Windows.Forms</Name>
     </Reference>
-    <Reference Include="System.Xml">
+    <Reference Update="System.Xml">
       <Name>System.XML</Name>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractCodeBlock.cs" />
-    <Compile Include="Alice.cs" />
-    <Compile Include="AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Control.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ControlListItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ControlProperty.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="CodeBlock.cs" />
-    <Compile Include="IGenerate.cs" />
-    <Compile Include="IHaveCodeBlockParent.cs" />
-    <Compile Include="ModuleConverter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ConvertSource.cs" />
-    <Compile Include="CSharpProperty.cs" />
-    <Compile Include="CSharpPropertyPart.cs" />
-    <Compile Include="Debug.cs" />
-    <Compile Include="Enum.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="EnumItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extensions.cs" />
-    <Compile Include="IAmAProperty.cs" />
-    <Compile Include="Massage.cs" />
-    <Compile Include="Module.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Number.cs" />
-    <Compile Include="Parameter.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Procedure.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ProcedureType.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Property.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PropertyPartType.cs" />
-    <Compile Include="Tools.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Variable.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="VbFileType.cs" />
     <Content Include="OMEGA.ICO" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent />
-    <PostBuildEvent />
-  </PropertyGroup>
+  <PropertyGroup />
 </Project>

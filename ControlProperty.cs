@@ -6,14 +6,11 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Property.
     /// </summary>
-    public class ControlProperty : IAmAProperty, IGenerate
+    public class ControlProperty : AbstractCodeBlock, IAmAProperty
     {
         public List<IAmAProperty> PropertyList;
         public string Comment { get; set; }
-
-        public int Indent { get; set; }
         public string Name { get; set; }
-
         public string Scope { get; set; }
         public string Type { get; set; }
         public bool Valid { get; set; }
@@ -31,12 +28,7 @@ namespace MetX.VB6ToCSharp
             throw new NotImplementedException();
         }
 
-        public string GenerateCode()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GenerateCode(CodeBlock parent)
+        public override string GenerateCode()
         {
             throw new NotImplementedException();
         }

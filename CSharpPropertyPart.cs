@@ -14,9 +14,10 @@ namespace MetX.VB6ToCSharp
         public List<Parameter> ParameterList;
         public PropertyPartType PartType;
 
-        public bool IsEmpty => Line.Trim().Length == 0
-                                               && LineList.Children.All(x => x.Line.Trim().IsEmpty())
-                               && BottomLineList.Children.All(x => x.Line.Trim().IsEmpty());
+        public bool IsEmpty =>
+            Line.IsEmpty()
+                && LineList.Children.Count == 0
+                && BottomLineList.Children.Count == 0;
 
         public CSharpPropertyPart(IHaveCodeBlockParent parent, PropertyPartType propertyPartType)
         {
@@ -38,22 +39,20 @@ namespace MetX.VB6ToCSharp
 
             Line = $"{firstIndent}{finalPartType}";
             var indentation = Tools.Indent(Indent);
-            var childIndentation = Tools.Indent(Indent + 1);
 
             var result = new StringBuilder();
             result.AppendLine(indentation + Line);
-            result.AppendLine(indentation + Before);
+            result.AppendLine(indentation + (Before ?? "{"));
 
             foreach (var child in LineList.Children)
             {
-                if (child.Line.IsNotEmpty() && child.Line.Length > 0)
+                if (child.Line.IsNotEmpty())
                 {
-                    //string line = Massage.Now(child.Line);
                     result.AppendLine(child.GenerateCode());
-                    //result.AppendLine(childIndentation + Line);
                 }
             }
 
+            result.AppendLine(indentation + (After ?? "}"));
             var code = result.ToString();
             return code;
         }
