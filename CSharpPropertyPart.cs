@@ -14,11 +14,6 @@ namespace MetX.VB6ToCSharp
         public List<Parameter> ParameterList;
         public PropertyPartType PartType;
 
-        public bool IsEmpty =>
-            Line.IsEmpty()
-                && LineList.Children.Count == 0
-                && BottomLineList.Children.Count == 0;
-
         public CSharpPropertyPart(IHaveCodeBlockParent parent, PropertyPartType propertyPartType)
         {
             Parent = parent;
@@ -31,30 +26,45 @@ namespace MetX.VB6ToCSharp
 
         public string GenerateCode()
         {
-            var firstIndent = Tools.Indent(Parent.Indent + 1);
+            var indentation = Tools.Indent(Parent.Indent + 1);
             var finalPartType = PartType.ToString().ToLower().Replace("let", "set");
 
-            if (IsEmpty)
-                return firstIndent + $"{finalPartType};";
-
-            Line = $"{firstIndent}{finalPartType}";
-            var indentation = Tools.Indent(Indent);
-
-            var result = new StringBuilder();
-            result.AppendLine(indentation + Line);
-            result.AppendLine(indentation + (Before ?? "{"));
-
-            foreach (var child in LineList.Children)
+            if (IsEmpty())
+                return indentation + $"{finalPartType};";
+            else
             {
-                if (child.Line.IsNotEmpty())
-                {
-                    result.AppendLine(child.GenerateCode());
-                }
-            }
+                Line = $"{indentation}{finalPartType}";
 
-            result.AppendLine(indentation + (After ?? "}"));
-            var code = result.ToString();
-            return code;
+                var result = new StringBuilder();
+                result.AppendLine(indentation + Line);
+                result.AppendLine(indentation + (Before ?? "{"));
+
+                if (LineList?.Children != null)
+                {
+                    foreach (var child in LineList.Children)
+                    {
+                        if (child.Line.IsNotEmpty())
+                        {
+                            result.AppendLine(child.GenerateCode());
+                        }
+                    }
+                }
+
+                if (BottomLineList?.Children != null)
+                {
+                    foreach (var child in BottomLineList.Children)
+                    {
+                        if (child.IsNotEmpty())
+                        {
+                            result.AppendLine(child.GenerateCode());
+                        }
+                    }
+                }
+                result.AppendLine(indentation + (After ?? "}"));
+
+                var code = result.ToString();
+                return code;
+            }
         }
     }
 }

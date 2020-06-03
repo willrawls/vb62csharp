@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
@@ -25,6 +27,16 @@ namespace MetX.VB6ToCSharp
         public static bool IsNotEmpty<T>(this IList<T> target)
         {
             return target?.Count > 0;
+        }
+
+        public static string RemoveEmptyLines(this string target)
+        {
+            return string.Join("\n", target
+                    .Replace("\r", "")
+                    .Split('\n')
+                    .Where(x => x.Trim().IsNotEmpty())
+                    .Select(x => x)
+            );
         }
     }
 }

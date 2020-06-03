@@ -79,14 +79,12 @@ namespace MetX.VB6ToCSharp
                             .Replace("' ", "")
                             .Replace("\r", "")
                             .Split('\n')
-                            .Select(x => firstIndentation + (x.EndsWith(";") ? x.Substring(0, x.Length - 1) : x)));
+                            .Select(x => secondIndentation + (x.EndsWith(";") ? x.Substring(0, x.Length - 1) : x)));
                     if (Comment.IsNotEmpty())
                     {
                         result.AppendLine();
                         result.AppendLine(firstIndentation + "/*");
-                        result.AppendLine();
                         result.AppendLine(Comment);
-                        result.AppendLine();
                         result.AppendLine(firstIndentation + "*/");
                         result.AppendLine();
                     }
@@ -97,9 +95,9 @@ namespace MetX.VB6ToCSharp
 
             if (Get.Encountered && letSet.Encountered)
             {
-                if (Get.IsEmpty && letSet.IsEmpty)
+                if (Get.IsEmpty() && letSet.IsEmpty())
                 {
-                    result.AppendLine(secondIndentation + blockName + " { get; set; }");
+                    result.AppendLine(firstIndentation + blockName + " { get; set; }");
                 }
                 else
                 {
@@ -122,20 +120,13 @@ namespace MetX.VB6ToCSharp
             }
             else if (letSet.Encountered)
             {
-                if (letSet.IsEmpty)
+                if (letSet.IsEmpty())
                     result.AppendLine(secondIndentation + " { get; set; } // Was set only");
                 else
                     result.AppendLine(letSet.GenerateCode());
             }
 
-            var code =
-                string.Join("\n",
-                    result.ToString()
-                        .Replace("\r", "")
-                        .Split('\n')
-                        .Where(x => x.Trim().IsNotEmpty())
-                        .Select(x => x)
-                );
+            var code = result.ToString().RemoveEmptyLines();
             return code;
         }
 
