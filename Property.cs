@@ -8,8 +8,8 @@ namespace MetX.VB6ToCSharp
     /// </summary>
     public class Property : AbstractCodeBlock, IAmAProperty
     {
+        public CodeBlock Block;
         public string Direction;
-        public CodeBlock LineList;
         public string Comment { get; set; }
         public string Name { get; set; }
         public List<Parameter> Parameters { get; set; }
@@ -20,7 +20,7 @@ namespace MetX.VB6ToCSharp
 
         public Property(int parentIndent)
         {
-            LineList = new CodeBlock(this);
+            Block = new CodeBlock(this);
             Parameters = new List<Parameter>();
             Indent = parentIndent + 1;
         }
@@ -30,12 +30,7 @@ namespace MetX.VB6ToCSharp
             throw new NotImplementedException();
         }
 
-        public string GenerateCode()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GenerateCode(CodeBlock parent)
+        public override string GenerateCode()
         {
             throw new NotImplementedException();
         }

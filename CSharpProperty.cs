@@ -42,21 +42,21 @@ namespace MetX.VB6ToCSharp
             targetPart.ParameterList = localSourceProperty.Parameters;
             targetPart.Encountered = true;
 
-            if (targetPart.LineList == null)
-                targetPart.LineList = new CodeBlock(this);
-            if (targetPart.BottomLineList == null)
-                targetPart.BottomLineList = new CodeBlock(this);
+            if (targetPart.BlockAtTop == null)
+                targetPart.BlockAtTop = new CodeBlock(this);
+            if (targetPart.BlockAtBottom == null)
+                targetPart.BlockAtBottom = new CodeBlock(this);
 
-            foreach (var originalLine in localSourceProperty.LineList.Children)
+            foreach (var originalLine in localSourceProperty.Block.Children)
             {
                 var line = originalLine.Line.Trim();
                 if (!line.IsNotEmpty()) continue;
 
                 ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                 if (translatedLine.IsNotEmpty())
-                    targetPart.LineList.Children.Add(new CodeBlock(this, translatedLine));
+                    targetPart.BlockAtTop.Children.Add(new CodeBlock(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
-                    targetPart.BottomLineList.Children.Add(new CodeBlock(this, placeAtBottom));
+                    targetPart.BlockAtBottom.Children.Add(new CodeBlock(this, placeAtBottom));
                 targetPart.Encountered = true;
             }
         }

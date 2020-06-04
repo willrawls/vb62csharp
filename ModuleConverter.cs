@@ -1200,7 +1200,7 @@ namespace MetX.VB6ToCSharp
                         if (bProperty)
                         {
                             // add line of property
-                            property.LineList.Children.Add(
+                            property.Block.Children.Add(
                                 new CodeBlock(property, line));
                         }
 
