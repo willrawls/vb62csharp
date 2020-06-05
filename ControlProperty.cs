@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace MetX.VB6ToCSharp
 {
@@ -14,10 +15,9 @@ namespace MetX.VB6ToCSharp
         public string Scope { get; set; }
         public string Type { get; set; }
         public bool Valid { get; set; }
-
         public string Value { get; set; }
 
-        public ControlProperty(int parentIndent)
+        public ControlProperty(ICodeLine parent, int parentIndent) : base(parent, "", 0)
         {
             PropertyList = new List<IAmAProperty>();
             Indent = parentIndent + 1;

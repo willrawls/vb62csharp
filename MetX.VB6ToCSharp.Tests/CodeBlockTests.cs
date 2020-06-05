@@ -5,13 +5,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace MetX.VB6ToCSharp.Tests
 {
     [TestClass]
-    public class CodeBlockTests : AbstractCodeBlock
-
+    public class CodeBlockTests
     {
         [TestMethod]
         public void ProperIndentation3LevelsDeep()
         {
-            var codeBlock = new CodeBlock(this, "Fred");
+            AbstractCodeBlock parent = new EmptyCodeParent();
+
+            var codeBlock = new CodeBlock(parent, "Fred");
 
             codeBlock.Children.Add(new CodeBlock(codeBlock, "One"));
 

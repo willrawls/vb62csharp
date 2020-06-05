@@ -11,23 +11,27 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void SimpleTest()
         {
-            var target = new CSharpProperty(1);
-            target.Comment = "' TheComment";
-            target.Name = "F";
-            target.Type = "G";
+            ICodeLine parent = new EmptyCodeParent();
 
-            target.Get = new CSharpPropertyPart(target, PropertyPartType.Get);
+            var target = new CSharpProperty(parent, 1)
+            {
+                Comment = "' TheComment",
+                Name = "F",
+                Type = "G",
+            };
+
             target.Get.Line = "A";
-            target.Get.Children = new List<AbstractCodeBlock>();
-            target.Get.Children.Add(new CodeBlock(target.Get, "B"));
-            target.Get.Children.Add(new CodeBlock(target.Get, "C"));
             target.Get.Encountered = true;
+            target.Get.Children = new List<ICodeLine>
+            {
+                new CodeBlock(target.Get, "B"),
+                new CodeBlock(target.Get, "C")
+            };
 
-            target.Set = new CSharpPropertyPart(target, PropertyPartType.Set);
             target.Set.Line = "D";
-            target.Set.Children = new List<AbstractCodeBlock>();
-            target.Set.Children.Add(new CodeBlock(target.Get, "E"));
             target.Set.Encountered = true;
+            target.Set.Children = new List<ICodeLine>();
+            target.Set.Children.Add(new CodeBlock(target.Get, "E"));
 
             var expected =
 @"    // TheComment

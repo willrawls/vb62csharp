@@ -5,7 +5,7 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Module.
     /// </summary>
-    public class Module
+    public class Module : AbstractCodeBlock
     {
         public string Comment;
         public List<Control> ControlList;
@@ -24,7 +24,7 @@ namespace MetX.VB6ToCSharp
         public List<Variable> VariableList;
         public string Version;
 
-        public Module()
+        public Module() : base(null, "", 1)
         {
             FormPropertyList = new List<ControlProperty>();
             ControlList = new List<Control>();

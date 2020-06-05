@@ -286,7 +286,7 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // write properties
-                foreach (var property in control.PropertyList)
+                foreach (ControlProperty property in control.Children.Cast<ControlProperty>())
                 {
                     GetPropertyRow(result, control.Type, control.Name, property, outPath);
                 }
@@ -789,7 +789,7 @@ namespace MetX.VB6ToCSharp
 
                             default:
                                 // new control
-                                control = new Control();
+                                control = new Control(TargetModule, null, 1);
                                 control.Name = sName;
                                 control.Type = sType;
                                 // save control name for possible next controls as owner
@@ -832,7 +832,7 @@ namespace MetX.VB6ToCSharp
                     case "BeginProperty":
                         bNestedProperty = true;
 
-                        oNestedProperty = new ControlProperty(1);
+                        oNestedProperty = new ControlProperty(control, 1);
                         // next word - nested property name
                         iPosition++;
                         sName = GetWord(sLine, ref iPosition);
@@ -851,14 +851,14 @@ namespace MetX.VB6ToCSharp
                         else
                         {
                             // to controls
-                            control.PropertyList.Add(oNestedProperty);
+                            control.Children.Add(oNestedProperty);
                         }
 
                         break;
 
                     default:
                         // parse property
-                        var property = new ControlProperty(2);
+                        var property = new ControlProperty(control, 2);
 
                         var iTemp = sLine.IndexOf("=");
                         if (iTemp > -1)
@@ -885,7 +885,7 @@ namespace MetX.VB6ToCSharp
                                 if (iLevel > 1)
                                 {
                                     // add property to control
-                                    control.PropertyList.Add(property);
+                                    control.Children.Add(property);
                                 }
                                 else
                                 {
@@ -1150,7 +1150,7 @@ namespace MetX.VB6ToCSharp
                                 break;
 
                             case "Property":
-                                property = new Property(1);
+                                property = new Property(TargetModule, TargetModule.Indent);
                                 property.Comment = sComments ?? string.Empty;
                                 sComments = string.Empty;
                                 ParsePropertyName(property, line);

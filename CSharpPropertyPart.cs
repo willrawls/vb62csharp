@@ -6,7 +6,7 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public class CSharpPropertyPart : AbstractCodeBlock, IGenerate, IHaveCodeBlockParent
+    public class CSharpPropertyPart : AbstractCodeBlock, IGenerate, ICodeLine
     {
         public AbstractCodeBlock BlockAtBottom;
         public AbstractCodeBlock BlockAtTop;
@@ -14,7 +14,8 @@ namespace MetX.VB6ToCSharp
         public List<Parameter> ParameterList;
         public PropertyPartType PartType;
 
-        public CSharpPropertyPart(IHaveCodeBlockParent parent, PropertyPartType propertyPartType)
+        public CSharpPropertyPart(ICodeLine parent, PropertyPartType propertyPartType) : base(parent, null, 1)
+
         {
             Parent = parent;
             PartType = propertyPartType;

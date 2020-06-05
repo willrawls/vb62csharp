@@ -4,51 +4,19 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public interface ICodeBlock : IGenerate, ICodeLine
+    public abstract class AbstractCodeBlock : CodeLine, ICodeBlock
     {
-        bool IsEmpty();
+        public string After { get; set; } = "}";
+        public string Before { get; set; } = "{";
+        public List<ICodeLine> Children { get; set; }
 
-        bool IsNotEmpty();
-    }
-
-    public interface ICodeLine
-    {
-        int Indent { get; set; }
-        string Line { get; set; }
-        IHaveCodeBlockParent Parent { get; set; }
-    }
-
-    public class AbstractCodeBlock : IGenerate, IHaveCodeBlockParent, ICodeBlock
-    {
-        public string After = "}";
-        public string Before = "{";
-        public List<AbstractCodeBlock> Children;
-        public int Indent { get; set; }
-        public string Line { get; set; }
-
-        public IHaveCodeBlockParent Parent { get; set; }
-
-        public virtual string GenerateCode()
+        // ReSharper disable once PublicConstructorInAbstractClass
+        public AbstractCodeBlock(ICodeLine parent, string line, int indent = 0) : base(parent, line, indent)
         {
-            throw new NotImplementedException();
         }
 
-        public bool IsEmpty() => Line.IsEmpty() && Children?.Count == 0;
+        public override bool IsEmpty() => Line.IsEmpty() && Children?.Count == 0;
 
-        public bool IsNotEmpty() => Line.IsNotEmpty() || Children?.Count > 0;
-    }
-
-    public class CodeLine : ICodeLine
-    {
-        public int Indent { get; set; }
-        public string Line { get; set; }
-        public IHaveCodeBlockParent Parent { get; set; }
-
-        public CodeLine(IHaveCodeBlockParent parent, string line, int indent = 0)
-        {
-            Parent = parent;
-            Line = line;
-            Indent = indent;
-        }
+        public override bool IsNotEmpty() => Line.IsNotEmpty() || Children?.Count > 0;
     }
 }

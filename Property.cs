@@ -18,7 +18,7 @@ namespace MetX.VB6ToCSharp
         public bool Valid { get; set; }
         public string Value { get; set; }
 
-        public Property(int parentIndent)
+        public Property(ICodeLine parent, int parentIndent) : base(parent, null, 1)
         {
             Block = new CodeBlock(this);
             Parameters = new List<Parameter>();

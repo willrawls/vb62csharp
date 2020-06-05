@@ -8,7 +8,12 @@ namespace MetX.VB6ToCSharp
 {
     public class CodeBlock : AbstractCodeBlock
     {
-        public CodeBlock(AbstractCodeBlock parent, string line = null, List<AbstractCodeBlock> children = null, string before = "{", string after = "}")
+        public CodeBlock(AbstractCodeBlock parent, string line = null,
+            List<ICodeLine> children = null,
+            string before = "{",
+            string after = "}",
+            int indent = 1)
+            : base(parent, line, indent)
         {
             SetupBlock(parent, line, before, children, after);
         }
@@ -42,13 +47,13 @@ namespace MetX.VB6ToCSharp
             throw new NotImplementedException();
         }
 
-        public void SetupBlock(AbstractCodeBlock parent, string line, string before, List<AbstractCodeBlock> children, string after)
+        public void SetupBlock(AbstractCodeBlock parent, string line, string before, List<ICodeLine> children, string after)
         {
             Parent = parent;
             Line = line;
             Before = before;
             After = after;
-            Children = children ?? new List<AbstractCodeBlock>();
+            Children = children ?? new List<ICodeLine>();
             SetupChildren();
         }
 
@@ -69,6 +74,13 @@ namespace MetX.VB6ToCSharp
         public override string ToString()
         {
             return Line;
+        }
+    }
+
+    public class EmptyCodeParent : AbstractCodeBlock
+    {
+        public EmptyCodeParent() : base(null, null, 0)
+        {
         }
     }
 }

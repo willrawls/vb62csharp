@@ -17,10 +17,26 @@ namespace MetX.VB6ToCSharp
         //      Replace all instances of Y with Z
         //      Append A
 
+        public static string Blockify(string blockName, int indentLevel,
+            string preBlock, string postBlock,
+            Func<StringBuilder, string> action)
+        {
+            var indentation = Indent(indentLevel);
+            var block = new StringBuilder();
+            block.AppendLine(indentation + blockName.Trim());
+            block.AppendLine(indentation + preBlock);
+            var blockLines = action.Invoke(block);
+            var lines = blockLines.Indent(indentLevel + 1);
+            block.AppendLine(lines);
+            block.AppendLine(indentation + postBlock);
+            var code = block.ToString();
+            return code;
+        }
+
         public static string GetBool(string value)
         {
             return value.IsEmpty() || (int.Parse(value) == 0)
-                ? "false" 
+                ? "false"
                 : "true";
         }
 
@@ -140,13 +156,13 @@ namespace MetX.VB6ToCSharp
             reader.Close();
         }
 
-        public static string GetLocation(List<ControlProperty> propertyList)
+        public static string GetLocation(List<ICodeLine> propertyList)
         {
             var left = 0;
             var top = 0;
 
             // each property
-            foreach (var property in propertyList)
+            foreach (ControlProperty property in propertyList)
             {
                 if (property.Name == "Left")
                 {
@@ -169,13 +185,13 @@ namespace MetX.VB6ToCSharp
             return left.ToString() + ", " + top.ToString();
         }
 
-        public static string GetSize(string height, string width, List<ControlProperty> propertyList)
+        public static string GetSize(string height, string width, List<ICodeLine> propertyList)
         {
             var heightValue = 0;
             var widthValue = 0;
 
             // each property
-            foreach (var property in propertyList)
+            foreach (ControlProperty property in propertyList)
             {
                 if (property.Name == height)
                 {
@@ -249,22 +265,6 @@ namespace MetX.VB6ToCSharp
             }
 
             return targetType;
-        }
-
-        public static string Blockify(string blockName, int indentLevel, 
-            string preBlock,  string postBlock, 
-            Func<StringBuilder, string> action)
-        {
-            var indentation = Indent(indentLevel);
-            var block = new StringBuilder();
-            block.AppendLine(indentation + blockName.Trim());
-            block.AppendLine(indentation + preBlock);
-            var blockLines = action.Invoke(block);
-            var lines = blockLines.Indent(indentLevel + 1);
-            block.AppendLine(lines);
-            block.AppendLine(indentation + postBlock);
-            var code = block.ToString();
-            return code;
         }
     }
 }

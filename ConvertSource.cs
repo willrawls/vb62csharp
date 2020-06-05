@@ -8,488 +8,11 @@ namespace MetX.VB6ToCSharp
 {
     public static class ConvertSource
     {
-        public static void ControlPropertyFont(ControlProperty sourceProperty, ControlProperty targetProperty)
-        {
-            var fontName = string.Empty;
-            var fontSize = 0;
-            var fontCharSet = 0;
-            var fontBold = false;
-            var fontUnderline = false;
-            var fontItalic = false;
-            var fontStrikethrough = false;
-            var temp = string.Empty;
-            //      BeginProperty Font
-            //         Name            =   "Arial"
-            //         Size            =   8.25
-            //         Charset         =   238
-            //         Weight          =   400
-            //         Underline       =   0   'False
-            //         Italic          =   0   'False
-            //         Strikethrough   =   0   'False
-            //      EndProperty
-
-            foreach (var property in sourceProperty.PropertyList)
-            {
-                switch (property.Name)
-                {
-                    case "Name":
-                        fontName = property.Value;
-                        break;
-
-                    case "Size":
-                        fontSize = Tools.GetFontSizeInt(property.Value);
-                        break;
-
-                    case "Weight":
-                        //        If tLogFont.lfWeight >= FW_BOLD Then
-                        //          bFontBold = True
-                        //        Else
-                        //          bFontBold = False
-                        //        End If
-                        // FW_BOLD = 700
-                        fontBold = (int.Parse(property.Value) >= 700);
-                        break;
-
-                    case "Charset":
-                        fontCharSet = int.Parse(property.Value);
-                        break;
-
-                    case "Underline":
-                        fontUnderline = (int.Parse(property.Value) != 0);
-                        break;
-
-                    case "Italic":
-                        fontItalic = (int.Parse(property.Value) != 0);
-                        break;
-
-                    case "Strikethrough":
-                        fontStrikethrough = (int.Parse(property.Value) != 0);
-                        break;
-                }
-            }
-
-            //      this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
-            //        (System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline
-            //        | System.Drawing.FontStyle.Strikeout), System.Drawing.GraphicsUnit.Point,
-            //        ((System.Byte)(0)));
-
-            // this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
-            // System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point,
-            // ((System.Byte)(238)));
-
-            targetProperty.Name = "Font";
-            targetProperty.Value = "new System.Drawing.Font(" + fontName + ",";
-            targetProperty.Value = targetProperty.Value + fontSize.ToString() + "F,";
-
-            temp = string.Empty;
-            if (fontBold)
-            {
-                temp = "System.Drawing.FontStyle.Bold";
-            }
-
-            if (fontItalic)
-            {
-                if (temp != string.Empty)
-                {
-                    temp += " | ";
-                }
-
-                temp += "System.Drawing.FontStyle.Italic";
-            }
-
-            if (fontUnderline)
-            {
-                if (temp != string.Empty)
-                {
-                    temp += " | ";
-                }
-
-                temp += "System.Drawing.FontStyle.Underline";
-            }
-
-            if (fontStrikethrough)
-            {
-                if (temp != string.Empty)
-                {
-                    temp += " | ";
-                }
-
-                temp += "System.Drawing.FontStyle.Strikeout";
-            }
-
-            if (temp == string.Empty)
-            {
-                targetProperty.Value += " System.Drawing.FontStyle.Regular,";
-            }
-            else
-            {
-                targetProperty.Value = targetProperty.Value + " ( " + temp + " ),";
-            }
-
-            targetProperty.Value += " System.Drawing.GraphicsUnit.Point, ";
-            targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
-        }
-
-        public static void GetPropertyLine(
-            string originalLine,
-            out string translatedLine,
-            out string placeAtBottom,
-            IAmAProperty sourceProperty)
-        {
-            var localSourceProperty = (Property) sourceProperty;
-            placeAtBottom = string.Empty;
-            var line = originalLine.Trim();
-            translatedLine = line;
-
-            if (translatedLine.Length > 0)
-            {
-                if (translatedLine.Trim().StartsWith("'"))
-                {
-                    translatedLine = "// " + translatedLine.Substring(1);
-                    return;
-                }
-
-                if (localSourceProperty != null &&
-                    (localSourceProperty.Direction == "Set" || localSourceProperty.Direction == "Let"))
-                {
-                    foreach (var parameter in localSourceProperty.Parameters)
-                    {
-                        translatedLine = translatedLine.Replace(parameter.Name, "value");
-                    }
-                }
-
-                // vbNullString = string.empty
-                if (translatedLine.Contains("vbNullString"))
-                {
-                    translatedLine = translatedLine.Replace("vbNullString", "string.Empty");
-                }
-
-                // Nothing = null
-                if (translatedLine.Contains("Nothing"))
-                {
-                    translatedLine = line
-                        .Replace("Set ", "")
-                        .Replace("Nothing", "null");
-                    translatedLine += ";";
-                }
-
-                if (Tools.WithCurrentlyIn.IsNotEmpty())
-                {
-                    if (translatedLine.StartsWith("."))
-                        translatedLine = Tools.WithCurrentlyIn + translatedLine;
-                    if (translatedLine.Contains(" ."))
-                    {
-                        var words = translatedLine.Split(' ');
-                        for (var i = 0; i < words.Length; i++)
-                        {
-                            if (words[i].StartsWith("."))
-                            {
-                                words[i] = Tools.WithCurrentlyIn + words[i];
-                            }
-                        }
-
-                        translatedLine = string.Join(" ", words);
-                    }
-                }
-
-                // Begin With
-                if (translatedLine.StartsWith("With "))
-                {
-                    Tools.WithCurrentlyIn = translatedLine.TokenAt(2).Trim();
-                    translatedLine = "";
-                }
-
-                // Set
-                if (translatedLine.Contains("Set "))
-                {
-                    translatedLine = translatedLine.Replace("Set ", " ");
-                }
-
-                if (translatedLine.Contains("Dim") && translatedLine.Contains("As"))
-                {
-                    // Dim x As string
-                    // string x;
-                    translatedLine = $"{translatedLine.TokenAt(4)} {translatedLine.TokenAt(2)} ";
-                }
-
-                // remark
-                if (line[0] == '\'') // '
-                {
-                    translatedLine = translatedLine.Replace("'", "//");
-                }
-
-                // & to +
-                if (translatedLine.Contains("&"))
-                {
-                    translatedLine = translatedLine.Replace("&", "+");
-                }
-
-                // Select Case
-                if (translatedLine.Contains("Select Case"))
-                {
-                    translatedLine = translatedLine.Replace("Select Case", "switch");
-                }
-
-                // End Select
-                if (translatedLine.Contains("End Select"))
-                {
-                    translatedLine = translatedLine.Replace("End Select", "}");
-                }
-
-                // _
-                if (translatedLine.Contains(" _"))
-                {
-                    translatedLine = translatedLine.Replace(" _", "\r\n");
-                }
-
-                // If
-                if (translatedLine.Contains("If "))
-                {
-                    translatedLine = translatedLine.Replace("If ", "if ( ");
-                }
-
-                // Not
-                if (translatedLine.Contains("Not "))
-                {
-                    translatedLine = translatedLine.Replace("Not ", "! ");
-                }
-
-                // then
-                if (translatedLine.Contains(" Then"))
-                {
-                    translatedLine = translatedLine.Replace(" Then", " )\r\n" + ModuleConverter.Indent3 + "{\r\n");
-                }
-
-                // else
-                if (translatedLine.Contains("Else"))
-                {
-                    translatedLine = translatedLine.Replace("Else",
-                        "}\r\n" + ModuleConverter.Indent3 + "else\r\n" + ModuleConverter.Indent3 + "{");
-                }
-
-                // End if
-                if (translatedLine.Contains("End If"))
-                {
-                    translatedLine = translatedLine.Replace("End If", "}");
-                }
-
-                // Unload Me
-                if (translatedLine.Contains("Unload Me"))
-                {
-                    translatedLine = translatedLine.Replace("Unload Me", "Close()");
-                }
-
-                // .Caption
-                if (translatedLine.Contains(".Caption"))
-                {
-                    translatedLine = translatedLine.Replace(".Caption", ".Text");
-                }
-
-                // True
-                if (translatedLine.Contains("True"))
-                {
-                    translatedLine = translatedLine.Replace("True", "true");
-                }
-
-                // False
-                if (translatedLine.Contains("False"))
-                {
-                    translatedLine = translatedLine.Replace("False", "false");
-                }
-
-                // New
-                if (line.Contains("If ")
-                    && line.Contains("Then")
-                    && line.TokensAfter(1, "Then").Trim().Length > 0)
-                {
-                    translatedLine = translatedLine.Replace("New", "new");
-                }
-
-                // New
-                if (translatedLine.Contains("New "))
-                {
-                    translatedLine = translatedLine.Replace("New ", "new ");
-                    if (!translatedLine.Contains("("))
-                        translatedLine += "();";
-                }
-
-                if (translatedLine.Contains("On Error Resume Next"))
-                {
-                    placeAtBottom = @"
-        }
-        catch(Exception e)
-        {
-            /* ON ERROR RESUME NEXT (ish) */
-        }
-";
-                    translatedLine = "try\r\n{\r\n";
-                }
-            }
-
-            if (translatedLine.IsNotEmpty()) 
-                translatedLine = Massage.Now(translatedLine);
-        }
-
-        public static bool Module(Module sourceModule, Module targetModule)
-        {
-            // module name
-            targetModule.Name = sourceModule.Name;
-            // file name
-            targetModule.FileName = Path.GetFileNameWithoutExtension(sourceModule.FileName) + ".cs";
-            // type
-            targetModule.Type = sourceModule.Type;
-            // version
-            targetModule.Version = sourceModule.Version;
-            // process own properties - forms
-            ConvertSourceModuleProperties(targetModule, sourceModule.FormPropertyList, targetModule.FormPropertyList);
-            // process controls - form
-            Controls(targetModule, sourceModule.ControlList, targetModule.ControlList);
-
-            // special exception for menu
-            if (targetModule.MenuUsed)
-            {
-                // add main menu control
-                var control = new Control
-                {
-                    Name = "MainMenu",
-                    Owner = targetModule.Name,
-                    Type = "MainMenu",
-                    Valid = true,
-                    InvisibleAtRuntime = true
-                };
-                targetModule.ControlList.Insert(0, control);
-                foreach (var oMenuControl in targetModule.ControlList)
-                    if ((oMenuControl.Type == "MenuItem") && (oMenuControl.Owner == targetModule.Name))
-                        // rewrite previous owner
-                        oMenuControl.Owner = control.Name;
-            }
-
-            var tempControlList = new List<Control>();
-            var tabControlIndex = 0;
-
-            // check for TabDlg.SSTab
-            foreach (var targetControl in targetModule.ControlList)
-            {
-                Control tabPage = null;
-                var index = 0;
-                if ((targetControl.Type == "TabControl") && (targetControl.Valid))
-                {
-                    // each property
-                    foreach (var targetProperty in targetControl.PropertyList)
-                    {
-                        Console.WriteLine(targetProperty.Name);
-
-                        if (targetProperty.Name.Contains($"TabCaption({index})"))
-                        {
-                            // new tab
-                            tempControlList.Add(new Control
-                            {
-                                Type = "TabPage",
-                                Name = "tabPage" + index.ToString(),
-                                Owner = targetControl.Name,
-                                Container = true,
-                                Valid = true,
-                                InvisibleAtRuntime = false,
-                                // add some necessary properties
-                                PropertyList = new List<ControlProperty>
-                                {
-                                    new ControlProperty(2)
-                                    {
-                                        Name = "Location", Value = "new System.Drawing.Point(4, 22)", Valid = true
-                                    },
-                                    new ControlProperty(2)
-                                    {
-                                        Name = "Size", Value = "new System.Drawing.Size(477, 374)", Valid = true
-                                    },
-                                    new ControlProperty(2)
-                                    {
-                                        Name = "Text", Value = targetProperty.Value, Valid = true
-                                    },
-                                    new ControlProperty(2)
-                                    {
-                                        Name = "TabIndex", Value = index.ToString(), Valid = true
-                                    }
-                                }
-                            });
-                            index++;
-                        }
-
-                        // Control = change owner of control to current tab
-                        //      this.SSTab1.(Tab(0).Control(0) = "ImageControl";
-                        if (targetProperty.Name.Contains(".Control("))
-                        {
-                            if (!targetProperty.Name.Contains("Enable"))
-                            {
-                                var tabName = targetProperty.Value.Substring(1, targetProperty.Value.Length - 2);
-                                tabName = Tools.GetControlIndexName(tabName);
-                                // search for "targetProperty.Value" control
-                                // and replace owner of this control to current tab
-                                foreach (var oNewOwner in targetModule.ControlList)
-                                {
-                                    if ((oNewOwner.Name == tabName) && (!oNewOwner.InvisibleAtRuntime))
-                                    {
-                                        oNewOwner.Owner = tabPage.Name;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                tabControlIndex++;
-            }
-
-            if (tempControlList.Count > 0)
-            {
-                // right order of tabs
-                var position = 0;
-                foreach (var control in tempControlList)
-                {
-                    targetModule.ControlList.Insert(tabControlIndex + position, control);
-                    position++;
-                }
-            }
-
-            // process enums
-            Enums(sourceModule.EnumList, targetModule.EnumList);
-
-            // process variables
-            Variables(sourceModule.VariableList, targetModule.VariableList);
-
-            // process properties
-            ClassProperties(sourceModule.PropertyList, targetModule.PropertyList);
-
-            // process procedures
-            Procedures(sourceModule, targetModule.ProcedureList);
-
-            return true;
-        }
-
-        public static bool ConvertSourceModuleProperties(
-            Module targetModule,
-            List<ControlProperty> sourcePropertyList,
-            List<ControlProperty> targetPropertyList)
-        {
-            foreach (var sourceProperty in sourcePropertyList)
-            {
-                var targetProperty = new ControlProperty(2);
-                if (!ControlProperties(targetModule.Type, sourceProperty, targetProperty, sourcePropertyList)) 
-                    continue;
-
-                if (targetProperty.Name == "BackgroundImage" || targetProperty.Name == "Icon")
-                    targetModule.ImagesUsed = true;
-
-                targetPropertyList.Add(targetProperty);
-            }
-            return true;
-        }
-
-        public static bool ClassProperties(
-            List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties)
+        public static bool ClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties, ICodeBlock parentBlock)
         {
             foreach (var sourceProperty in sourceProperties)
             {
-                var localSourceProperty = (Property) sourceProperty;
+                var localSourceProperty = (Property)sourceProperty;
                 CSharpProperty targetProperty = null;
 
                 targetProperty = targetProperties.Cast<CSharpProperty>()
@@ -498,7 +21,7 @@ namespace MetX.VB6ToCSharp
 
                 if (targetProperty == null)
                 {
-                    targetProperty = new CSharpProperty(2)
+                    targetProperty = new CSharpProperty(parentBlock, 1)
                     {
                         Name = sourceProperty.Name.Trim(),
                         Comment = sourceProperty.Comment,
@@ -515,27 +38,27 @@ namespace MetX.VB6ToCSharp
         }
 
         public static bool ControlProperties(
-            Module module,
-            Control control,
-            List<ControlProperty> sourcePropertyList,
-            List<ControlProperty> targetPropertyList)
+            Module sourceModule,
+            Control targetControl,
+            List<ICodeLine> sourcePropertyList,
+            List<ICodeLine> targetPropertyList)
         {
             // each property
-            foreach (var sourceProperty in sourcePropertyList)
+            foreach (ControlProperty sourceProperty in sourcePropertyList)
             {
                 if (sourceProperty.Name == "Index")
                 {
                     // Index           =   3
-                    control.Name += sourceProperty.Value;
+                    targetControl.Name += sourceProperty.Value;
                 }
                 else
                 {
-                    var targetProperty = new ControlProperty(2);
-                    if (ControlProperties(control.Type, sourceProperty, targetProperty, sourcePropertyList))
+                    ControlProperty targetProperty = new ControlProperty(targetControl, 2);
+                    if (ControlProperties(targetControl.Type.ToString(), sourceProperty, targetProperty, sourcePropertyList))
                     {
                         if (targetProperty.Name == "Image")
                         {
-                            module.ImagesUsed = true;
+                            sourceModule.ImagesUsed = true;
                         }
 
                         targetPropertyList.Add(targetProperty);
@@ -546,81 +69,10 @@ namespace MetX.VB6ToCSharp
             return true;
         }
 
-        public static bool Controls(
-            Module module,
-            List<Control> sourceControlList,
-            List<Control> targetControlList)
-        {
-            var type = string.Empty;
-
-            foreach (var sourceControl in sourceControlList)
-            {
-                var targetControl = new Control
-                {
-                    Name = sourceControl.Name,
-                    Owner = sourceControl.Owner,
-                    Container = sourceControl.Container,
-                    Valid = true
-                };
-
-                type = sourceControl.Type;
-
-                targetControl.Type = type;
-                ControlProperties(module, targetControl, sourceControl.PropertyList, targetControl.PropertyList);
-
-                targetControlList.Add(targetControl);
-            }
-
-            return true;
-        }
-
-        public static bool Enums(List<Enum> sourceEnums, List<Enum> targetEnums)
-        {
-            foreach (var sourceEnum in sourceEnums)
-                targetEnums.Add(sourceEnum);
-
-            return true;
-        }
-
-        public static bool Procedures(Module sourceModule, List<Procedure> targetProcedures)
-        {
-            const string indent6 = "      ";
-
-            foreach (var sourceProcedure in sourceModule.ProcedureList)
-            {
-                var targetProcedure = new Procedure
-                {
-                    Name = sourceProcedure.Name,
-                    Scope = sourceProcedure.Scope,
-                    Comment = sourceProcedure.Comment,
-                    Type = sourceProcedure.Type,
-                    ReturnType = Tools.VariableTypeConvert(sourceProcedure.ReturnType),
-                    ParameterList = sourceProcedure.ParameterList
-                };
-
-                // lines
-                foreach (var originalLine in sourceProcedure.LineList)
-                {
-                    GetPropertyLine(originalLine, out var convertedLine, out var placeAtBottom, null);
-
-                    targetProcedure.LineList.Add(convertedLine);
-                    if (placeAtBottom.IsNotEmpty())
-                        targetProcedure.BottomLineList.Add(placeAtBottom);
-                }
-
-                Massage.DetermineWhichLinesGetASemicolon(targetProcedure.LineList);
-                Massage.DetermineWhichLinesGetASemicolon(targetProcedure.BottomLineList);
-
-                targetProcedures.Add(targetProcedure);
-            }
-
-            return true;
-        }
-
         public static bool ControlProperties(string type,
             ControlProperty sourceProperty,
             ControlProperty targetProperty,
-            List<ControlProperty> sourcePropertyList)
+            List<ICodeLine> sourcePropertyList)
         {
             var validProperty = true;
             targetProperty.Valid = true;
@@ -1189,6 +641,557 @@ namespace MetX.VB6ToCSharp
             }
 
             return validProperty;
+        }
+
+        public static void ControlPropertyFont(ControlProperty sourceProperty, ControlProperty targetProperty)
+        {
+            var fontName = string.Empty;
+            var fontSize = 0;
+            var fontCharSet = 0;
+            var fontBold = false;
+            var fontUnderline = false;
+            var fontItalic = false;
+            var fontStrikethrough = false;
+            var temp = string.Empty;
+            //      BeginProperty Font
+            //         Name            =   "Arial"
+            //         Size            =   8.25
+            //         Charset         =   238
+            //         Weight          =   400
+            //         Underline       =   0   'False
+            //         Italic          =   0   'False
+            //         Strikethrough   =   0   'False
+            //      EndProperty
+
+            foreach (var property in sourceProperty.PropertyList)
+            {
+                switch (property.Name)
+                {
+                    case "Name":
+                        fontName = property.Value;
+                        break;
+
+                    case "Size":
+                        fontSize = Tools.GetFontSizeInt(property.Value);
+                        break;
+
+                    case "Weight":
+                        //        If tLogFont.lfWeight >= FW_BOLD Then
+                        //          bFontBold = True
+                        //        Else
+                        //          bFontBold = False
+                        //        End If
+                        // FW_BOLD = 700
+                        fontBold = (int.Parse(property.Value) >= 700);
+                        break;
+
+                    case "Charset":
+                        fontCharSet = int.Parse(property.Value);
+                        break;
+
+                    case "Underline":
+                        fontUnderline = (int.Parse(property.Value) != 0);
+                        break;
+
+                    case "Italic":
+                        fontItalic = (int.Parse(property.Value) != 0);
+                        break;
+
+                    case "Strikethrough":
+                        fontStrikethrough = (int.Parse(property.Value) != 0);
+                        break;
+                }
+            }
+
+            //      this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
+            //        (System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline
+            //        | System.Drawing.FontStyle.Strikeout), System.Drawing.GraphicsUnit.Point,
+            //        ((System.Byte)(0)));
+
+            // this.cmdExit.Font = new System.Drawing.Font("Tahoma", 12F,
+            // System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point,
+            // ((System.Byte)(238)));
+
+            targetProperty.Name = "Font";
+            targetProperty.Value = "new System.Drawing.Font(" + fontName + ",";
+            targetProperty.Value = targetProperty.Value + fontSize.ToString() + "F,";
+
+            temp = string.Empty;
+            if (fontBold)
+            {
+                temp = "System.Drawing.FontStyle.Bold";
+            }
+
+            if (fontItalic)
+            {
+                if (temp != string.Empty)
+                {
+                    temp += " | ";
+                }
+
+                temp += "System.Drawing.FontStyle.Italic";
+            }
+
+            if (fontUnderline)
+            {
+                if (temp != string.Empty)
+                {
+                    temp += " | ";
+                }
+
+                temp += "System.Drawing.FontStyle.Underline";
+            }
+
+            if (fontStrikethrough)
+            {
+                if (temp != string.Empty)
+                {
+                    temp += " | ";
+                }
+
+                temp += "System.Drawing.FontStyle.Strikeout";
+            }
+
+            if (temp == string.Empty)
+            {
+                targetProperty.Value += " System.Drawing.FontStyle.Regular,";
+            }
+            else
+            {
+                targetProperty.Value = targetProperty.Value + " ( " + temp + " ),";
+            }
+
+            targetProperty.Value += " System.Drawing.GraphicsUnit.Point, ";
+            targetProperty.Value = targetProperty.Value + "((System.Byte)(" + fontCharSet.ToString() + ")));";
+        }
+
+        public static bool Controls(
+            Module sourceModule,
+            Module targetModule,
+            List<Control> sourceControlList,
+            List<Control> targetControlList)
+        {
+            var type = string.Empty;
+
+            foreach (var sourceControl in sourceControlList)
+            {
+                var targetControl = new Control(targetModule)
+                {
+                    Name = sourceControl.Name,
+                    Owner = sourceControl.Owner,
+                    Container = sourceControl.Container,
+                    Valid = true
+                };
+
+                type = sourceControl.Type;
+
+                targetControl.Type = type;
+                ControlProperties(sourceModule, targetControl, sourceControl.Children, targetControl.Children);
+
+                targetControlList.Add(targetControl);
+            }
+
+            return true;
+        }
+
+        public static bool ConvertSourceModuleProperties(
+            Module targetModule,
+            List<ICodeLine> sourcePropertyList,
+            List<ICodeLine> targetPropertyList)
+        {
+            foreach (var sourceProperty in sourcePropertyList)
+            {
+                var targetProperty = new ControlProperty(targetModule, 2);
+                if (!ControlProperties(targetModule.Type.ToString(), (ControlProperty)sourceProperty, (ControlProperty)targetProperty, sourcePropertyList))
+                    continue;
+
+                if (targetProperty.Name == "BackgroundImage" || targetProperty.Name == "Icon")
+                    targetModule.ImagesUsed = true;
+
+                targetPropertyList.Add(targetProperty);
+            }
+            return true;
+        }
+
+        public static bool Enums(List<Enum> sourceEnums, List<Enum> targetEnums)
+        {
+            foreach (var sourceEnum in sourceEnums)
+                targetEnums.Add(sourceEnum);
+
+            return true;
+        }
+
+        public static void GetPropertyLine(
+                                    string originalLine,
+            out string translatedLine,
+            out string placeAtBottom,
+            IAmAProperty sourceProperty)
+        {
+            var localSourceProperty = (Property)sourceProperty;
+            placeAtBottom = string.Empty;
+            var line = originalLine.Trim();
+            translatedLine = line;
+
+            if (translatedLine.Length > 0)
+            {
+                if (translatedLine.Trim().StartsWith("'"))
+                {
+                    translatedLine = "// " + translatedLine.Substring(1);
+                    return;
+                }
+
+                if (localSourceProperty != null &&
+                    (localSourceProperty.Direction == "Set" || localSourceProperty.Direction == "Let"))
+                {
+                    foreach (var parameter in localSourceProperty.Parameters)
+                    {
+                        translatedLine = translatedLine.Replace(parameter.Name, "value");
+                    }
+                }
+
+                // vbNullString = string.empty
+                if (translatedLine.Contains("vbNullString"))
+                {
+                    translatedLine = translatedLine.Replace("vbNullString", "string.Empty");
+                }
+
+                // Nothing = null
+                if (translatedLine.Contains("Nothing"))
+                {
+                    translatedLine = line
+                        .Replace("Set ", "")
+                        .Replace("Nothing", "null");
+                    translatedLine += ";";
+                }
+
+                if (Tools.WithCurrentlyIn.IsNotEmpty())
+                {
+                    if (translatedLine.StartsWith("."))
+                        translatedLine = Tools.WithCurrentlyIn + translatedLine;
+                    if (translatedLine.Contains(" ."))
+                    {
+                        var words = translatedLine.Split(' ');
+                        for (var i = 0; i < words.Length; i++)
+                        {
+                            if (words[i].StartsWith("."))
+                            {
+                                words[i] = Tools.WithCurrentlyIn + words[i];
+                            }
+                        }
+
+                        translatedLine = string.Join(" ", words);
+                    }
+                }
+
+                // Begin With
+                if (translatedLine.StartsWith("With "))
+                {
+                    Tools.WithCurrentlyIn = translatedLine.TokenAt(2).Trim();
+                    translatedLine = "";
+                }
+
+                // Set
+                if (translatedLine.Contains("Set "))
+                {
+                    translatedLine = translatedLine.Replace("Set ", " ");
+                }
+
+                if (translatedLine.Contains("Dim") && translatedLine.Contains("As"))
+                {
+                    // Dim x As string
+                    // string x;
+                    translatedLine = $"{translatedLine.TokenAt(4)} {translatedLine.TokenAt(2)} ";
+                }
+
+                // remark
+                if (line[0] == '\'') // '
+                {
+                    translatedLine = translatedLine.Replace("'", "//");
+                }
+
+                // & to +
+                if (translatedLine.Contains("&"))
+                {
+                    translatedLine = translatedLine.Replace("&", "+");
+                }
+
+                // Select Case
+                if (translatedLine.Contains("Select Case"))
+                {
+                    translatedLine = translatedLine.Replace("Select Case", "switch");
+                }
+
+                // End Select
+                if (translatedLine.Contains("End Select"))
+                {
+                    translatedLine = translatedLine.Replace("End Select", "}");
+                }
+
+                // _
+                if (translatedLine.Contains(" _"))
+                {
+                    translatedLine = translatedLine.Replace(" _", "\r\n");
+                }
+
+                // If
+                if (translatedLine.Contains("If "))
+                {
+                    translatedLine = translatedLine.Replace("If ", "if ( ");
+                }
+
+                // Not
+                if (translatedLine.Contains("Not "))
+                {
+                    translatedLine = translatedLine.Replace("Not ", "! ");
+                }
+
+                // then
+                if (translatedLine.Contains(" Then"))
+                {
+                    translatedLine = translatedLine.Replace(" Then", " )\r\n" + ModuleConverter.Indent3 + "{\r\n");
+                }
+
+                // else
+                if (translatedLine.Contains("Else"))
+                {
+                    translatedLine = translatedLine.Replace("Else",
+                        "}\r\n" + ModuleConverter.Indent3 + "else\r\n" + ModuleConverter.Indent3 + "{");
+                }
+
+                // End if
+                if (translatedLine.Contains("End If"))
+                {
+                    translatedLine = translatedLine.Replace("End If", "}");
+                }
+
+                // Unload Me
+                if (translatedLine.Contains("Unload Me"))
+                {
+                    translatedLine = translatedLine.Replace("Unload Me", "Close()");
+                }
+
+                // .Caption
+                if (translatedLine.Contains(".Caption"))
+                {
+                    translatedLine = translatedLine.Replace(".Caption", ".Text");
+                }
+
+                // True
+                if (translatedLine.Contains("True"))
+                {
+                    translatedLine = translatedLine.Replace("True", "true");
+                }
+
+                // False
+                if (translatedLine.Contains("False"))
+                {
+                    translatedLine = translatedLine.Replace("False", "false");
+                }
+
+                // New
+                if (line.Contains("If ")
+                    && line.Contains("Then")
+                    && line.TokensAfter(1, "Then").Trim().Length > 0)
+                {
+                    translatedLine = translatedLine.Replace("New", "new");
+                }
+
+                // New
+                if (translatedLine.Contains("New "))
+                {
+                    translatedLine = translatedLine.Replace("New ", "new ");
+                    if (!translatedLine.Contains("("))
+                        translatedLine += "();";
+                }
+
+                if (translatedLine.Contains("On Error Resume Next"))
+                {
+                    placeAtBottom = @"
+        }
+        catch(Exception e)
+        {
+            /* ON ERROR RESUME NEXT (ish) */
+        }
+";
+                    translatedLine = "try\r\n{\r\n";
+                }
+            }
+
+            if (translatedLine.IsNotEmpty())
+                translatedLine = Massage.Now(translatedLine);
+        }
+
+        public static bool Module(Module sourceModule, Module targetModule)
+        {
+            // module name
+            targetModule.Name = sourceModule.Name;
+            // file name
+            targetModule.FileName = Path.GetFileNameWithoutExtension(sourceModule.FileName) + ".cs";
+            // type
+            targetModule.Type = sourceModule.Type;
+            // version
+            targetModule.Version = sourceModule.Version;
+            // process own properties - forms
+            ConvertSourceModuleProperties(targetModule, sourceModule.FormPropertyList.Cast<ICodeLine>().ToList(), targetModule.FormPropertyList.Cast<ICodeLine>().ToList());
+            // process controls - form
+            Controls(sourceModule, targetModule, sourceModule.ControlList, targetModule.ControlList);
+
+            // special exception for menu
+            if (targetModule.MenuUsed)
+            {
+                // add main menu control
+                var control = new Control(targetModule)
+                {
+                    Name = "MainMenu",
+                    Owner = targetModule.Name,
+                    Type = "MainMenu",
+                    Valid = true,
+                    InvisibleAtRuntime = true
+                };
+                targetModule.ControlList.Insert(0, control);
+                foreach (var oMenuControl in targetModule.ControlList)
+                    if ((oMenuControl.Type == "MenuItem") && (oMenuControl.Owner == targetModule.Name))
+                        // rewrite previous owner
+                        oMenuControl.Owner = control.Name;
+            }
+
+            var tempControlList = new List<Control>();
+            var tabControlIndex = 0;
+
+            // check for TabDlg.SSTab
+            foreach (var targetControl in targetModule.ControlList)
+            {
+                Control tabPage = null;
+                var index = 0;
+                if ((targetControl.Type == "TabControl") && (targetControl.Valid))
+                {
+                    // each property
+                    foreach (ControlProperty targetProperty in targetControl.Children)
+                    {
+                        Console.WriteLine(targetProperty.Name);
+
+                        if (targetProperty.Name.Contains($"TabCaption({index})"))
+                        {
+                            // new tab
+                            var control = new Control(targetModule)
+                            {
+                                Type = "TabPage",
+                                Name = "tabPage" + index.ToString(),
+                                Owner = targetControl.Name,
+                                Container = true,
+                                Valid = true,
+                                InvisibleAtRuntime = false,
+                                // add some necessary properties
+                                Children = new List<ICodeLine>
+                                {
+                                    new ControlProperty(targetModule, 2)
+                                    {
+                                        Name = "Location", Value = "new System.Drawing.Point(4, 22)", Valid = true
+                                    },
+                                    new ControlProperty(targetModule, 2)
+                                    {
+                                        Name = "Size", Value = "new System.Drawing.Size(477, 374)", Valid = true
+                                    },
+                                    new ControlProperty(targetModule, 2)
+                                    {
+                                        Name = "Text",
+                                        Value = targetProperty.Line,
+                                        Valid = true
+                                    },
+                                    new ControlProperty(targetModule, 2)
+                                    {
+                                        Name = "TabIndex", Value = index.ToString(), Valid = true
+                                    }
+                                }
+                            };
+                            tempControlList.Add(control);
+                            index++;
+                        }
+
+                        // Control = change owner of control to current tab
+                        //      this.SSTab1.(Tab(0).Control(0) = "ImageControl";
+                        if (targetProperty.Name.Contains(".Control("))
+                        {
+                            if (!targetProperty.Name.Contains("Enable"))
+                            {
+                                var tabName = targetProperty.Value.Substring(1, targetProperty.Value.Length - 2);
+                                tabName = Tools.GetControlIndexName(tabName);
+                                // search for "targetProperty.Value" control
+                                // and replace owner of this control to current tab
+                                foreach (var oNewOwner in targetModule.ControlList)
+                                {
+                                    if ((oNewOwner.Name == tabName) && (!oNewOwner.InvisibleAtRuntime))
+                                    {
+                                        oNewOwner.Owner = tabPage.Name;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                tabControlIndex++;
+            }
+
+            if (tempControlList.Count > 0)
+            {
+                // right order of tabs
+                var position = 0;
+                foreach (var control in tempControlList)
+                {
+                    targetModule.ControlList.Insert(tabControlIndex + position, control);
+                    position++;
+                }
+            }
+
+            // process enums
+            Enums(sourceModule.EnumList, targetModule.EnumList);
+
+            // process variables
+            Variables(sourceModule.VariableList, targetModule.VariableList);
+
+            // process properties
+            ClassProperties(sourceModule.PropertyList, targetModule.PropertyList, targetModule);
+
+            // process procedures
+            Procedures(sourceModule, targetModule.ProcedureList);
+
+            return true;
+        }
+
+        public static bool Procedures(Module sourceModule, List<Procedure> targetProcedures)
+        {
+            const string indent6 = "      ";
+
+            foreach (var sourceProcedure in sourceModule.ProcedureList)
+            {
+                var targetProcedure = new Procedure
+                {
+                    Name = sourceProcedure.Name,
+                    Scope = sourceProcedure.Scope,
+                    Comment = sourceProcedure.Comment,
+                    Type = sourceProcedure.Type,
+                    ReturnType = Tools.VariableTypeConvert(sourceProcedure.ReturnType),
+                    ParameterList = sourceProcedure.ParameterList
+                };
+
+                // lines
+                foreach (var originalLine in sourceProcedure.LineList)
+                {
+                    GetPropertyLine(originalLine, out var convertedLine, out var placeAtBottom, null);
+
+                    targetProcedure.LineList.Add(convertedLine);
+                    if (placeAtBottom.IsNotEmpty())
+                        targetProcedure.BottomLineList.Add(placeAtBottom);
+                }
+
+                Massage.DetermineWhichLinesGetASemicolon(targetProcedure.LineList);
+                Massage.DetermineWhichLinesGetASemicolon(targetProcedure.BottomLineList);
+
+                targetProcedures.Add(targetProcedure);
+            }
+
+            return true;
         }
 
         public static bool Variable(Variable sourceVariable, Variable targetVariable)

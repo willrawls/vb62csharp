@@ -19,7 +19,7 @@ namespace MetX.VB6ToCSharp
         public bool Valid { get; set; }
         public string Value { get; set; }
 
-        public CSharpProperty(int parentIndent)
+        public CSharpProperty(ICodeLine parent, int parentIndent) : base(parent, null, parentIndent + 1)
         {
             Get = new CSharpPropertyPart(this, PropertyPartType.Get);
             Set = new CSharpPropertyPart(this, PropertyPartType.Set);
