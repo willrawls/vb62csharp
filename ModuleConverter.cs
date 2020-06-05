@@ -789,9 +789,11 @@ namespace MetX.VB6ToCSharp
 
                             default:
                                 // new control
-                                control = new Control(TargetModule, null, 1);
-                                control.Name = sName;
-                                control.Type = sType;
+                                control = new Control(TargetModule)
+                                {
+                                    Name = sName,
+                                    Type = sType
+                                };
                                 // save control name for possible next controls as owner
                                 sOwner = sName;
                                 // set current container name
@@ -1150,7 +1152,7 @@ namespace MetX.VB6ToCSharp
                                 break;
 
                             case "Property":
-                                property = new Property(TargetModule, TargetModule.Indent);
+                                property = new Property(TargetModule);
                                 property.Comment = sComments ?? string.Empty;
                                 sComments = string.Empty;
                                 ParsePropertyName(property, line);

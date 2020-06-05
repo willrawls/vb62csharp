@@ -21,7 +21,7 @@ namespace MetX.VB6ToCSharp
 
                 if (targetProperty == null)
                 {
-                    targetProperty = new CSharpProperty(parentBlock, 1)
+                    targetProperty = new CSharpProperty(parentBlock)
                     {
                         Name = sourceProperty.Name.Trim(),
                         Comment = sourceProperty.Comment,

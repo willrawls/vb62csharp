@@ -8,16 +8,17 @@ namespace MetX.VB6ToCSharp
         public string Line { get; set; }
         public ICodeLine Parent { get; set; }
 
-        public CodeLine(ICodeLine parent, string line, int indent = 0)
+        public CodeLine(ICodeLine parent, string line)
         {
             Parent = parent;
             Line = line;
-            Indent = indent;
+            Indent = parent?.Indent + 1 ?? 0;
         }
 
         public virtual string GenerateCode()
         {
-            return Line ?? "";
+            var indentation = Tools.Indent(Indent);
+            return indentation + (Line ?? "");
         }
 
         public virtual bool IsEmpty() => Line.IsEmpty();

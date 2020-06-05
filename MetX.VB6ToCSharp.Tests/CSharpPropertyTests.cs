@@ -9,11 +9,12 @@ namespace MetX.VB6ToCSharp.Tests
     public class CSharpPropertyTests
     {
         [TestMethod]
-        public void SimpleTest()
+        public void SimpleGetSetTest()
         {
-            ICodeLine parent = new EmptyCodeParent();
+            ICodeLine parent = new EmptyParent();
 
-            var target = new CSharpProperty(parent, 1)
+            // ReSharper disable once UseObjectOrCollectionInitializer
+            var target = new CSharpProperty(parent)
             {
                 Comment = "' TheComment",
                 Name = "F",
@@ -57,6 +58,25 @@ namespace MetX.VB6ToCSharp.Tests
             Console.WriteLine(actual);
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SimplePropertyPartTest()
+        {
+            ICodeLine parent = new EmptyParent();
+            var part = new CSharpPropertyPart(parent, PropertyPartType.Get)
+            {
+                Line = "Testing",
+                PartType = PropertyPartType.Get,
+                Encountered = true
+            };
+            part.Children = new List<ICodeLine>
+            {
+                new CodeLine(part, "123")
+            };
+
+            var actual = part.GenerateCode();
+            Assert.AreEqual("\n    get\r\n    {\r\n        123\r\n    }\r\n", "\n" + actual);
         }
     }
 }

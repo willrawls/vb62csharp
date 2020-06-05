@@ -10,7 +10,7 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void ProperIndentation3LevelsDeep()
         {
-            AbstractCodeBlock parent = new EmptyCodeParent();
+            AbstractCodeBlock parent = new EmptyParent();
 
             var codeBlock = new CodeBlock(parent, "Fred");
 

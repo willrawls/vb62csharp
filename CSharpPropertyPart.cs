@@ -9,23 +9,25 @@ namespace MetX.VB6ToCSharp
     public class CSharpPropertyPart : AbstractCodeBlock, IGenerate, ICodeLine
     {
         public AbstractCodeBlock BlockAtBottom;
-        public AbstractCodeBlock BlockAtTop;
+
+        //public AbstractCodeBlock BlockAtTop;
         public bool Encountered;
+
         public List<Parameter> ParameterList;
         public PropertyPartType PartType;
 
-        public CSharpPropertyPart(ICodeLine parent, PropertyPartType propertyPartType) : base(parent, null, 1)
+        public CSharpPropertyPart(ICodeLine parent, PropertyPartType propertyPartType) : base(parent, null)
 
         {
             Parent = parent;
             PartType = propertyPartType;
-            Indent = 2;
+            Indent = parent.Indent + 1;
             ParameterList = new List<Parameter>();
         }
 
         public string GenerateCode()
         {
-            var indentation = Tools.Indent(Parent.Indent + 1);
+            var indentation = Tools.Indent(Indent);
             var finalPartType = PartType.ToString().ToLower().Replace("let", "set");
 
             if (IsEmpty())
@@ -38,9 +40,9 @@ namespace MetX.VB6ToCSharp
                 result.AppendLine(indentation + Line);
                 result.AppendLine(indentation + (Before ?? "{"));
 
-                if (BlockAtTop?.Children != null)
+                if (Children != null)
                 {
-                    foreach (var child in BlockAtTop.Children)
+                    foreach (var child in Children)
                     {
                         if (child.Line.IsNotEmpty())
                         {

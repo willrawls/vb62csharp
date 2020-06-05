@@ -24,7 +24,7 @@ namespace MetX.VB6ToCSharp
         public List<Variable> VariableList;
         public string Version;
 
-        public Module() : base(null, "", 1)
+        public Module() : base(null, "")
         {
             FormPropertyList = new List<ControlProperty>();
             ControlList = new List<Control>();

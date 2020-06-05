@@ -17,7 +17,7 @@ namespace MetX.VB6ToCSharp
         public bool Valid { get; set; }
         public string Value { get; set; }
 
-        public ControlProperty(ICodeLine parent, int parentIndent) : base(parent, "", 0)
+        public ControlProperty(ICodeLine parent, int parentIndent) : base(parent, "")
         {
             PropertyList = new List<IAmAProperty>();
             Indent = parentIndent + 1;

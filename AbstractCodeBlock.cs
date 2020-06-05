@@ -11,7 +11,7 @@ namespace MetX.VB6ToCSharp
         public List<ICodeLine> Children { get; set; }
 
         // ReSharper disable once PublicConstructorInAbstractClass
-        public AbstractCodeBlock(ICodeLine parent, string line, int indent = 0) : base(parent, line, indent)
+        public AbstractCodeBlock(ICodeLine parent, string line) : base(parent, line)
         {
         }
 

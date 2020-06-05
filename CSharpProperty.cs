@@ -1,5 +1,6 @@
 using System;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MetX.Library;
@@ -19,12 +20,12 @@ namespace MetX.VB6ToCSharp
         public bool Valid { get; set; }
         public string Value { get; set; }
 
-        public CSharpProperty(ICodeLine parent, int parentIndent) : base(parent, null, parentIndent + 1)
+        public CSharpProperty(ICodeLine parent) : base(parent, null)
         {
             Get = new CSharpPropertyPart(this, PropertyPartType.Get);
             Set = new CSharpPropertyPart(this, PropertyPartType.Set);
             Let = new CSharpPropertyPart(this, PropertyPartType.Let);
-            Indent = parentIndent + 1;
+            Indent = parent.Indent + 1;
         }
 
         public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
@@ -42,8 +43,8 @@ namespace MetX.VB6ToCSharp
             targetPart.ParameterList = localSourceProperty.Parameters;
             targetPart.Encountered = true;
 
-            if (targetPart.BlockAtTop == null)
-                targetPart.BlockAtTop = new CodeBlock(this);
+            if (targetPart.Children == null)
+                targetPart.Children = new List<ICodeLine> { new CodeBlock(this) };
             if (targetPart.BlockAtBottom == null)
                 targetPart.BlockAtBottom = new CodeBlock(this);
 
@@ -54,7 +55,7 @@ namespace MetX.VB6ToCSharp
 
                 ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                 if (translatedLine.IsNotEmpty())
-                    targetPart.BlockAtTop.Children.Add(new CodeBlock(this, translatedLine));
+                    targetPart.Children.Add(new CodeBlock(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
                     targetPart.BlockAtBottom.Children.Add(new CodeBlock(this, placeAtBottom));
                 targetPart.Encountered = true;

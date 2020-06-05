@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text;
 using MetX.Library;
 
@@ -8,12 +9,19 @@ namespace MetX.VB6ToCSharp
 {
     public class CodeBlock : AbstractCodeBlock
     {
+        public static CodeBlock _(AbstractCodeBlock parent)
+        {
+            var block = new CodeBlock(parent);
+            return block;
+
+        }
+
         public CodeBlock(AbstractCodeBlock parent, string line = null,
             List<ICodeLine> children = null,
             string before = "{",
             string after = "}",
             int indent = 1)
-            : base(parent, line, indent)
+            : base(parent, line)
         {
             SetupBlock(parent, line, before, children, after);
         }
@@ -74,13 +82,6 @@ namespace MetX.VB6ToCSharp
         public override string ToString()
         {
             return Line;
-        }
-    }
-
-    public class EmptyCodeParent : AbstractCodeBlock
-    {
-        public EmptyCodeParent() : base(null, null, 0)
-        {
         }
     }
 }

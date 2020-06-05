@@ -18,11 +18,11 @@ namespace MetX.VB6ToCSharp
         public bool Valid { get; set; }
         public string Value { get; set; }
 
-        public Property(ICodeLine parent, int parentIndent) : base(parent, null, 1)
+        public Property(ICodeLine parent) : base(parent, null)
         {
             Block = new CodeBlock(this);
             Parameters = new List<Parameter>();
-            Indent = parentIndent + 1;
+            Indent = parent.Indent + 1;
         }
 
         public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)

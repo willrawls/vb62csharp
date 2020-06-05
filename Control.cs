@@ -17,7 +17,7 @@ namespace MetX.VB6ToCSharp
 
         public bool Valid;
 
-        public Control(ICodeLine parent, string line = null, int indent = 0) : base(parent, line, indent)
+        public Control(ICodeLine parent, string line = null) : base(parent, line)
         {
         }
     }
