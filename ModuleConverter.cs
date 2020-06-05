@@ -1203,7 +1203,7 @@ namespace MetX.VB6ToCSharp
                         {
                             // add line of property
                             property.Block.Children.Add(
-                                new CodeBlock(property, line));
+                                new Block(property, line));
                         }
 
                         if (bProcedure)

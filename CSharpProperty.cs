@@ -7,7 +7,7 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public class CSharpProperty : AbstractCodeBlock, IAmAProperty
+    public class CSharpProperty : AbstractBlock, IAmAProperty
     {
         public CSharpPropertyPart Get;
         public CSharpPropertyPart Let;
@@ -44,9 +44,9 @@ namespace MetX.VB6ToCSharp
             targetPart.Encountered = true;
 
             if (targetPart.Children == null)
-                targetPart.Children = new List<ICodeLine> { new CodeBlock(this) };
+                targetPart.Children = new List<ICodeLine> { new Block(this) };
             if (targetPart.BlockAtBottom == null)
-                targetPart.BlockAtBottom = new CodeBlock(this);
+                targetPart.BlockAtBottom = new Block(this);
 
             foreach (var originalLine in localSourceProperty.Block.Children)
             {
@@ -55,9 +55,9 @@ namespace MetX.VB6ToCSharp
 
                 ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                 if (translatedLine.IsNotEmpty())
-                    targetPart.Children.Add(new CodeBlock(this, translatedLine));
+                    targetPart.Children.Add(new Block(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
-                    targetPart.BlockAtBottom.Children.Add(new CodeBlock(this, placeAtBottom));
+                    targetPart.BlockAtBottom.Children.Add(new Block(this, placeAtBottom));
                 targetPart.Encountered = true;
             }
         }
@@ -131,7 +131,7 @@ namespace MetX.VB6ToCSharp
             return code;
         }
 
-        public string GenerateCode(CodeBlock parent)
+        public string GenerateCode(Block parent)
         {
             Parent = parent;
             return GenerateCode();

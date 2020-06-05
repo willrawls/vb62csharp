@@ -7,16 +7,15 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public class CodeBlock : AbstractCodeBlock
+    public class Block : AbstractBlock
     {
-        public static CodeBlock _(AbstractCodeBlock parent)
+        public static Block New(AbstractBlock parent)
         {
-            var block = new CodeBlock(parent);
+            var block = new Block(parent);
             return block;
-
         }
 
-        public CodeBlock(AbstractCodeBlock parent, string line = null,
+        public Block(AbstractBlock parent, string line = null,
             List<ICodeLine> children = null,
             string before = "{",
             string after = "}",
@@ -40,7 +39,7 @@ namespace MetX.VB6ToCSharp
                     result.AppendLine(indentation + Before);
 
                 foreach (var child in Children)
-                    result.Append(((CodeBlock)child).GenerateCode());
+                    result.Append(((Block)child).GenerateCode());
 
                 if (After.IsNotEmpty())
                     result.AppendLine(indentation + After);
@@ -50,12 +49,12 @@ namespace MetX.VB6ToCSharp
             return code;
         }
 
-        public string GenerateCode(AbstractCodeBlock parent)
+        public string GenerateCode(AbstractBlock parent)
         {
             throw new NotImplementedException();
         }
 
-        public void SetupBlock(AbstractCodeBlock parent, string line, string before, List<ICodeLine> children, string after)
+        public void SetupBlock(AbstractBlock parent, string line, string before, List<ICodeLine> children, string after)
         {
             Parent = parent;
             Line = line;
@@ -74,8 +73,8 @@ namespace MetX.VB6ToCSharp
             foreach (var child in Children)
             {
                 child.Parent = this;
-                if (Parent is CodeBlock)
-                    ((CodeBlock)child).SetupChildren();
+                if (Parent is Block)
+                    ((Block)child).SetupChildren();
             }
         }
 

@@ -4,14 +4,14 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public abstract class AbstractCodeBlock : CodeLine, ICodeBlock
+    public abstract class AbstractBlock : LineOfCode, IBlock
     {
         public string After { get; set; } = "}";
         public string Before { get; set; } = "{";
         public List<ICodeLine> Children { get; set; }
 
         // ReSharper disable once PublicConstructorInAbstractClass
-        public AbstractCodeBlock(ICodeLine parent, string line) : base(parent, line)
+        public AbstractBlock(ICodeLine parent, string line) : base(parent, line)
         {
         }
 

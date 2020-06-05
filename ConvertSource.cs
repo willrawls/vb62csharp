@@ -8,7 +8,7 @@ namespace MetX.VB6ToCSharp
 {
     public static class ConvertSource
     {
-        public static bool ClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties, ICodeBlock parentBlock)
+        public static bool ClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties, IBlock parentBlock)
         {
             foreach (var sourceProperty in sourceProperties)
             {

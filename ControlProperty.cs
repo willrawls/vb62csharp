@@ -7,7 +7,7 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Property.
     /// </summary>
-    public class ControlProperty : AbstractCodeBlock, IAmAProperty
+    public class ControlProperty : AbstractBlock, IAmAProperty
     {
         public List<IAmAProperty> PropertyList;
         public string Comment { get; set; }

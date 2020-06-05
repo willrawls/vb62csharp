@@ -2,7 +2,7 @@
 
 namespace MetX.VB6ToCSharp
 {
-    public interface ICodeBlock : ICodeLine
+    public interface IBlock : ICodeLine
     {
         string After { get; set; }
         string Before { get; set; }

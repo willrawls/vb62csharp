@@ -6,9 +6,9 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Property.
     /// </summary>
-    public class Property : AbstractCodeBlock, IAmAProperty
+    public class Property : AbstractBlock, IAmAProperty
     {
-        public CodeBlock Block;
+        public Block Block;
         public string Direction;
         public string Comment { get; set; }
         public string Name { get; set; }
@@ -20,7 +20,7 @@ namespace MetX.VB6ToCSharp
 
         public Property(ICodeLine parent) : base(parent, null)
         {
-            Block = new CodeBlock(this);
+            Block = new Block(this);
             Parameters = new List<Parameter>();
             Indent = parent.Indent + 1;
         }

@@ -5,7 +5,7 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Module.
     /// </summary>
-    public class Module : AbstractCodeBlock
+    public class Module : AbstractBlock
     {
         public string Comment;
         public List<Control> ControlList;

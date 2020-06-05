@@ -2,13 +2,13 @@
 
 namespace MetX.VB6ToCSharp
 {
-    public class CodeLine : ICodeLine
+    public class LineOfCode : ICodeLine
     {
         public int Indent { get; set; }
         public string Line { get; set; }
         public ICodeLine Parent { get; set; }
 
-        public CodeLine(ICodeLine parent, string line)
+        public LineOfCode(ICodeLine parent, string line)
         {
             Parent = parent;
             Line = line;

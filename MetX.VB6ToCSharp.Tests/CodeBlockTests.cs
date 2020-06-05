@@ -10,22 +10,22 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void ProperIndentation3LevelsDeep()
         {
-            AbstractCodeBlock parent = new EmptyParent();
+            AbstractBlock parent = new EmptyParent();
 
-            var codeBlock = new CodeBlock(parent, "Fred");
+            var codeBlock = new Block(parent, "Fred");
 
-            codeBlock.Children.Add(new CodeBlock(codeBlock, "One"));
+            codeBlock.Children.Add(new Block(codeBlock, "One"));
 
-            AbstractCodeBlock two = new CodeBlock(codeBlock, "Two");
+            AbstractBlock two = new Block(codeBlock, "Two");
             codeBlock.Children.Add(two);
-            codeBlock.Children.Add(new CodeBlock(codeBlock, "Three"));
-            two.Children.Add(new CodeBlock(two, "Four"));
+            codeBlock.Children.Add(new Block(codeBlock, "Three"));
+            two.Children.Add(new Block(two, "Four"));
 
-            AbstractCodeBlock five = new CodeBlock(two, "Five");
+            AbstractBlock five = new Block(two, "Five");
             two.Children.Add(five);
 
-            five.Children.Add(new CodeBlock(five, "Six"));
-            five.Children.Add(new CodeBlock(five, "Seven"));
+            five.Children.Add(new Block(five, "Six"));
+            five.Children.Add(new Block(five, "Seven"));
 
             const string expected =
 @"    Fred

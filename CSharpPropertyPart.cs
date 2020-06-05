@@ -6,9 +6,9 @@ using MetX.Library;
 
 namespace MetX.VB6ToCSharp
 {
-    public class CSharpPropertyPart : AbstractCodeBlock, IGenerate, ICodeLine
+    public class CSharpPropertyPart : AbstractBlock, IGenerate, ICodeLine
     {
-        public AbstractCodeBlock BlockAtBottom;
+        public AbstractBlock BlockAtBottom;
 
         //public AbstractCodeBlock BlockAtTop;
         public bool Encountered;

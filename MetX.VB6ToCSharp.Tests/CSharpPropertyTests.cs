@@ -25,14 +25,14 @@ namespace MetX.VB6ToCSharp.Tests
             target.Get.Encountered = true;
             target.Get.Children = new List<ICodeLine>
             {
-                new CodeBlock(target.Get, "B"),
-                new CodeBlock(target.Get, "C")
+                new Block(target.Get, "B"),
+                new Block(target.Get, "C")
             };
 
             target.Set.Line = "D";
             target.Set.Encountered = true;
             target.Set.Children = new List<ICodeLine>();
-            target.Set.Children.Add(new CodeBlock(target.Get, "E"));
+            target.Set.Children.Add(new Block(target.Get, "E"));
 
             var expected =
 @"    // TheComment
@@ -72,7 +72,7 @@ namespace MetX.VB6ToCSharp.Tests
             };
             part.Children = new List<ICodeLine>
             {
-                new CodeLine(part, "123")
+                new LineOfCode(part, "123")
             };
 
             var actual = part.GenerateCode();

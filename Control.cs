@@ -5,7 +5,7 @@ namespace MetX.VB6ToCSharp
     /// <summary>
     ///     Summary description for Control.
     /// </summary>
-    public class Control : AbstractCodeBlock
+    public class Control : AbstractBlock
     {
         public bool Container;
         public bool InvisibleAtRuntime;
