@@ -12,13 +12,13 @@ namespace MetX.VB6ToCSharp
         {
             Parent = parent;
             Line = line;
-            Indent = parent?.Indent + 1 ?? 0;
+            Indent = parent.Indent + 1;
         }
 
         public virtual string GenerateCode()
         {
             var indentation = Tools.Indent(Indent);
-            return indentation + (Line ?? "");
+            return indentation + (Line ?? "") + "\r\n";
         }
 
         public virtual bool IsEmpty() => Line.IsEmpty();

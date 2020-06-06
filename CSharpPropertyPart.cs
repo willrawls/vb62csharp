@@ -8,7 +8,7 @@ namespace MetX.VB6ToCSharp
 {
     public class CSharpPropertyPart : AbstractBlock, IGenerate, ICodeLine
     {
-        public AbstractBlock BlockAtBottom;
+        public AbstractBlock LinesAfter;
 
         //public AbstractCodeBlock BlockAtTop;
         public bool Encountered;
@@ -17,15 +17,15 @@ namespace MetX.VB6ToCSharp
         public PropertyPartType PartType;
 
         public CSharpPropertyPart(ICodeLine parent, PropertyPartType propertyPartType) : base(parent, null)
-
         {
             Parent = parent;
             PartType = propertyPartType;
             Indent = parent.Indent + 1;
             ParameterList = new List<Parameter>();
+            LinesAfter = new Block(this);
         }
 
-        public string GenerateCode()
+        public override string GenerateCode()
         {
             var indentation = Tools.Indent(Indent);
             var finalPartType = PartType.ToString().ToLower().Replace("let", "set");
@@ -34,33 +34,27 @@ namespace MetX.VB6ToCSharp
                 return indentation + $"{finalPartType};";
             else
             {
-                Line = $"{finalPartType}";
+                // Line = $"{finalPartType}";
 
                 var result = new StringBuilder();
-                result.AppendLine(indentation + Line);
+                result.AppendLine(indentation + $"{finalPartType}"); // Line);
                 result.AppendLine(indentation + (Before ?? "{"));
 
-                if (Children != null)
+                if(Line.IsNotEmpty())
+                    result.AppendLine(indentation + Line);
+
+                foreach (ICodeLine block in Blocks.Where(block => block.Line.IsNotEmpty()))
                 {
-                    foreach (var child in Children)
-                    {
-                        if (child.Line.IsNotEmpty())
-                        {
-                            result.AppendLine(child.GenerateCode());
-                        }
-                    }
+                    var generatedCode = block.GenerateCode();
+                    result.Append(generatedCode);
                 }
 
-                if (BlockAtBottom?.Children != null)
+                foreach (var blockAfter in LinesAfter.Blocks.Where(line => line.IsNotEmpty()))
                 {
-                    foreach (var child in BlockAtBottom.Children)
-                    {
-                        if (child.IsNotEmpty())
-                        {
-                            result.AppendLine(child.GenerateCode());
-                        }
-                    }
+                    var generatedCode = blockAfter.GenerateCode();
+                    result.Append(generatedCode);
                 }
+
                 result.AppendLine(indentation + (After ?? "}"));
 
                 var code = result.ToString();

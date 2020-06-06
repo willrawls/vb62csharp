@@ -786,7 +786,7 @@ namespace MetX.VB6ToCSharp
                 type = sourceControl.Type;
 
                 targetControl.Type = type;
-                ControlProperties(sourceModule, targetControl, sourceControl.Children, targetControl.Children);
+                ControlProperties(sourceModule, targetControl, sourceControl.Blocks, targetControl.Blocks);
 
                 targetControlList.Add(targetControl);
             }
@@ -1066,7 +1066,7 @@ namespace MetX.VB6ToCSharp
                 if ((targetControl.Type == "TabControl") && (targetControl.Valid))
                 {
                     // each property
-                    foreach (ControlProperty targetProperty in targetControl.Children)
+                    foreach (ControlProperty targetProperty in targetControl.Blocks)
                     {
                         Console.WriteLine(targetProperty.Name);
 
@@ -1082,7 +1082,7 @@ namespace MetX.VB6ToCSharp
                                 Valid = true,
                                 InvisibleAtRuntime = false,
                                 // add some necessary properties
-                                Children = new List<ICodeLine>
+                                Blocks = new List<ICodeLine>
                                 {
                                     new ControlProperty(targetModule, 2)
                                     {
@@ -1161,8 +1161,6 @@ namespace MetX.VB6ToCSharp
 
         public static bool Procedures(Module sourceModule, List<Procedure> targetProcedures)
         {
-            const string indent6 = "      ";
-
             foreach (var sourceProcedure in sourceModule.ProcedureList)
             {
                 var targetProcedure = new Procedure

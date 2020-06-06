@@ -286,7 +286,7 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // write properties
-                foreach (ControlProperty property in control.Children.Cast<ControlProperty>())
+                foreach (ControlProperty property in control.Blocks.Cast<ControlProperty>())
                 {
                     GetPropertyRow(result, control.Type, control.Name, property, outPath);
                 }
@@ -853,7 +853,7 @@ namespace MetX.VB6ToCSharp
                         else
                         {
                             // to controls
-                            control.Children.Add(oNestedProperty);
+                            control.Blocks.Add(oNestedProperty);
                         }
 
                         break;
@@ -887,7 +887,7 @@ namespace MetX.VB6ToCSharp
                                 if (iLevel > 1)
                                 {
                                     // add property to control
-                                    control.Children.Add(property);
+                                    control.Blocks.Add(property);
                                 }
                                 else
                                 {
@@ -929,10 +929,7 @@ namespace MetX.VB6ToCSharp
 
         public void ParseParameters(List<Parameter> parameterList, string line)
         {
-            var bFinish = false;
             var position = 0;
-            var start = 0;
-            var status = false;
             var word = string.Empty;
             // parameters delimited by comma
             var parts = line.Split(',').ToList().Select(p => p.Trim()).ToList();
@@ -973,7 +970,6 @@ namespace MetX.VB6ToCSharp
             var word = string.Empty;
             var position = 0;
             var start = 0;
-            var status = false;
 
             //public Sub cmdOk_Click()
             //public void cmdShow_Click(object sender, System.EventArgs e)
@@ -1202,7 +1198,7 @@ namespace MetX.VB6ToCSharp
                         if (bProperty)
                         {
                             // add line of property
-                            property.Block.Children.Add(
+                            property.Block.Blocks.Add(
                                 new Block(property, line));
                         }
 

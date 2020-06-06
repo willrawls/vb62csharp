@@ -43,21 +43,19 @@ namespace MetX.VB6ToCSharp
             targetPart.ParameterList = localSourceProperty.Parameters;
             targetPart.Encountered = true;
 
-            if (targetPart.Children == null)
-                targetPart.Children = new List<ICodeLine> { new Block(this) };
-            if (targetPart.BlockAtBottom == null)
-                targetPart.BlockAtBottom = new Block(this);
+            targetPart.Blocks.Add(new Block(this));
+            targetPart.LinesAfter = new Block(this);
 
-            foreach (var originalLine in localSourceProperty.Block.Children)
+            foreach (var originalLine in localSourceProperty.Block.Blocks)
             {
                 var line = originalLine.Line.Trim();
                 if (!line.IsNotEmpty()) continue;
 
                 ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                 if (translatedLine.IsNotEmpty())
-                    targetPart.Children.Add(new Block(this, translatedLine));
+                    targetPart.Blocks.Add(new Block(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
-                    targetPart.BlockAtBottom.Children.Add(new Block(this, placeAtBottom));
+                    targetPart.LinesAfter.Blocks.Add(new Block(this, placeAtBottom));
                 targetPart.Encountered = true;
             }
         }
@@ -102,6 +100,7 @@ namespace MetX.VB6ToCSharp
                 }
                 else
                 {
+                    result.AppendLine(firstIndentation + blockName);
                     result.AppendLine(Get.GenerateCode());
                     result.AppendLine(letSet.GenerateCode());
                 }

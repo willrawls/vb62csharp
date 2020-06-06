@@ -7,7 +7,7 @@ namespace MetX.VB6ToCSharp
     {
         public const string SourceCodeFolderPath = @"I:\OneDrive\data\code\Slice and Dice\Sandy\";
         public const string OutputFolderPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC\";
-        public const bool ClearOutputFolder = false;
+        // public const bool ClearOutputFolder = false;
 
         public static int Main(string[] args)
         {
@@ -17,6 +17,8 @@ namespace MetX.VB6ToCSharp
 
         public static void ConvertAllFiles()
         {
+
+            /*
             if(ClearOutputFolder)
             {
                 // Delete previous run
@@ -27,6 +29,7 @@ namespace MetX.VB6ToCSharp
                 }
             }
 
+            */
             var fileSets = new List<IEnumerable<string>>
             {
                 Directory.EnumerateFiles(SourceCodeFolderPath, "*.cls"),

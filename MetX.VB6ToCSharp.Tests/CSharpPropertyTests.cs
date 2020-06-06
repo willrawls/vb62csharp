@@ -21,18 +21,18 @@ namespace MetX.VB6ToCSharp.Tests
                 Type = "G",
             };
 
-            target.Get.Line = "A";
+            //target.Get.Line = "A";
             target.Get.Encountered = true;
-            target.Get.Children = new List<ICodeLine>
-            {
-                new Block(target.Get, "B"),
-                new Block(target.Get, "C")
-            };
+            target.Get.Blocks.AddRange(
+                new List<ICodeLine>()
+                {
+                    Block.New(target.Get, "B"),
+                    Block.New(target.Get, "C")
+                });
 
             target.Set.Line = "D";
             target.Set.Encountered = true;
-            target.Set.Children = new List<ICodeLine>();
-            target.Set.Children.Add(new Block(target.Get, "E"));
+            target.Set.Blocks.Add(new Block(target.Set, "E"));
 
             var expected =
 @"    // TheComment
@@ -64,19 +64,19 @@ namespace MetX.VB6ToCSharp.Tests
         public void SimplePropertyPartTest()
         {
             ICodeLine parent = new EmptyParent();
-            var part = new CSharpPropertyPart(parent, PropertyPartType.Get)
+            var get = new CSharpPropertyPart(parent, PropertyPartType.Get)
             {
                 Line = "Testing",
                 PartType = PropertyPartType.Get,
-                Encountered = true
-            };
-            part.Children = new List<ICodeLine>
-            {
-                new LineOfCode(part, "123")
+                Encountered = true,
+                Blocks = new List<ICodeLine>
+                {
+                    new LineOfCode(parent, "123")
+                }
             };
 
-            var actual = part.GenerateCode();
-            Assert.AreEqual("\n    get\r\n    {\r\n        123\r\n    }\r\n", "\n" + actual);
+            var actual = get.GenerateCode();
+            Assert.AreEqual("\n    get\r\n    {\r\n        Testing\r\n        123\r\n    }\r\n", "\n" + actual);
         }
     }
 }

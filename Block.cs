@@ -9,20 +9,21 @@ namespace MetX.VB6ToCSharp
 {
     public class Block : AbstractBlock
     {
-        public static Block New(AbstractBlock parent)
+        public static Block New(AbstractBlock parent, string line = "")
         {
-            var block = new Block(parent);
+            var block = new Block(parent, line);
             return block;
         }
 
-        public Block(AbstractBlock parent, string line = null,
-            List<ICodeLine> children = null,
+        // public Block(AbstractBlock parent, string line = null,
+        public Block(ICodeLine parent, string line = null,
+            List<ICodeLine> lines = null,
             string before = "{",
             string after = "}",
             int indent = 1)
             : base(parent, line)
         {
-            SetupBlock(parent, line, before, children, after);
+            SetupBlock(parent, line, before, lines, after);
         }
 
         public override string GenerateCode()
@@ -33,13 +34,13 @@ namespace MetX.VB6ToCSharp
             if (Line.IsNotEmpty())
                 result.AppendLine(indentation + Line);
 
-            if (!Children.IsEmpty())
+            if (!Blocks.IsEmpty())
             {
                 if (Before.IsNotEmpty())
                     result.AppendLine(indentation + Before);
 
-                foreach (var child in Children)
-                    result.Append(((Block)child).GenerateCode());
+                foreach (var line in Blocks)
+                    result.Append(((Block)line).GenerateCode());
 
                 if (After.IsNotEmpty())
                     result.AppendLine(indentation + After);
@@ -54,13 +55,14 @@ namespace MetX.VB6ToCSharp
             throw new NotImplementedException();
         }
 
-        public void SetupBlock(AbstractBlock parent, string line, string before, List<ICodeLine> children, string after)
+        public void SetupBlock(ICodeLine parent, string line, string before, List<ICodeLine> lines, string after)
         {
             Parent = parent;
             Line = line;
             Before = before;
             After = after;
-            Children = children ?? new List<ICodeLine>();
+            if (lines.IsNotEmpty()) 
+                Blocks.AddRange(lines);
             SetupChildren();
         }
 
@@ -68,13 +70,13 @@ namespace MetX.VB6ToCSharp
         {
             Indent = Parent?.Indent + 1 ?? 1;
 
-            if (Children.IsEmpty()) return;
+            if (Blocks.IsEmpty()) return;
 
-            foreach (var child in Children)
+            foreach (var line in Blocks)
             {
-                child.Parent = this;
+                line.Parent = this;
                 if (Parent is Block)
-                    ((Block)child).SetupChildren();
+                    ((Block)line).SetupChildren();
             }
         }
 
