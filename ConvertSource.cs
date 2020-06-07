@@ -53,7 +53,7 @@ namespace MetX.VB6ToCSharp
                 }
                 else
                 {
-                    ControlProperty targetProperty = new ControlProperty(targetControl, 2);
+                    var targetProperty = new ControlProperty(targetControl, 2);
                     if (ControlProperties(targetControl.Type.ToString(), sourceProperty, targetProperty, sourcePropertyList))
                     {
                         if (targetProperty.Name == "Image")
@@ -786,7 +786,7 @@ namespace MetX.VB6ToCSharp
                 type = sourceControl.Type;
 
                 targetControl.Type = type;
-                ControlProperties(sourceModule, targetControl, sourceControl.Blocks, targetControl.Blocks);
+                ControlProperties(sourceModule, targetControl, sourceControl.Children, targetControl.Children);
 
                 targetControlList.Add(targetControl);
             }
@@ -1066,7 +1066,7 @@ namespace MetX.VB6ToCSharp
                 if ((targetControl.Type == "TabControl") && (targetControl.Valid))
                 {
                     // each property
-                    foreach (ControlProperty targetProperty in targetControl.Blocks)
+                    foreach (ControlProperty targetProperty in targetControl.Children)
                     {
                         Console.WriteLine(targetProperty.Name);
 
@@ -1082,7 +1082,7 @@ namespace MetX.VB6ToCSharp
                                 Valid = true,
                                 InvisibleAtRuntime = false,
                                 // add some necessary properties
-                                Blocks = new List<ICodeLine>
+                                Children = new List<ICodeLine>
                                 {
                                     new ControlProperty(targetModule, 2)
                                     {

@@ -1,36 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MetX.VB6ToCSharp.Tests
 {
     [TestClass]
-    public class CSharpPropertyTests
+    public class CSharpPropertyPartTests
     {
         [TestMethod]
-        public void NoChildren_ToEmptyGetAndSet()
+        public void GetWithLine()
         {
-            var target = QuickCSharpProperty("F", "G");
+            var parent = new EmptyParent();
+            var target = QuickCSharpPropertyPart(parent, "A");
 
-            const string expected = "    public G F { get; set; }\r\n";
+            const string expected = "    get\r\n    {\r\n        A\r\n        {\r\n        }\r\n    }\r\n";
             var actual = target.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);
         }
 
-        public static CSharpProperty QuickCSharpProperty(string name = null, string type = null, string line = null)
+        [TestMethod]
+        public void GetWithLineAnd1Child()
         {
-            ICodeLine parent = new EmptyParent();
-            CSharpProperty target = new CSharpProperty(parent)
+            var parent = new EmptyParent();
+            var target = QuickCSharpPropertyPart(parent, "A");
+            target.Children.Add(_.L(target, "C"));
+
+            const string expected = "    get\r\n    {\r\n        A\r\n        {\r\n            C\r\n        }\r\n    }\r\n";
+            var actual = target.GenerateCode();
+
+            Extensions.AreEqualFormatted(expected, actual);
+        }
+
+        [TestMethod]
+        public void GetWith1ChildLine()
+        {
+            var parent = CSharpPropertyTests.QuickCSharpProperty();
+            parent.Get.Children.Add(_.L(parent.Get, "C"));
+
+            const string expected = "        get\r\n        {\r\n            C\r\n        }\r\n";
+            var actual = parent.Get.GenerateCode();
+
+            Extensions.AreEqualFormatted(expected, actual);
+        }
+
+        public static CSharpPropertyPart QuickCSharpPropertyPart(ICodeLine parent, string line = null, PropertyPartType type = PropertyPartType.Get)
+        {
+            var target = new CSharpPropertyPart(parent, type)
             {
-                Name = name,
-                Type = type,
                 Line = line,
+                Encountered = true,
             };
             return target;
         }
 
+        /*
         [TestMethod]
         public void NoChildrenWithLine()
         {
@@ -44,7 +67,7 @@ namespace MetX.VB6ToCSharp.Tests
 
 
         [TestMethod]
-        public void Comment_GetWith2Children_SetWith1Child()
+        public void Comment_Get2Children_SetLine1Child()
         {
             ICodeLine parent = new EmptyParent();
 
@@ -57,7 +80,6 @@ namespace MetX.VB6ToCSharp.Tests
             };
 
             target.Get.Encountered = true;
-            target.Get.Line = "A";
             target.Get.Children.AddRange(
                 new List<ICodeLine>()
                 {
@@ -70,7 +92,7 @@ namespace MetX.VB6ToCSharp.Tests
             target.Set.Children.Add(_.B(target.Set, "E"));
 
             var expected =
-@"    //  TheComment
+                @"    // TheComment
     public G F
     {
         get
@@ -81,7 +103,6 @@ namespace MetX.VB6ToCSharp.Tests
                 C
             }
         }
-
         set
         {
             D
@@ -89,8 +110,6 @@ namespace MetX.VB6ToCSharp.Tests
                 E
             }
         }
-
-    }
 ";
             var actual = target.GenerateCode();
             Extensions.AreEqualFormatted(expected, actual);
@@ -112,7 +131,6 @@ namespace MetX.VB6ToCSharp.Tests
             var expected = "    get\r\n    {\r\n        Testing\r\n        123\r\n    }\r\n";
             Extensions.AreEqualFormatted(expected, actual);
         }
+    */
     }
 }
-
-

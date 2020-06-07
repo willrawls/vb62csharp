@@ -1,10 +1,12 @@
 ﻿using MetX.Library;
+// ReSharper disable InconsistentNaming
 
 namespace MetX.VB6ToCSharp
 {
-    public class LineOfCode : ICodeLine
+    public class LineOfCode : Indentifier, ICodeLine
     {
-        public int Indent { get; set; }
+        public int Indent => Parent.Indent + 1;
+
         public string Line { get; set; }
         public ICodeLine Parent { get; set; }
 
@@ -12,13 +14,17 @@ namespace MetX.VB6ToCSharp
         {
             Parent = parent;
             Line = line;
-            Indent = parent.Indent + 1;
+            _internalIndent = Indent;
+        }
+
+        public LineOfCode(string line)
+        {
+            Line = line;
         }
 
         public virtual string GenerateCode()
         {
-            var indentation = Tools.Indent(Indent);
-            return indentation + (Line ?? "") + "\r\n";
+            return Indentation + (Line ?? "") + "\r\n";
         }
 
         public virtual bool IsEmpty() => Line.IsEmpty();

@@ -20,7 +20,6 @@ namespace MetX.VB6ToCSharp
         public ControlProperty(ICodeLine parent, int parentIndent) : base(parent, "")
         {
             PropertyList = new List<IAmAProperty>();
-            Indent = parentIndent + 1;
         }
 
         public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)

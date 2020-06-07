@@ -6,6 +6,6 @@ namespace MetX.VB6ToCSharp
     {
         string After { get; set; }
         string Before { get; set; }
-        List<ICodeLine> Blocks { get; set; }
+        List<ICodeLine> Children { get; set; }
     }
 }

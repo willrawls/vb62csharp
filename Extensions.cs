@@ -7,6 +7,15 @@ namespace MetX.VB6ToCSharp
 {
     public static class Extensions
     {
+        public static string AddIndent(this string line, int indentLevelToAdd = 1)
+        {
+            if (indentLevelToAdd < 1)
+                return line;
+
+            var toAdd = indentLevelToAdd * 4;
+            return new string(' ', toAdd) + line;
+        }
+
         public static string Indent(this string originalLines, int indentLevel = 1)
         {
             if (indentLevel < 1)

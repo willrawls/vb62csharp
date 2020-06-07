@@ -22,7 +22,6 @@ namespace MetX.VB6ToCSharp
         {
             Block = new Block(this);
             Parameters = new List<Parameter>();
-            Indent = parent.Indent + 1;
         }
 
         public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)

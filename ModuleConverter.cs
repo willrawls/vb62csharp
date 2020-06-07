@@ -286,7 +286,7 @@ namespace MetX.VB6ToCSharp
                 }
 
                 // write properties
-                foreach (ControlProperty property in control.Blocks.Cast<ControlProperty>())
+                foreach (var property in control.Children.Cast<ControlProperty>())
                 {
                     GetPropertyRow(result, control.Type, control.Name, property, outPath);
                 }
@@ -853,7 +853,7 @@ namespace MetX.VB6ToCSharp
                         else
                         {
                             // to controls
-                            control.Blocks.Add(oNestedProperty);
+                            control.Children.Add(oNestedProperty);
                         }
 
                         break;
@@ -887,7 +887,7 @@ namespace MetX.VB6ToCSharp
                                 if (iLevel > 1)
                                 {
                                     // add property to control
-                                    control.Blocks.Add(property);
+                                    control.Children.Add(property);
                                 }
                                 else
                                 {
@@ -1198,7 +1198,7 @@ namespace MetX.VB6ToCSharp
                         if (bProperty)
                         {
                             // add line of property
-                            property.Block.Blocks.Add(
+                            property.Block.Children.Add(
                                 new Block(property, line));
                         }
 

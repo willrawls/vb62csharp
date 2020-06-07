@@ -9,74 +9,53 @@ namespace MetX.VB6ToCSharp
 {
     public class Block : AbstractBlock
     {
-        public static Block New(AbstractBlock parent, string line = "")
-        {
-            var block = new Block(parent, line);
-            return block;
-        }
-
-        // public Block(AbstractBlock parent, string line = null,
-        public Block(ICodeLine parent, string line = null,
-            List<ICodeLine> lines = null,
-            string before = "{",
-            string after = "}",
-            int indent = 1)
+        public Block(ICodeLine parent, string line = null)
             : base(parent, line)
         {
-            SetupBlock(parent, line, before, lines, after);
+           SetupBlock(parent, line, "{", "}");
         }
 
         public override string GenerateCode()
         {
-            var indentation = Tools.Indent(Indent);
             var result = new StringBuilder();
 
             if (Line.IsNotEmpty())
-                result.AppendLine(indentation + Line);
+                result.AppendLine(Indentation + Line);
 
-            if (!Blocks.IsEmpty())
+            if (Children.IsNotEmpty())
             {
                 if (Before.IsNotEmpty())
-                    result.AppendLine(indentation + Before);
+                    result.AppendLine(Indentation + Before);
 
-                foreach (var line in Blocks)
-                    result.Append(((Block)line).GenerateCode());
+                foreach (var codeLine in Children)
+                    result.Append(codeLine.GenerateCode());
 
                 if (After.IsNotEmpty())
-                    result.AppendLine(indentation + After);
+                    result.AppendLine(Indentation + After);
             }
 
             var code = result.ToString();
             return code;
         }
 
-        public string GenerateCode(AbstractBlock parent)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SetupBlock(ICodeLine parent, string line, string before, List<ICodeLine> lines, string after)
+        public void SetupBlock(ICodeLine parent, string line, string before, string after)
         {
             Parent = parent;
             Line = line;
             Before = before;
             After = after;
-            if (lines.IsNotEmpty()) 
-                Blocks.AddRange(lines);
             SetupChildren();
         }
 
         public void SetupChildren()
         {
-            Indent = Parent?.Indent + 1 ?? 1;
+            if (Children.IsEmpty()) return;
 
-            if (Blocks.IsEmpty()) return;
-
-            foreach (var line in Blocks)
+            foreach (var codeLine in Children)
             {
-                line.Parent = this;
-                if (Parent is Block)
-                    ((Block)line).SetupChildren();
+                codeLine.Parent = this;
+                if (Parent is AbstractBlock)
+                    ((Block)codeLine).SetupChildren();
             }
         }
 

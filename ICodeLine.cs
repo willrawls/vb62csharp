@@ -2,9 +2,12 @@
 {
     public interface ICodeLine : IGenerate
     {
-        int Indent { get; set; }
         string Line { get; set; }
         ICodeLine Parent { get; set; }
+
+        int Indent { get; }
+        string Indentation { get; }
+        string SecondIndentation { get; }
 
         bool IsEmpty();
 

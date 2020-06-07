@@ -52,8 +52,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeBlockTests.cs" />
+    <Compile Include="CodeLineRelatedTests.cs" />
+    <Compile Include="CSharpPropertyPartTests.cs" />
     <Compile Include="CSharpPropertyTests.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

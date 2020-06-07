@@ -25,7 +25,6 @@ namespace MetX.VB6ToCSharp
             Get = new CSharpPropertyPart(this, PropertyPartType.Get);
             Set = new CSharpPropertyPart(this, PropertyPartType.Set);
             Let = new CSharpPropertyPart(this, PropertyPartType.Let);
-            Indent = parent.Indent + 1;
         }
 
         public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
@@ -43,19 +42,19 @@ namespace MetX.VB6ToCSharp
             targetPart.ParameterList = localSourceProperty.Parameters;
             targetPart.Encountered = true;
 
-            targetPart.Blocks.Add(new Block(this));
+            targetPart.Children.Add(new Block(this));
             targetPart.LinesAfter = new Block(this);
 
-            foreach (var originalLine in localSourceProperty.Block.Blocks)
+            foreach (var originalLine in localSourceProperty.Block.Children)
             {
                 var line = originalLine.Line.Trim();
                 if (!line.IsNotEmpty()) continue;
 
                 ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
                 if (translatedLine.IsNotEmpty())
-                    targetPart.Blocks.Add(new Block(this, translatedLine));
+                    targetPart.Children.Add(new Block(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
-                    targetPart.LinesAfter.Blocks.Add(new Block(this, placeAtBottom));
+                    targetPart.LinesAfter.Children.Add(new Block(this, placeAtBottom));
                 targetPart.Encountered = true;
             }
         }
@@ -63,13 +62,11 @@ namespace MetX.VB6ToCSharp
         public override string GenerateCode()
         {
             var result = new StringBuilder();
-            var firstIndentation = Tools.Indent(Indent);
-            var secondIndentation = Tools.Indent(Indent + 1);
 
             // possible comment
             if (Comment.IsNotEmpty())
                 if (!Comment.Contains("\n"))
-                    result.AppendLine($"{firstIndentation}// {Comment.Substring(1)}");
+                    result.AppendLine($"{Indentation}// {Comment.Substring(1)}");
                 else
                 {
                     Comment =
@@ -78,55 +75,50 @@ namespace MetX.VB6ToCSharp
                             .Replace("' ", "")
                             .Replace("\r", "")
                             .Split('\n')
-                            .Select(x => secondIndentation + (x.EndsWith(";") ? x.Substring(0, x.Length - 1) : x)));
+                            .Select(x => SecondIndentation + (x.EndsWith(";") ? x.Substring(0, x.Length - 1) : x)));
                     if (Comment.IsNotEmpty())
                     {
                         result.AppendLine();
-                        result.AppendLine(firstIndentation + "/*");
+                        result.AppendLine(Indentation + "/*");
                         result.AppendLine(Comment);
-                        result.AppendLine(firstIndentation + "*/");
+                        result.AppendLine(Indentation + "*/");
                         result.AppendLine();
                     }
                 }
 
             var letSet = Set.Encountered ? Set : Let;
-            var blockName = $"public {Type ?? "object"} {Name}";
+            var propertyHeader = $"public {Type ?? "object"} {Name}";
 
-            if (Get.Encountered && letSet.Encountered)
+            if(Line.IsNotEmpty())
             {
-                if (Get.IsEmpty() && letSet.IsEmpty())
-                {
-                    result.AppendLine(firstIndentation + blockName + " { get; set; }");
-                }
-                else
-                {
-                    result.AppendLine(firstIndentation + blockName);
-                    result.AppendLine(Get.GenerateCode());
-                    result.AppendLine(letSet.GenerateCode());
-                }
-            }
-            else if (Get.Encountered)
-            {
-                result.AppendLine(Get.GenerateCode());
-                /*
-                result.AppendLine(firstIndentation + $"public {Type} {Name}");
-                result.AppendLine(firstIndentation + "{");
-                if (Get.IsEmpty)
-                    result.AppendLine(secondIndentation + "get; set; // Was get only");
-                else
-                    result.AppendLine(Get.GenerateCode());
-                result.AppendLine(firstIndentation + "}");
-                */
-            }
-            else if (letSet.Encountered)
-            {
-                if (letSet.IsEmpty())
-                    result.AppendLine(secondIndentation + " { get; set; } // Was set only");
-                else
-                    result.AppendLine(letSet.GenerateCode());
+                result.AppendLine(Indentation + Line);
             }
 
-            var code = result.ToString().RemoveEmptyLines();
+            if (Get.IsEmpty() && letSet.IsEmpty())
+            {
+                result.AppendLine(Indentation + propertyHeader + " { get; set; }");
+            }
+            else
+            {
+                result.AppendLine(Indentation + propertyHeader);
+                result.AppendLine(Indentation + Before);
+
+                if (Get.Encountered)
+                {
+                    result.AppendLine(Get.GenerateCode());
+                }
+
+                if(letSet.Encountered)
+                {
+                    if (letSet.IsEmpty())
+                        result.AppendLine(SecondIndentation + "{ get; set; } // Was set only");
+                    else
+                        result.AppendLine(letSet.GenerateCode());
+                }
+                result.AppendLine(Indentation + After);
+            }
+
+            var code = result.ToString();
             return code;
         }
 
