@@ -1,32 +1,48 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
+using System.IO;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     public static class Program
     {
-        public static void ConvertAll(string folderPath)
-        {
-            foreach (var fileToDelete in Directory.EnumerateFiles(folderPath))
-                File.Delete(fileToDelete);
-
-            var clsFiles = Directory.EnumerateFiles(@"I:\Sandy", "*.cls").ToList();
-            var frmFiles = Directory.EnumerateFiles(@"I:\Sandy", "*.frm").ToList();
-            var basFiles = Directory.EnumerateFiles(@"I:\Sandy", "*.bas").ToList();
-
-            foreach (var fileSet in new[] { clsFiles, basFiles, frmFiles })
-                foreach (var clsFile in fileSet)
-                {
-                    var ConvertObject = new ConvertCode();
-                    ConvertObject.ParseFile(clsFile, folderPath);
-                }
-        }
+        public const string SourceCodeFolderPath = @"I:\OneDrive\data\code\Slice and Dice\Sandy\";
+        public const string OutputFolderPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC\";
+        // public const bool ClearOutputFolder = false;
 
         public static int Main(string[] args)
         {
-            ConvertAll(@"I:\SandyB\");
-
+            ConvertAllFiles();
             return 0;
+        }
+
+        public static void ConvertAllFiles()
+        {
+
+            /*
+            if(ClearOutputFolder)
+            {
+                // Delete previous run
+                foreach (var fileToDelete in Directory.EnumerateFiles(OutputFolderPath))
+                {
+                    File.SetAttributes(fileToDelete, FileAttributes.Normal);
+                    File.Delete(fileToDelete);
+                }
+            }
+
+            */
+            var fileSets = new List<IEnumerable<string>>
+            {
+                Directory.EnumerateFiles(SourceCodeFolderPath, "*.cls"),
+                Directory.EnumerateFiles(SourceCodeFolderPath, "*.frm"),
+                Directory.EnumerateFiles(SourceCodeFolderPath, "*.bas"),
+            };
+
+            foreach (var fileSet in fileSets)
+            foreach (var file in fileSet)
+            {
+                new ModuleConverter()
+                    .ConvertFile(file, OutputFolderPath);
+            }
         }
     }
 }

@@ -1,21 +1,22 @@
 using System.Collections;
+using System.Collections.Generic;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     /// <summary>
     /// Summary description for Enum.
     /// </summary>
     public class Enum
     {
-        public ArrayList ItemList { get; set; }
+        public List<EnumItem> ItemList;
 
-        public string Name { get; set; }
+        public string Name;
 
-        public string Scope { get; set; }
+        public string Scope;
 
         public Enum()
         {
-            ItemList = new ArrayList();
+            ItemList = new List<EnumItem>();
         }
     }
 }

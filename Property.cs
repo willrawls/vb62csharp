@@ -1,30 +1,37 @@
-using System.Collections;
+using System;
+using System.Collections.Generic;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     /// <summary>
-    /// Summary description for Property.
+    ///     Summary description for Property.
     /// </summary>
-    public class Property
+    public class Property : AbstractBlock, IAmAProperty
     {
+        public Block Block;
+        public string Direction;
         public string Comment { get; set; }
-
-        public string Direction { get; set; }
-
-        public ArrayList LineList { get; set; }
-
         public string Name { get; set; }
-
-        public ArrayList ParameterList { get; set; }
-
+        public List<Parameter> Parameters { get; set; }
         public string Scope { get; set; }
-
         public string Type { get; set; }
+        public bool Valid { get; set; }
+        public string Value { get; set; }
 
-        public Property()
+        public Property(ICodeLine parent) : base(parent, null)
         {
-            LineList = new ArrayList();
-            ParameterList = new ArrayList();
+            Block = new Block(this);
+            Parameters = new List<Parameter>();
+        }
+
+        public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GenerateCode()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,39 +1,84 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
-    /// <summary>
-    /// Summary description for Procedure.
-    /// </summary>
-    ///
-
-    public enum ProcedureType
-    {
-        ProcedureEvent = 1,
-        ProcedureSub = 2,
-        ProcedureFunction = 3
-    }
-
     public class Procedure
     {
-        public string Comment { get; set; }
+        public string Comment;
 
-        public ArrayList LineList { get; set; }
+        public List<string> LineList;
 
-        public string Name { get; set; }
+        public List<string> BottomLineList;
 
-        public ArrayList ParameterList { get; set; }
+        public string Name;
 
-        public string ReturnType { get; set; }
+        public List<Parameter> ParameterList;
 
-        public string Scope { get; set; }
+        public string ReturnType;
 
-        public ProcedureType Type { get; set; }
+        public string Scope;
+
+        public ProcedureType Type;
 
         public Procedure()
         {
-            LineList = new ArrayList();
-            ParameterList = new ArrayList();
+            LineList = new List<string>();
+            BottomLineList = new List<string>();
+            ParameterList = new List<Parameter>();
+        }
+
+        public string GenerateCode(int indentLevel)
+        {
+            var result = new StringBuilder();
+            var firstIndent = Tools.Indent(indentLevel);
+            var secondIndent = Tools.Indent(indentLevel + 1);
+
+            // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
+            result.Append(firstIndent + Scope + " ");
+            switch (Type)
+            {
+                case ProcedureType.ProcedureSub:
+                    result.Append("void");
+                    break;
+
+                case ProcedureType.ProcedureFunction:
+                    result.Append(ReturnType);
+                    break;
+
+                case ProcedureType.ProcedureEvent:
+                    result.Append("void");
+                    break;
+            }
+
+            // name
+            result.Append(" " + Name);
+            // parameters
+            if (ParameterList.Count == 0)
+            {
+                result.AppendLine("()");
+            }
+
+            // start body
+            result.AppendLine(firstIndent + "{");
+
+            foreach (var line in LineList.Select(l => l.Trim()))
+                if (line.Length > 0)
+                    result.AppendLine(secondIndent + line + ";");
+                else
+                    result.AppendLine();
+
+            foreach (var line in BottomLineList.Select(l => l.Trim()))
+                if (line.Length > 0)
+                    result.AppendLine($"{secondIndent}{line};");
+                else
+                    result.AppendLine();
+
+            // end procedure
+            result.AppendLine(firstIndent + "}");
+            return result.ToString();
         }
     }
 }

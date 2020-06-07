@@ -1,29 +1,24 @@
-using System.Collections;
+using System.Collections.Generic;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     /// <summary>
-    /// Summary description for Control.
+    ///     Summary description for Control.
     /// </summary>
-    public class Control
+    public class Control : AbstractBlock
     {
-        public bool Container { get; set; }
-        public bool InvisibleAtRuntime { get; set; }
-        public string Name { get; set; }
+        public bool Container;
+        public bool InvisibleAtRuntime;
+        public string Name;
+        public string Owner;
 
-        public string Owner { get; set; }
-        public ArrayList PropertyList { get; set; }
-        public string Type { get; set; }
-        public bool Valid { get; set; }
+        //public List<ControlProperty> PropertyList = new List<ControlProperty>();
+        public string Type;
 
-        public Control()
+        public bool Valid;
+
+        public Control(ICodeLine parent, string line = null) : base(parent, line)
         {
-            PropertyList = new ArrayList();
-        }
-
-        public void PropertyAdd(ControlProperty oProperty)
-        {
-            PropertyList.Add(oProperty);
         }
     }
 }

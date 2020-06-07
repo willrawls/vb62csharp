@@ -1,62 +1,38 @@
-using System.Collections;
+using System.Collections.Generic;
 
-namespace VB2C
+namespace MetX.VB6ToCSharp
 {
     /// <summary>
-    /// Summary description for Module.
+    ///     Summary description for Module.
     /// </summary>
-    public class Module
+    public class Module : AbstractBlock
     {
-        public ArrayList ControlList { get; set; }
-        public ArrayList EnumList { get; set; }
-        public string FileName { get; set; }
-        public ArrayList FormPropertyList { get; }
-        public ArrayList ImageList { get; set; }
-        public bool ImagesUsed { get; set; } = false;
-        public bool MenuUsed { get; set; } = false;
-        public string Name { get; set; }
+        public string Comment;
+        public List<Control> ControlList;
+        public List<Enum> EnumList;
+        public string FileName;
+        public List<ControlProperty> FormPropertyList;
+        public List<string> ImageList;
+        public bool ImagesUsed = false;
+        public bool MenuUsed = false;
+        public string Name;
 
-        public ArrayList ProcedureList { get; set; }
-        public ArrayList PropertyList { get; set; }
-        public string Type { get; set; }
+        public List<Procedure> ProcedureList;
+        public List<IAmAProperty> PropertyList;
+        public string Type;
 
-        public ArrayList VariableList { get; set; }
-        public string Version { get; set; }
+        public List<Variable> VariableList;
+        public string Version;
 
-        public Module()
+        public Module() : base(null, "")
         {
-            FormPropertyList = new ArrayList();
-            ControlList = new ArrayList();
-            ImageList = new ArrayList();
-            VariableList = new ArrayList();
-            PropertyList = new ArrayList();
-            ProcedureList = new ArrayList();
-            EnumList = new ArrayList();
-        }
-
-        public void ControlAdd(Control oControl)
-        {
-            ControlList.Add(oControl);
-        }
-
-        public void FormPropertyAdd(ControlProperty oProperty)
-        {
-            FormPropertyList.Add(oProperty);
-        }
-
-        public void ProcedureAdd(Procedure oProcedure)
-        {
-            ProcedureList.Add(oProcedure);
-        }
-
-        public void PropertyAdd(Property oProperty)
-        {
-            PropertyList.Add(oProperty);
-        }
-
-        public void VariableAdd(Variable oVariable)
-        {
-            VariableList.Add(oVariable);
+            FormPropertyList = new List<ControlProperty>();
+            ControlList = new List<Control>();
+            ImageList = new List<string>();
+            VariableList = new List<Variable>();
+            PropertyList = new List<IAmAProperty>();
+            ProcedureList = new List<Procedure>();
+            EnumList = new List<Enum>();
         }
     }
 }
