@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MetX.VB6ToCSharp.Interface;
+using MetX.VB6ToCSharp.Structure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MetX.VB6ToCSharp.Tests
