@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
@@ -8,13 +9,19 @@ namespace MetX.VB6ToCSharp
 {
     public static class Program
     {
-        public const string BaseFolder = @"I:\OneDrive\data\code\Slice and Dice";
-        public static string SourceCodeFolderPath = $@"{BaseFolder}Sandy\";
-        public static string OutputFolderPath = $@"{BaseFolder}\SandyC\";
-        public const bool ClearOutputFolder = false;
+        //public static string BaseFolder = @"I:\OneDrive\data\code\Slice and Dice";
+        public static string SourceCodeFolderPath; //= $@"{BaseFolder}\Sandy\";
+        public static string OutputFolderPath; // = $@"{BaseFolder}\SandyC\";
+        public static bool ClearOutputFolder;
 
         public static int Main(string[] args)
         {
+            SourceCodeFolderPath = args[0];
+            OutputFolderPath = args[1];
+
+            if(args.Any(x => x.ToLower().Equals("--clear")))
+                ClearOutputFolder = true;
+
             ConvertAllFiles();
             return 0;
         }

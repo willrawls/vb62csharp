@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MetX.VB6ToCSharp": {
+      "commandName": "Project",
+      "commandLineArgs": "\"I:\\OneDrive\\data\\code\\Slice and Dice\\Sandy\" \"I:\\OneDrive\\data\\code\\Slice and Dice\\SandyC\"",
+      "workingDirectory": "I:\\OneDrive\\data\\code\\Slice and Dice\\SandyC"
+    }
+  }
+}

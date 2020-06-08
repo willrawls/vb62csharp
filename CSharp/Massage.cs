@@ -2,94 +2,116 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Massage
     {
-        /// <summary>
-        /// When line starts with X and ends with Y:
-        ///      Remove X and Y
-        ///      Add Z as a line above the beginning
-        ///      Add A as a line below the end
-        /// </summary>
-        public static List<FourWayReplace> AboveAndBelowReplacements { get; set; } = new List<FourWayReplace>
+        private static List<string> LineContainsAnyOfTheseThenShouldHaveASemiColon =
+            new List<string>
+            {
+                "{", "}",
+                "foreach",
+                "while",
+                "if(", "if (", "else",
+            };
+
+        private static List<string> LineDoesNotContainAnyOfThese = new List<string>
         {
+            "//",
         };
 
         /// <summary>
-        /// When line contains X:
-        ///      Replace with Y
+        ///     When line starts with X and ends with Y:
+        ///     Remove X and Y
+        ///     Add Z as a line above the beginning
+        ///     Add A as a line below the end
         /// </summary>
-        public static List<FourWayReplace> BlanketReplacements { get; set; } = new List<FourWayReplace>
-        {
-            new FourWayReplace("Exit Property", "return; // ???"),
-            new FourWayReplace("Exit Function", "return; // ???"),
-            new FourWayReplace("Exit Sub", "return;"),
-            new FourWayReplace("For Each ", "foreach( var "),
-            new FourWayReplace(" In ", " in "),
-            new FourWayReplace(";;", ";"),
-            new FourWayReplace("; = ", " = "),
-            new FourWayReplace("{ get; set; }", ";"),
-            new FourWayReplace("Static", "static"),
-            new FourWayReplace("String", "string"),
-            new FourWayReplace("Collection", "Dictionary<string,string>()"),
-            new FourWayReplace("using System.Dictionary<string,string>()s", "using System.Collections"),
-            new FourWayReplace("True", "true"),
-            new FourWayReplace("False", "false"),
-            new FourWayReplace("private ", "public "), // Because I believe everything should be public
-            new FourWayReplace("Err.Clear", string.Empty),
-            new FourWayReplace("Err.Number", "ex"),
-            new FourWayReplace("Me.", "this."),
-            new FourWayReplace("/*;", "/*"),
-            new FourWayReplace("*/;", "*/"),
-            new FourWayReplace("); ); )", ")"),
-            new FourWayReplace("); )", ")"),
-        };
+        public static List<FourWayReplace> AboveAndBelowReplacements { get; set; } =
+            new List<FourWayReplace>
+            {
+            };
 
         /// <summary>
-        /// When line ends with X:
-        ///      Replace X with Y
+        ///     When line contains X:
+        ///     Replace with Y
         /// </summary>
-        public static List<FourWayReplace> EndsWithReplacements { get; set; } = new List<FourWayReplace>
-        {
-            new FourWayReplace(";;", ";"),
-            new FourWayReplace(":;", "~~~"),
-        };
+        public static List<FourWayReplace> BlanketReplacements { get; set; } =
+            new List<FourWayReplace>
+            {
+                new FourWayReplace("Exit Property", "return; // ???"),
+                new FourWayReplace("Exit Function", "return; // ???"),
+                new FourWayReplace("Exit Sub", "return;"),
+                new FourWayReplace("For Each ", "foreach( var "),
+                new FourWayReplace(" In ", " in "),
+                new FourWayReplace(";;", ";"),
+                new FourWayReplace("; = ", " = "),
+                new FourWayReplace("{ get; set; }", ";"),
+                new FourWayReplace("Static", "static"),
+                new FourWayReplace("String", "string"),
+                new FourWayReplace("Collection", "Dictionary<string,string>()"),
+                new FourWayReplace("using System.Dictionary<string,string>()s",
+                    "using System.Collections"),
+                new FourWayReplace("True", "true"),
+                new FourWayReplace("False", "false"),
+                new FourWayReplace("private ",
+                    "public "), // Because I believe everything should be public
+                new FourWayReplace("Err.Clear", string.Empty),
+                new FourWayReplace("Err.Number", "ex"),
+                new FourWayReplace("Me.", "this."),
+                new FourWayReplace("/*;", "/*"),
+                new FourWayReplace("*/;", "*/"),
+                new FourWayReplace("); ); )", ")"),
+                new FourWayReplace("); )", ")"),
+            };
 
         /// <summary>
-        /// When line starts with X and ends with Y:
-        ///      Replace Z with A
+        ///     When line ends with X:
+        ///     Replace X with Y
         /// </summary>
-        public static List<FourWayReplace> StartsAndEndsWithReplacements { get; set; } = new List<FourWayReplace>()
-        {
-            new FourWayReplace("Set", "Nothing", "Set", ""),
-
-        };
+        public static List<FourWayReplace> EndsWithReplacements { get; set; } =
+            new List<FourWayReplace>
+            {
+                new FourWayReplace(";;", ";"),
+                new FourWayReplace(":;", "~~~"),
+            };
 
         /// <summary>
-        /// When line starts with X, Replace X with Y, Replace Z with A
+        ///     When line starts with X and ends with Y:
+        ///     Replace Z with A
         /// </summary>
-        public static List<FourWayReplace> StartsWithReplacements { get; set; } = new List<FourWayReplace>
-        {
-            new FourWayReplace("' ", "// "),
-            new FourWayReplace("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. "),
-        };
+        public static List<FourWayReplace> StartsAndEndsWithReplacements { get; set; } =
+            new List<FourWayReplace>()
+            {
+                new FourWayReplace("Set", "Nothing", "Set", ""),
+            };
 
         /// <summary>
-        /// When a line starts with X, Replace Y with Z, Append A
+        ///     When line starts with X, Replace X with Y, Replace Z with A
         /// </summary>
-        public static List<FourWayReplace> WhenStartsWithReplaceOtherReplacements { get; set; } = new List<FourWayReplace>()
-        {
-            new FourWayReplace("foreach(", null, null, " )"),
-        };
+        public static List<FourWayReplace> StartsWithReplacements { get; set; } =
+            new List<FourWayReplace>
+            {
+                new FourWayReplace("' ", "// "),
+                new FourWayReplace("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. "),
+            };
 
         /// <summary>
-        /// When line starts with X and ends with Y:
-        ///      Remove X and Y, 
-        ///      Add Z as a line above the beginning, 
-        ///      Add A as a line below the end
+        ///     When a line starts with X, Replace Y with Z, Append A
+        /// </summary>
+        public static List<FourWayReplace> WhenStartsWithReplaceOtherReplacements { get; set; } =
+            new List<FourWayReplace>()
+            {
+                new FourWayReplace("foreach(", null, null, " )"),
+            };
+
+        /// <summary>
+        ///     When line starts with X and ends with Y:
+        ///     Remove X and Y,
+        ///     Add Z as a line above the beginning,
+        ///     Add A as a line below the end
         /// </summary>
         public static string AboveAndBelowWithReplaceNow(string originalLineOfCode)
         {
@@ -99,21 +121,35 @@ namespace MetX.VB6ToCSharp.CSharp
             var lineOfCode = originalLineOfCode;
             foreach (var entry in AboveAndBelowReplacements)
             {
-                while (lineOfCode.ToLower().StartsWith(entry.X.ToLower()) && lineOfCode.ToLower().EndsWith(entry.Y.ToLower()))
+                while (lineOfCode.ToLower().StartsWith(entry.X.ToLower()) &&
+                       lineOfCode.ToLower().EndsWith(entry.Y.ToLower()))
                 {
                     lineOfCode = lineOfCode
                         .Replace(entry.X, "")
                         .Replace(entry.Y, "");
 
-                    lineOfCode = entry.Z + Environment.NewLine + lineOfCode + Environment.NewLine + entry.A;
+                    lineOfCode = entry.Z + Environment.NewLine + lineOfCode + Environment.NewLine +
+                                 entry.A;
                 }
             }
 
             return lineOfCode;
         }
 
+        public static List<RegExReplace> Shuffle = new List<RegExReplace>
+        {
+            new RegExReplace(
+                new Regex(@"(?<f1>instr\s*\(\s*)\s*(?<f2>.*)\s*,\s*(?<f3>.*\))", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "[<f1>][<f2>][<f3>]"),
+        };
+
+        public static string RegExReplace()
+        {
+            return "xyz";
+        }
+
         /// <summary>
-        /// When line contains X, replace with Y
+        ///     When line contains X, replace with Y
         /// </summary>
         /// <param name="originalLineOfCode"></param>
         /// <returns></returns>
@@ -134,7 +170,7 @@ namespace MetX.VB6ToCSharp.CSharp
         }
 
         /// <summary>
-        /// Special case replacements
+        ///     Special case replacements
         /// </summary>
         /// <param name="lineOfCode"></param>
         /// <returns></returns>
@@ -168,23 +204,34 @@ namespace MetX.VB6ToCSharp.CSharp
         }
 
         /// <summary>
-        /// Adds semicolon to end of appropriate lines
+        ///     Adds semicolon to end of appropriate lines
         /// </summary>
         /// <param name="lines"></param>
         /// <returns></returns>
         public static string DetermineIfLineGetsASemicolon(string line)
         {
-            if (line.IsEmpty() || line.EndsWith(";"))
+            if (line.IsEmpty())
+                return string.Empty;
+
+            line = line.Trim();
+            if (line.EndsWith(";"))
                 return line;
 
-            if (!line.Trim().EndsWith(";") && !line.Trim().EndsWith("{") && !line.Trim().EndsWith("}"))
-                line += ";";
+            if (LineContainsAnyOfTheseThenShouldHaveASemiColon
+                    .Any(x => line
+                        .Contains(x)) == false
+                && LineDoesNotContainAnyOfThese
+                    .Any(x => line
+                                  .Contains(x) == false
+                              && !line.EndsWith(":"))
+            )
+                return line + ";";
 
             return line;
         }
 
         /// <summary>
-        /// Adds semicolon to end of appropriate lines
+        ///     Adds semicolon to end of appropriate lines
         /// </summary>
         /// <param name="lines"></param>
         /// <returns></returns>
@@ -193,28 +240,29 @@ namespace MetX.VB6ToCSharp.CSharp
             if (lines.IsEmpty())
                 return lines;
 
-            if (lines.Count == 1)
+            for (var i = 0; i < lines.Count; i++)
             {
-                lines[0] += ";";
-                return lines;
+                lines[i] = DetermineIfLineGetsASemicolon(lines[i]);
             }
 
+            /*
             for (var i = 0; i < lines.Count; i++)
             {
                 if (lines[i].IsNotEmpty()
                     && !lines[i].EndsWith(";")
-                    && !lines[i].EndsWith("{")
+                    && !lines[i].Starts("{")
                     && !lines[i].EndsWith("}")
                 )
                     lines[i] += ";";
             }
+            */
 
             return lines;
         }
 
         /// <summary>
-        /// When line ends with X
-        ///      Replace X with Z
+        ///     When line ends with X
+        ///     Replace X with Z
         /// </summary>
         /// <param name="originalLineOfCode"></param>
         /// <returns></returns>
@@ -229,6 +277,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 while (lineOfCode.ToLower().EndsWith(entry.X.ToLower()))
                     lineOfCode = lineOfCode.Replace(entry.X.ToLower(), entry.Z);
             }
+
             return lineOfCode;
         }
 
@@ -242,13 +291,14 @@ namespace MetX.VB6ToCSharp.CSharp
                 .Replace("\r", string.Empty)
                 .Split('\n').ToList();
 
-            foreach (var line in lines) 
+            foreach (var line in lines)
                 result.AppendLine(Now(line));
             var code = result.ToString();
             return code;
         }
+
         /// <summary>
-        /// Run all blanket and specialized replacements now
+        ///     Run all blanket and specialized replacements now
         /// </summary>
         /// <param name="translatedLine"></param>
         /// <returns></returns>
@@ -270,8 +320,8 @@ namespace MetX.VB6ToCSharp.CSharp
         }
 
         /// <summary>
-        /// When line starts with X and ends with Y
-        ///      Replace Z with A
+        ///     When line starts with X and ends with Y
+        ///     Replace Z with A
         /// </summary>
         public static string StartsAndEndsWithReplaceNow(string originalLineOfCode)
         {
@@ -280,14 +330,15 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var lineOfCode = originalLineOfCode.Trim();
             foreach (var entry in StartsAndEndsWithReplacements)
-                if (lineOfCode.ToLower().StartsWith(entry.X.ToLower()) && lineOfCode.ToLower().EndsWith(entry.Y.ToLower()))
+                if (lineOfCode.ToLower().StartsWith(entry.X.ToLower()) &&
+                    lineOfCode.ToLower().EndsWith(entry.Y.ToLower()))
                     lineOfCode = lineOfCode.Replace(entry.Z, entry.A);
 
             return lineOfCode;
         }
-        
+
         /// <summary>
-        /// When line starts with X, Replace X with Y, Replace Z with A
+        ///     When line starts with X, Replace X with Y, Replace Z with A
         /// </summary>
         public static string StartsWithReplaceNow(string originalLineOfCode)
         {
@@ -300,12 +351,13 @@ namespace MetX.VB6ToCSharp.CSharp
                 var iterations = 0;
                 while (++iterations < 100 && lineOfCode.ToLower().StartsWith(entry.X.ToLower()))
                 {
-                    if(entry.Y.IsNotEmpty())
+                    if (entry.Y.IsNotEmpty())
                         lineOfCode = lineOfCode.Replace(entry.X, entry.Y);
-                    if(entry.Z.IsNotEmpty() && entry.A.IsNotEmpty())
+                    if (entry.Z.IsNotEmpty() && entry.A.IsNotEmpty())
                         lineOfCode = lineOfCode.Replace(entry.Z, entry.A);
                 }
-                if(iterations > 98)
+
+                if (iterations > 98)
                     throw new Exception("Too many tries in StartsWithReplaceNow");
             }
 
@@ -313,7 +365,7 @@ namespace MetX.VB6ToCSharp.CSharp
         }
 
         /// <summary>
-        /// When a line starts with X, Replace Y with Z, Append A
+        ///     When a line starts with X, Replace Y with Z, Append A
         /// </summary>
         public static string WhenStartsWithReplaceOtherAndAppendNow(string originalLineOfCode)
         {
