@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using MetX.Library;
 
 namespace MetX.VB6ToCSharp.CSharp
@@ -134,18 +133,6 @@ namespace MetX.VB6ToCSharp.CSharp
             }
 
             return lineOfCode;
-        }
-
-        public static List<RegExReplace> Shuffle = new List<RegExReplace>
-        {
-            new RegExReplace(
-                new Regex(@"(?<f1>instr\s*\(\s*)\s*(?<f2>.*)\s*,\s*(?<f3>.*\))", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                "[<f1>][<f2>][<f3>]"),
-        };
-
-        public static string RegExReplace()
-        {
-            return "xyz";
         }
 
         /// <summary>
