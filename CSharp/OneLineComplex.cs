@@ -7,23 +7,47 @@ namespace MetX.VB6ToCSharp.CSharp
 {
     public static class OneLineComplex
     {
-        //public static string InstrPattern = @".*instr\s*\(\s*(?<X>.*)\s*,\s*(?<Y>.*)\b";
-        //public static Regex Instr = new Regex(InstrPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
         public static List<RegexReplace> Shuffle = new List<RegexReplace>
         {
+            // Instr
             new RegexReplace(
                 new Regex(@".*instr\s*\(\s*(?<X>.*)\s*,\s*(?<Y>.*)\b",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
                 "$1.Contains($2"),
 
+            // X = X + ...
+            new RegexReplace(
+                new Regex(@"(.*) = (\1 [+-\\])(.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "$1 += $3;"),
+
+            // For x = y To z
+            new RegexReplace(
+                new Regex(@"For (.+) = (.*) To (.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "for(var $1 = $2; $1 < $3; $1++) //SOB//"),
+
+            // Add x
+            new RegexReplace(
+                new Regex(@"Add (.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "Add($1)"),
+
+            // Mid$(x,y) ---
+            new RegexReplace(
+                new Regex(@"Mid\$*\((.+),(.+)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "$1.Substring($2)"),
+
+            // Do While x > y ---
+            new RegexReplace(
+                new Regex(@"Do While (.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "while($1)//SOB//"),
+            
         };
 
-
-        public static string ReplaceWithRegex(this RegexReplace find, string toSearch)
+        public static string Now(string line)
         {
-            var answer = find.Regex.Replace(toSearch, "x.Contains($3,$2)");
-            return answer;
+            foreach (var entry in Shuffle) 
+                line = entry.Regex.Replace(line, entry.ReplacePattern);
+
+            return line;
         }
     }
 }

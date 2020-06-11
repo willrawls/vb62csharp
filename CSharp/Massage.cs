@@ -14,7 +14,9 @@ namespace MetX.VB6ToCSharp.CSharp
                 "{", "}",
                 "foreach",
                 "while",
-                "if(", "if (", "else",
+                "if(", 
+                "if (", 
+                "else",
             };
 
         private static List<string> LineDoesNotContainAnyOfThese = new List<string>
@@ -64,6 +66,10 @@ namespace MetX.VB6ToCSharp.CSharp
                 new FourWayReplace("*/;", "*/"),
                 new FourWayReplace("); ); )", ")"),
                 new FourWayReplace("); )", ")"),
+                new FourWayReplace("Resume ", "goto "),
+                new FourWayReplace("Long ", "long "),
+                new FourWayReplace("Clear ", "this.Clear()"),
+                new FourWayReplace("()()", "()"),
             };
 
         /// <summary>
@@ -163,14 +169,11 @@ namespace MetX.VB6ToCSharp.CSharp
         /// <returns></returns>
         public static string CleanupTranslatedLineOfCode(string originalLineOfCode)
         {
-            var lineOfCode = originalLineOfCode;
+            var lineOfCode = originalLineOfCode.Replace("//SOB//", " {");
             if (lineOfCode.TokenCount() == 4 && lineOfCode.TokenAt(3) == "As")
             {
                 lineOfCode = $"{lineOfCode.TokenAt(4)} {lineOfCode.TokenAt(2)};";
             }
-
-            if (lineOfCode.Contains("foreach(") && !lineOfCode.Contains(")"))
-                lineOfCode += " )";
 
             if (lineOfCode.Contains("foreach(") && lineOfCode.EndsWith(");"))
                 lineOfCode = lineOfCode.FirstToken(");") + ")";
@@ -187,7 +190,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 .Replace("\n\n", "\n")
                 .Replace("\n\n", "\n");
 
-            return lineOfCode.Trim();
+            return lineOfCode; //.Trim();
         }
 
         /// <summary>
@@ -195,25 +198,25 @@ namespace MetX.VB6ToCSharp.CSharp
         /// </summary>
         /// <param name="lines"></param>
         /// <returns></returns>
-        public static string DetermineIfLineGetsASemicolon(string line)
+        public static string DetermineIfLineGetsASemicolon(string line, string nextLine)
         {
+
             if (line.IsEmpty())
                 return string.Empty;
 
-            line = line.Trim();
-            if (line.EndsWith(";"))
+            //line = line.Trim();
+            if (line.Trim().EndsWith(";"))
                 return line;
 
-            if (LineContainsAnyOfTheseThenShouldHaveASemiColon
-                    .Any(x => line
-                        .Contains(x)) == false
-                && LineDoesNotContainAnyOfThese
-                    .Any(x => line
-                                  .Contains(x) == false
-                              && !line.EndsWith(":"))
-            )
-                return line + ";";
+            if (LineContainsAnyOfTheseThenShouldHaveASemiColon.Any(x => line.Contains(x)) == false
+                && LineDoesNotContainAnyOfThese.Any(x => line.Contains(x) == false && !line.EndsWith(":")))
+            {
+                if(nextLine.IsEmpty() || !nextLine.Contains("{"))
+                    return line + ";";
+            }
 
+            if(line.Trim() == ";")
+                line = "";
             return line;
         }
 
@@ -222,14 +225,14 @@ namespace MetX.VB6ToCSharp.CSharp
         /// </summary>
         /// <param name="lines"></param>
         /// <returns></returns>
-        public static IList<string> DetermineWhichLinesGetASemicolon(IList<string> lines)
+        public static IList<string> DetermineWhichLinesGetASemicolon(List<string> lines)
         {
             if (lines.IsEmpty())
                 return lines;
 
             for (var i = 0; i < lines.Count; i++)
             {
-                lines[i] = DetermineIfLineGetsASemicolon(lines[i]);
+                lines[i] = DetermineIfLineGetsASemicolon(lines[i], i+1 < lines.Count ? lines[i+1] : null);
             }
 
             /*
@@ -300,10 +303,12 @@ namespace MetX.VB6ToCSharp.CSharp
 
             translatedLine = WhenStartsWithReplaceOtherAndAppendNow(translatedLine);
 
-            translatedLine = CleanupTranslatedLineOfCode(translatedLine);
-            translatedLine = DetermineIfLineGetsASemicolon(translatedLine);
+            translatedLine = OneLineComplex.Now(translatedLine);
 
-            return translatedLine.Trim();
+            translatedLine = CleanupTranslatedLineOfCode(translatedLine);
+            translatedLine = DetermineIfLineGetsASemicolon(translatedLine, null);
+            
+            return translatedLine; //.Trim();
         }
 
         /// <summary>
@@ -315,7 +320,7 @@ namespace MetX.VB6ToCSharp.CSharp
             if (originalLineOfCode.IsEmpty())
                 return originalLineOfCode;
 
-            var lineOfCode = originalLineOfCode.Trim();
+            var lineOfCode = originalLineOfCode; //.Trim();
             foreach (var entry in StartsAndEndsWithReplacements)
                 if (lineOfCode.ToLower().StartsWith(entry.X.ToLower()) &&
                     lineOfCode.ToLower().EndsWith(entry.Y.ToLower()))
@@ -359,7 +364,7 @@ namespace MetX.VB6ToCSharp.CSharp
             if (originalLineOfCode.IsEmpty())
                 return originalLineOfCode;
 
-            var lineOfCode = originalLineOfCode.Trim();
+            var lineOfCode = originalLineOfCode; //.Trim();
             foreach (var entry in WhenStartsWithReplaceOtherReplacements)
                 if (entry.X.IsNotEmpty() && lineOfCode.ToLower().StartsWith(entry.X.ToLower()))
                 {

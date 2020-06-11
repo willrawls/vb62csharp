@@ -71,9 +71,25 @@ namespace MetX.VB6ToCSharp.VB6
 
         public bool ConvertFile(ICodeLine parent, string filename, string outputPath)
         {
-            var version = string.Empty;
-            bool result;
+            var code = GenerateCode(parent, filename, outputPath);
+            if (code.IsEmpty()) 
+                return false;
 
+            // save result
+            var outFileName = Path.Combine(outputPath, TargetModule.FileName);
+            File.WriteAllText(outFileName, code);
+
+            // generate resx file if source form contain any images
+            if ((TargetModule.ImagesUsed))
+                WriteResX(TargetModule.ImageList, outputPath, TargetModule.Name);
+
+            return code.IsNotEmpty();
+        }
+
+        public string GenerateCode(ICodeLine parent, string filename, string outputPath)
+        {
+            var version = string.Empty;
+            
             // try recognize source code type depend by file extension
             var extension = filename.Substring(filename.Length - 3, 3);
             switch (extension.ToUpper())
@@ -134,7 +150,7 @@ namespace MetX.VB6ToCSharp.VB6
                 if (FileType == VbFileType.VbFileUnknown)
                 {
                     ActionResult = "Unknown file type";
-                    return false;
+                    return null;
                 }
 
                 SourceModule = new Module(parent)
@@ -148,22 +164,22 @@ namespace MetX.VB6ToCSharp.VB6
                 {
                     case "FRM":
                         SourceModule.Type = "form";
-                        result = ParseForm(reader);
+                        ParseForm(reader);
                         break;
 
                     case "BAS":
                         SourceModule.Type = "module";
-                        result = ParseModule(reader);
+                        ParseModule(reader);
                         break;
 
                     case "CLS":
                         SourceModule.Type = "class";
-                        result = ParseClass(reader);
+                        ParseClass(reader);
                         break;
                 }
 
                 // parse remain - variables, functions, procedures
-                result = ParseProcedures(reader);
+                ParseProcedures(reader);
 
                 stream.Flush();
                 stream.Close();
@@ -172,16 +188,7 @@ namespace MetX.VB6ToCSharp.VB6
 
             // generate output file
             var code = GetModuleCode(parent, outputPath);
-
-            // save result
-            var outFileName = outputPath + TargetModule.FileName;
-            File.WriteAllText(outFileName, code);
-
-            // generate resx file if source form contain any images
-            if ((TargetModule.ImagesUsed))
-                WriteResX(TargetModule.ImageList, outputPath, TargetModule.Name);
-
-            return result;
+            return code;
         }
 
         public void ConvertFormCode(string outPath, StringBuilder result)

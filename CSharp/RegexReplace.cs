@@ -13,5 +13,7 @@ namespace MetX.VB6ToCSharp.CSharp
             Regex = regex;
             ReplacePattern = replacePattern;
         }
+
+        public string Replace(string line) => Regex.Replace(line, ReplacePattern);
     }
 }

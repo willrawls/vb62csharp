@@ -831,8 +831,9 @@ namespace MetX.VB6ToCSharp.VB6
         {
             var localSourceProperty = (Property)sourceProperty;
             placeAtBottom = string.Empty;
-            var line = originalLine.Trim();
+            var line = originalLine; //.Trim();
             translatedLine = line;
+            
 
             if (translatedLine.Length > 0)
             {
