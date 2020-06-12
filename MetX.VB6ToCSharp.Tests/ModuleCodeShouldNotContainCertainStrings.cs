@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace MetX.VB6ToCSharp.Tests
 {
     [TestClass]
-    public class ModuleCodeShouldNotContainCertainStrings
+    public class CodeShouldBeWellFormed
     {
         const string inputFilePath = @"I:\OneDrive\data\code\Slice and Dice\Sandy\CAssocItem.cls";
         const string outputPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC";
@@ -34,6 +34,8 @@ namespace MetX.VB6ToCSharp.Tests
                 if(code.Contains(noNo))
                     noNoList += $"  {noNo}\n";
             }
+
+            Console.WriteLine("\n" + code);
 
             foreach (var noNo in NoNos)
             {

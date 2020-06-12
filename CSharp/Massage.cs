@@ -212,7 +212,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 && LineDoesNotContainAnyOfThese.Any(x => line.Contains(x) == false && !line.EndsWith(":")))
             {
                 if(nextLine.IsEmpty() || !nextLine.Contains("{"))
-                    return line + ";";
+                     return line + ";";
             }
 
             if(line.Trim() == ";")
@@ -234,18 +234,6 @@ namespace MetX.VB6ToCSharp.CSharp
             {
                 lines[i] = DetermineIfLineGetsASemicolon(lines[i], i+1 < lines.Count ? lines[i+1] : null);
             }
-
-            /*
-            for (var i = 0; i < lines.Count; i++)
-            {
-                if (lines[i].IsNotEmpty()
-                    && !lines[i].EndsWith(";")
-                    && !lines[i].Starts("{")
-                    && !lines[i].EndsWith("}")
-                )
-                    lines[i] += ";";
-            }
-            */
 
             return lines;
         }
