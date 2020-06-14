@@ -824,7 +824,8 @@ namespace MetX.VB6ToCSharp.VB6
         }
 
         public static void GetPropertyLine(
-                                    string originalLine,
+            string originalLine,
+            string nextLine,
             out string translatedLine,
             out string placeAtBottom,
             IAmAProperty sourceProperty)
@@ -864,34 +865,9 @@ namespace MetX.VB6ToCSharp.VB6
                     translatedLine = line
                         .Replace("Set ", "")
                         .Replace("Nothing", "null");
-                    translatedLine += ";";
                 }
 
-                if (Tools.WithCurrentlyIn.IsNotEmpty())
-                {
-                    if (translatedLine.StartsWith("."))
-                        translatedLine = Tools.WithCurrentlyIn + translatedLine;
-                    if (translatedLine.Contains(" ."))
-                    {
-                        var words = translatedLine.Split(' ');
-                        for (var i = 0; i < words.Length; i++)
-                        {
-                            if (words[i].StartsWith("."))
-                            {
-                                words[i] = Tools.WithCurrentlyIn + words[i];
-                            }
-                        }
-
-                        translatedLine = string.Join(" ", words);
-                    }
-                }
-
-                // Begin With
-                if (translatedLine.StartsWith("With "))
-                {
-                    Tools.WithCurrentlyIn = translatedLine.TokenAt(2).Trim();
-                    translatedLine = "";
-                }
+                translatedLine = HandleWith(translatedLine);
 
                 // Set
                 if (translatedLine.Contains("Set "))
@@ -913,9 +889,9 @@ namespace MetX.VB6ToCSharp.VB6
                 }
 
                 // & to +
-                if (translatedLine.Contains("&"))
+                if (translatedLine.Contains(" & "))
                 {
-                    translatedLine = translatedLine.Replace("&", "+");
+                    translatedLine = translatedLine.Replace(" & ", " + ");
                 }
 
                 // Select Case
@@ -997,6 +973,7 @@ namespace MetX.VB6ToCSharp.VB6
                     && line.TokensAfter(1, "Then").Trim().Length > 0)
                 {
                     translatedLine = translatedLine.Replace("New", "new");
+                    translatedLine = translatedLine.Replace(" = ", " == ");
                 }
 
                 // New
@@ -1013,7 +990,7 @@ namespace MetX.VB6ToCSharp.VB6
         }
         catch(Exception e)
         {
-            /* ON ERROR RESUME NEXT (ish) */
+            // ON ERROR RESUME NEXT
         }
 ";
                     translatedLine = "try\r\n{\r\n";
@@ -1021,8 +998,56 @@ namespace MetX.VB6ToCSharp.VB6
             }
 
             if (translatedLine.IsNotEmpty())
-                translatedLine = Massage.Now(translatedLine);
+                translatedLine = Massage.Now(translatedLine, nextLine);
         }
+
+        public static string HandleWith(string translatedLine)
+        {
+            if (translatedLine.Trim().StartsWith("End With"))
+            {
+                Tools.WithCurrentlyIn = "";
+                translatedLine = "";
+                if (WithStack.Count > 0)
+                {
+                    Tools.WithCurrentlyIn = WithStack.Pop();
+                }
+            }
+            else if (translatedLine.Trim().StartsWith("With "))
+            {
+                if (Tools.WithCurrentlyIn.IsNotEmpty())
+                    WithStack.Push(Tools.WithCurrentlyIn);
+
+                Tools.WithCurrentlyIn = translatedLine.Trim().Substring(5); //.TokenAt(2);       
+
+                translatedLine = "";
+            }
+            else if (Tools.WithCurrentlyIn.IsNotEmpty())
+            {
+                if (translatedLine.Trim().StartsWith("."))
+                    translatedLine = Tools.WithCurrentlyIn + translatedLine.Trim();
+                if (translatedLine.Contains(" ."))
+                {
+                    var words = translatedLine.AllTokens(" .", StringSplitOptions.RemoveEmptyEntries);
+                    for (var i = 1; i < words.Count; i++)
+                        words[i] = Tools.WithCurrentlyIn + "." + words[i];
+
+                    translatedLine = string.Join(" ", words);
+                }
+                else if (translatedLine.Contains("\t."))
+                {
+                    var words = translatedLine.Split('\t');
+                    for (var i = 0; i < words.Length; i++)
+                        if (words[i].Trim().StartsWith("."))
+                            words[i] = Tools.WithCurrentlyIn + " " + words[i];
+
+                    translatedLine = string.Join(" ", words);
+                }
+            }
+
+            return translatedLine;
+        }
+
+        public static Stack<string> WithStack { get; set; } = new Stack<string>();
 
         public static bool Module(Module sourceModule, Module targetModule)
         {
@@ -1177,9 +1202,14 @@ namespace MetX.VB6ToCSharp.VB6
                 };
 
                 // lines
-                foreach (var originalLine in sourceProcedure.LineList)
+                for (var i = 0; i < sourceProcedure.LineList.Count; i++)
                 {
-                    GetPropertyLine(originalLine, out var convertedLine, out var placeAtBottom, null);
+                    var originalLine = sourceProcedure.LineList[i];
+                    var nextLine = (i < sourceProcedure.LineList.Count - 1)
+                        ? sourceProcedure.LineList[i+1]
+                        : null;
+                    GetPropertyLine(originalLine, nextLine, out var convertedLine,
+                        out var placeAtBottom, null);
 
                     targetProcedure.LineList.Add(convertedLine);
                     if (placeAtBottom.IsNotEmpty())

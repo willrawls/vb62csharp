@@ -42,5 +42,36 @@ namespace MetX.VB6ToCSharp.Tests
                 Assert.IsFalse(code.Contains(noNo), noNoList);
             }
         }
+
+
+        [TestMethod]
+        public void WithBlockReplacementTest()
+        {
+            ICodeLine parent = new EmptyParent();
+
+
+            var code =
+@"With Fred
+    .x = b
+    .y = c
+    .z = d
+End With";
+            var expected = 
+@"    Fred.x;
+    Fred.y = c;
+    Fred.z = d
+";
+            var block = new Block(new EmptyParent(), "With Fred");
+            block.Children.Add(new LineOfCode(block, "    .x = b"));
+            block.Children.Add(new LineOfCode(block, "    .y = c"));
+            block.Children.Add(new LineOfCode(block, "    .z = d"));
+            block.Children.Add(new LineOfCode(block, "End With"));
+
+            var actual = block.GenerateCode();
+
+            Extensions.AreEqualFormatted(expected, actual);
+        }
+
+
     }
 }

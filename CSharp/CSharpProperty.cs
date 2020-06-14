@@ -45,12 +45,21 @@ namespace MetX.VB6ToCSharp.CSharp
             targetPart.Children.Add(new Block(this));
             targetPart.LinesAfter = new Block(this);
 
-            foreach (var originalLine in localSourceProperty.Block.Children)
+            for (var i = 0; i < localSourceProperty.Block.Children.Count; i++)
             {
+                var originalLine = localSourceProperty.Block.Children[i];
+                var nextLine = i < localSourceProperty.Block.Children.Count - 1 
+                    ? localSourceProperty.Block.Children[i+1]
+                    : null;
                 var line = originalLine.Line.Trim();
                 if (!line.IsNotEmpty()) continue;
 
-                ConvertSource.GetPropertyLine(line, out var translatedLine, out var placeAtBottom, localSourceProperty);
+                ConvertSource.GetPropertyLine(
+                    line, 
+                    nextLine?.Line, 
+                    out var translatedLine,
+                    out var placeAtBottom, 
+                    localSourceProperty);
                 if (translatedLine.IsNotEmpty())
                     targetPart.Children.Add(new Block(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())

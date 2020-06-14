@@ -1,20 +1,70 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
     public static class OneLineComplex
     {
-        public static List<RegexReplace> Shuffle = new List<RegexReplace>
+        // something(x,y) => x.somethingElse(y)
+        public static List<XReplace> toX_function_Y = new List<XReplace>
         {
-            // Instr
-            new RegexReplace(
-                new Regex(@".*instr\s*\(\s*(?<X>.*)\s*,\s*(?<Y>.*)\b",
-                    RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                "$1.Contains($2"),
+            new XReplace("instr", "$1.Contains($2)"),
+            new XReplace( "left", "$1.Substring(0, $2)"),
+            new XReplace(@"left\$", "$1.Substring(0, $2)"),
+            new XReplace("right", "$1.Substring($1.Length - $2)"),
+            new XReplace(@"right\$", "$1.Substring($1.Length - $2)"),
+        };
 
+        // something(x) => x.OtherSomething()
+        public static List<XReplace> toX_function = new List<XReplace>
+        {
+            new XReplace("ucase", "$1.ToUpper()"),
+            new XReplace(@"ucase\$", "$1.ToUpper()"), // Since it's going into a regular expression, the entry must meet its rules
+        };
+
+        // something x  ==> something(x)
+        public static List<string> fromBare_to_function_X_ = new List<string>
+        {
+            "Add",
+            "AddItem",
+            "SetListIndex",
+        };
+
+        static OneLineComplex()
+        {
+            // something(x,y) => x.somethingElse(y)
+            foreach (var wrappable in toX_function_Y)
+            {
+                // When "a(x,y) => x.A(y)   (for instance Z = Contains)
+                Library.Add(new RegexReplace(
+                    new Regex($@".*{wrappable.X}\s*\(\s*(?<X>.*)\s*,\s*(?<Y>.*)\b\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    wrappable.Y));
+            }
+
+            // something x  ==> something(x)
+            foreach (var wrappable in fromBare_to_function_X_)
+            {
+                Library.Add(new RegexReplace(
+                    new Regex(wrappable + @" (.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    wrappable + "($1)"));
+            }
+
+            // something(x) => x.OtherSomething()
+            foreach (var wrappable in toX_function)
+            {
+                var item = new RegexReplace(
+                    new Regex(wrappable.X + @"\((.+)\)",
+                        RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                    wrappable.Y);
+                Library.Add(item);
+            }
+        }
+
+        public static List<RegexReplace> Library = new List<RegexReplace>
+        {
             // X = X + ...
             new RegexReplace(
                 new Regex(@"(.*) = (\1 [+-\\])(.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -25,15 +75,15 @@ namespace MetX.VB6ToCSharp.CSharp
                 new Regex(@"For (.+) = (.*) To (.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
                 "for(var $1 = $2; $1 < $3; $1++) //SOB//"),
 
-            // Add x
-            new RegexReplace(
-                new Regex(@"Add (.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-                "Add($1)"),
-
             // Mid$(x,y) ---
             new RegexReplace(
                 new Regex(@"Mid\$*\((.+),(.+)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
                 "$1.Substring($2)"),
+
+            // ... x As y
+            new RegexReplace(
+                new Regex(@"(.+) As (.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "$2 $1;"),
 
             // Do While x > y ---
             new RegexReplace(
@@ -42,10 +92,12 @@ namespace MetX.VB6ToCSharp.CSharp
             
         };
 
-        public static string Now(string line)
+        public static string Shuffle(string line)
         {
-            foreach (var entry in Shuffle) 
+            foreach (var entry in Library)
+            {
                 line = entry.Regex.Replace(line, entry.ReplacePattern);
+            }
 
             return line;
         }
