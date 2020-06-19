@@ -18,7 +18,7 @@ namespace MetX.VB6ToCSharp.Structure
             var result = new StringBuilder();
 
             if (Line.IsNotEmpty())
-                result.AppendLine(Indentation + Line);
+                result.AppendLine(Indentation + Line.Transform());
 
             if (Children.IsNotEmpty())
             {

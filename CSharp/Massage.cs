@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MetX.Library;
+using MetX.VB6ToCSharp.VB6;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
@@ -176,7 +177,7 @@ namespace MetX.VB6ToCSharp.CSharp
             if (lineOfCode.TokenCount() == 4 && lineOfCode.TokenAt(3) == "As")
             {
                 lineOfCode = $"{lineOfCode.TokenAt(4)} {lineOfCode.TokenAt(2)};";
-                if (lineOfCode.Contains("static ")) ;
+                if (lineOfCode.Contains("static "))
                     lineOfCode = "static " + lineOfCode;
             }
 
@@ -278,7 +279,7 @@ namespace MetX.VB6ToCSharp.CSharp
             {
                 var line = lines[i];
                 var nextLine = i < lines.Count - 1 ? lines[i + 1] : null;
-                result.AppendLine(Now(line, nextLine));
+                result.AppendLine(Transform(line, nextLine));
             }
 
             var code = result.ToString();
@@ -290,8 +291,11 @@ namespace MetX.VB6ToCSharp.CSharp
         /// </summary>
         /// <param name="translatedLine"></param>
         /// <returns></returns>
-        public static string Now(string translatedLine, string nextLine)
+        public static string Transform(this string originalLine, string nextLine = null)
         {
+            var translatedLine = originalLine;
+            translatedLine = translatedLine.HandleWith();
+
             translatedLine = BlanketReplaceNow(translatedLine);
             translatedLine = StartsWithReplaceNow(translatedLine);
             translatedLine = EndsWithReplaceNow(translatedLine);
@@ -301,7 +305,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
             translatedLine = WhenStartsWithReplaceOtherAndAppendNow(translatedLine);
 
-            translatedLine = OneLineComplex.Shuffle(translatedLine);
+            translatedLine = RegExReplacements.Shuffle(translatedLine);
 
             translatedLine = CleanupTranslatedLineOfCode(translatedLine);
             translatedLine = DetermineIfLineGetsASemicolon(translatedLine, nextLine);

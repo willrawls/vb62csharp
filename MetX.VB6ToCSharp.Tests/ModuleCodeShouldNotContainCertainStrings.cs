@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
@@ -15,7 +16,8 @@ namespace MetX.VB6ToCSharp.Tests
 
         static List<string> NoNos = new List<string>
         {
-            "get;", "set;", "{;", "};", "';"
+            "get;", "set;", "{;", "};", "';", "*;", 
+            "F = ", "Value = ", "assumed;"
         };
 
         [TestMethod]
@@ -59,7 +61,7 @@ End With";
             var expected = 
 @"    Fred.x;
     Fred.y = c;
-    Fred.z = d
+    Fred.z = d;
 ";
             var block = new Block(new EmptyParent(), "With Fred");
             block.Children.Add(new LineOfCode(block, "    .x = b"));

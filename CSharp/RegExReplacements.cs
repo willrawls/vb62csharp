@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
-    public static class OneLineComplex
+    public static class RegExReplacements
     {
         // something(x,y) => x.somethingElse(y)
         public static List<XReplace> toX_function_Y = new List<XReplace>
@@ -33,7 +33,7 @@ namespace MetX.VB6ToCSharp.CSharp
             "SetListIndex",
         };
 
-        static OneLineComplex()
+        static RegExReplacements()
         {
             // something(x,y) => x.somethingElse(y)
             foreach (var wrappable in toX_function_Y)

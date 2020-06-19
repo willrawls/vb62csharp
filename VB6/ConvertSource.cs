@@ -998,10 +998,10 @@ namespace MetX.VB6ToCSharp.VB6
             }
 
             if (translatedLine.IsNotEmpty())
-                translatedLine = Massage.Now(translatedLine, nextLine);
+                translatedLine = Massage.Transform(translatedLine, nextLine);
         }
 
-        public static string HandleWith(string translatedLine)
+        public static string HandleWith(this string translatedLine)
         {
             if (translatedLine.Trim().StartsWith("End With"))
             {

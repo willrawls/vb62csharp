@@ -1132,7 +1132,7 @@ namespace MetX.VB6ToCSharp.VB6
 
                     // comments
                     case "'":
-                        sComments = sComments + line + "\r\n";
+                        sComments += "// " + line.Substring(1) + "\r\n";
                         break;
 
                     // next can be declaration of variables

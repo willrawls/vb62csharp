@@ -60,7 +60,6 @@ namespace MetX.VB6ToCSharp.Tests
             Assert.AreEqual("\n" + expected, "\n" + actual);
         }
 
-
         [TestMethod]
         public void BlockWithLineAndSubLineTest()
         {
