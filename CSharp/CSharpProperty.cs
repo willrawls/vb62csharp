@@ -88,9 +88,9 @@ namespace MetX.VB6ToCSharp.CSharp
                     if (Comment.IsNotEmpty())
                     {
                         result.AppendLine();
-                        result.AppendLine(Indentation + "/*");
+                        //result.AppendLine(Indentation + "/*");
                         result.AppendLine(Comment);
-                        result.AppendLine(Indentation + "*/");
+                        //result.AppendLine(Indentation + "*/");
                         result.AppendLine();
                     }
                 }

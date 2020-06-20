@@ -13,7 +13,7 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void Indentifier_Simple()
         {
-            var block = _.B(_.E(0), "A", "B");
+            var block = _.B(_.Top(0), "A", "B");
             Assert.AreEqual("    ", block.Indentation);
             Assert.AreEqual("        ", block.SecondIndentation);
         }
@@ -35,22 +35,31 @@ namespace MetX.VB6ToCSharp.Tests
             block2.Children.Add(block5);
 
             block5.Children.Add(_.B(block5, "Six"));
-            block5.Children.Add(_.B(block5, "Seven"));
+            block5.Children.Add(_.B(block5, "Seven", "Eight"));
 
             const string expected =
 @"    Fred
     {
-        One
+        One;
         Two
         {
             Four
+            {
+            }
             Five
             {
                 Six
+                {
+                }
                 Seven
+                {
+                    Eight;
+                }
             }
         }
         Three
+        {
+        }
     }
 ";
 
@@ -66,7 +75,7 @@ namespace MetX.VB6ToCSharp.Tests
             ICodeLine parent = new EmptyParent();
             var block = _.B(parent, "Fred", "George");
 
-            var expected = "    Fred\r\n    {\r\n        George\r\n    }\r\n";
+            var expected = "    Fred\r\n    {\r\n        George;\r\n    }\r\n";
             var actual = block.GenerateCode();
             Assert.AreEqual("\n" + expected, "\n" + actual);
         }

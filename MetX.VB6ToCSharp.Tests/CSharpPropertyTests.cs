@@ -64,13 +64,13 @@ namespace MetX.VB6ToCSharp.Tests
             target.Get.Children.AddRange(
                 new List<ICodeLine>()
                 {
-                    _.B(target.Get, "B"),
-                    _.B(target.Get, "C")
+                    _.Line(target.Get, "B"),
+                    _.Line(target.Get, "C")
                 });
 
             target.Set.Line = "D";
             target.Set.Encountered = true;
-            target.Set.Children.Add(_.B(target.Set, "E"));
+            target.Set.Children.Add(_.Line(target.Set, "E"));
 
             var expected =
 @"    //  TheComment
@@ -80,8 +80,8 @@ namespace MetX.VB6ToCSharp.Tests
         {
             A
             {
-                B
-                C
+                B;
+                C;
             }
         }
 
@@ -89,7 +89,7 @@ namespace MetX.VB6ToCSharp.Tests
         {
             D
             {
-                E
+                E;
             }
         }
 
@@ -108,11 +108,11 @@ namespace MetX.VB6ToCSharp.Tests
                 PartType = PropertyPartType.Get,
                 Encountered = true,
             };
-            get.Children.Add(_.L(get, "Testing"));
-            get.Children.Add(_.L(get, "123"));
+            get.Children.Add(_.Line(get, "Testing"));
+            get.Children.Add(_.Line(get, "123"));
 
             var actual = get.GenerateCode();
-            var expected = "    get\r\n    {\r\n        Testing\r\n        123\r\n    }\r\n";
+            var expected = "    get\r\n    {\r\n        Testing;\r\n        123;\r\n    }\r\n";
             Extensions.AreEqualFormatted(expected, actual);
         }
     }

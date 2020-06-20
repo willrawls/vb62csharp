@@ -18,19 +18,17 @@ namespace MetX.VB6ToCSharp.Structure
             var result = new StringBuilder();
 
             if (Line.IsNotEmpty())
-                result.AppendLine(Indentation + Line.Transform());
+                result.AppendLine(Indentation + Line); //.Transform());
+
+            if (Before.IsNotEmpty())
+                result.AppendLine(Indentation + Before);
 
             if (Children.IsNotEmpty())
-            {
-                if (Before.IsNotEmpty())
-                    result.AppendLine(Indentation + Before);
-
                 foreach (var codeLine in Children)
                     result.Append(codeLine.GenerateCode());
 
-                if (After.IsNotEmpty())
-                    result.AppendLine(Indentation + After);
-            }
+            if (After.IsNotEmpty())
+                result.AppendLine(Indentation + After);
 
             var code = result.ToString();
             return code;

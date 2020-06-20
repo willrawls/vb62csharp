@@ -196,7 +196,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 .Replace("\n\n", "\n")
                 .Replace("\n\n", "\n");
 
-            return lineOfCode; //.Trim();
+            return lineOfCode;
         }
 
         /// <summary>
@@ -309,8 +309,11 @@ namespace MetX.VB6ToCSharp.CSharp
 
             translatedLine = CleanupTranslatedLineOfCode(translatedLine);
             translatedLine = DetermineIfLineGetsASemicolon(translatedLine, nextLine);
+
+            if (translatedLine.Trim() == ";")
+                translatedLine = string.Empty;
             
-            return translatedLine; //.Trim();
+            return translatedLine;
         }
 
         /// <summary>
@@ -322,7 +325,7 @@ namespace MetX.VB6ToCSharp.CSharp
             if (originalLineOfCode.IsEmpty())
                 return originalLineOfCode;
 
-            var lineOfCode = originalLineOfCode; //.Trim();
+            var lineOfCode = originalLineOfCode;
             foreach (var entry in StartsAndEndsWithReplacements)
                 if (lineOfCode.ToLower().StartsWith(entry.X.ToLower()) &&
                     lineOfCode.ToLower().EndsWith(entry.Y.ToLower()))
@@ -366,7 +369,7 @@ namespace MetX.VB6ToCSharp.CSharp
             if (originalLineOfCode.IsEmpty())
                 return originalLineOfCode;
 
-            var lineOfCode = originalLineOfCode; //.Trim();
+            var lineOfCode = originalLineOfCode;
             foreach (var entry in WhenStartsWithReplaceOtherReplacements)
                 if (entry.X.IsNotEmpty() && lineOfCode.ToLower().StartsWith(entry.X.ToLower()))
                 {

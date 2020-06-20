@@ -1132,7 +1132,13 @@ namespace MetX.VB6ToCSharp.VB6
 
                     // comments
                     case "'":
-                        sComments += "// " + line.Substring(1) + "\r\n";
+                        var commentLines = line.Substring(1).Replace("\r", "").Split('\n');
+                        for (int i = 0; i < commentLines.Length; i++)
+                        {
+                            commentLines[i] = "// " + commentLines[i] + "\n";
+                        }
+
+                        sComments += string.Join("\n", commentLines);
                         break;
 
                     // next can be declaration of variables
@@ -1223,8 +1229,7 @@ namespace MetX.VB6ToCSharp.VB6
                         if (bProperty)
                         {
                             // add line of property
-                            property.Block.Children.Add(
-                                new Block(property, line));
+                            property.Block.Children.Add(_.Line(property, line));
                         }
 
                         if (bProcedure)

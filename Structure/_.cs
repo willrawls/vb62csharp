@@ -16,7 +16,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// <param name="line1"></param>
         /// <param name="line2"></param>
         /// <returns></returns>
-        public static List<ICodeLine> C(ICodeLine parent = null, ICodeLine line1 = null, ICodeLine line2 = null)
+        public static List<ICodeLine> List(ICodeLine parent = null, ICodeLine line1 = null, ICodeLine line2 = null)
         {
             var lines = new List<ICodeLine>();
             
@@ -44,18 +44,18 @@ namespace MetX.VB6ToCSharp.Structure
         /// <param name="line1"></param>
         /// <param name="line2"></param>
         /// <returns>Children list with up to two lines in it</returns>
-        public static List<ICodeLine> C(ICodeLine parent = null, string line1 = null, string line2 = null)
+        public static List<ICodeLine> List(ICodeLine parent = null, string line1 = null, string line2 = null)
         {
             var lines = new List<ICodeLine>();
             
             if(parent != null && line1.IsNotEmpty())
             {
-                lines.Add(_.L(parent, line1));
+                lines.Add(_.Line(parent, line1));
             }
 
             if(parent != null && line2.IsNotEmpty())
             {
-                lines.Add(_.L(parent, line2));
+                lines.Add(_.Line(parent, line2));
             }
 
             return lines;
@@ -67,7 +67,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// <param name="parent"></param>
         /// <param name="line">The line of code to encapsulate</param>
         /// <returns></returns>
-        public static LineOfCode L(ICodeLine parent, string line)
+        public static LineOfCode Line(ICodeLine parent, string line)
         {
             var lineOfCode = new LineOfCode(parent, line);
             return lineOfCode;
@@ -115,7 +115,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// </summary>
         /// <param name="startingIndent">-1 so the children start with a 0 indentation</param>
         /// <returns></returns>
-        public static EmptyParent E(int startingIndent = -1)
+        public static EmptyParent Top(int startingIndent = -1)
         {
             return new EmptyParent(startingIndent);
         }
