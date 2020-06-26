@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace MetX.VB6ToCSharp.Tests
 {
     [TestClass]
-    public class CodeShouldBeWellFormed
+    public class CAssocItem_CodeShouldBeWellFormed
     {
         const string inputFilePath = @"CAssocItem.cls";
         const string outputPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC";
@@ -47,14 +47,14 @@ namespace MetX.VB6ToCSharp.Tests
             Assert.IsNotNull(code);
             Assert.IsTrue(code.Length > 0);
 
-            var noNoList = "\nShould not contain: (still present)\n";
+            var noNoList = "\nShould not contain:\n";
             foreach (var noNo in noNos)
             {
                 if(code.Contains(noNo))
                     noNoList += $"  {noNo}\n";
             }
 
-            var mustList = "\nMust contain: (is missing)\n";
+            var mustList = "\nMust contain:\n";
             foreach (var must in musts)
             {
                 if(!code.Contains(must))

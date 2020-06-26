@@ -88,9 +88,7 @@ namespace MetX.VB6ToCSharp.CSharp
                     if (Comment.IsNotEmpty())
                     {
                         result.AppendLine();
-                        //result.AppendLine(Indentation + "/*");
                         result.AppendLine(Comment);
-                        //result.AppendLine(Indentation + "*/");
                         result.AppendLine();
                     }
                 }
@@ -129,12 +127,6 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var code = result.ToString();
             return code;
-        }
-
-        public string GenerateCode(Block parent)
-        {
-            Parent = parent;
-            return GenerateCode();
         }
     }
 }
