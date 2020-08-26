@@ -993,15 +993,6 @@ namespace MetX.VB6ToCSharp.VB6
             var position = 0;
             var start = 0;
 
-            //public Sub cmdOk_Click()
-            //public void cmdShow_Click(object sender, System.EventArgs e)
-
-            //public Sub Form_Load()
-            //public void frmConvert_Load(object sender, System.EventArgs e)
-
-            //Public Function Rozbor_DefaultFields(ByVal MKf As String) As String
-            //public static bool ParseProcedures( Module SourceModule, Module TargetModule )
-
             word = GetWord(line, ref position);
             switch (word)
             {
