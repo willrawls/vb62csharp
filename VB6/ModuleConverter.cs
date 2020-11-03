@@ -86,12 +86,12 @@ namespace MetX.VB6ToCSharp.VB6
             return code.IsNotEmpty();
         }
 
-        public string GenerateCode(ICodeLine parent, string filename, string outputPath)
+        public string GenerateCode(ICodeLine parent, string inputFilename, string outputPath = null)
         {
             var version = string.Empty;
             
             // try recognize source code type depend by file extension
-            var extension = filename.Substring(filename.Length - 3, 3);
+            var extension = inputFilename.Substring(inputFilename.Length - 3, 3);
             switch (extension.ToUpper())
             {
                 case "FRM":
@@ -112,7 +112,7 @@ namespace MetX.VB6ToCSharp.VB6
             }
 
             // open file
-            using (var stream = new FileStream(filename, FileMode.Open, FileAccess.Read))
+            using (var stream = new FileStream(inputFilename, FileMode.Open, FileAccess.Read))
             using (var reader = new StreamReader(stream))
             {
                 reader.BaseStream.Seek(0, SeekOrigin.Begin);
@@ -156,7 +156,7 @@ namespace MetX.VB6ToCSharp.VB6
                 SourceModule = new Module(parent)
                 {
                     Version = version ?? "1.0",
-                    FileName = filename
+                    FileName = inputFilename
                 };
 
                 // now parse specifics of each type
@@ -191,7 +191,7 @@ namespace MetX.VB6ToCSharp.VB6
             return code;
         }
 
-        public void ConvertFormCode(string outPath, StringBuilder result)
+        public void ConvertFormCode(StringBuilder result, string outputPath = null)
         {
             // list of controls
             foreach (var control in TargetModule.ControlList)
@@ -305,7 +305,7 @@ namespace MetX.VB6ToCSharp.VB6
                 // write properties
                 foreach (var property in control.Children.Cast<ControlProperty>())
                 {
-                    GetPropertyRow(result, control.Type, control.Name, property, outPath);
+                    GetPropertyRow(result, control.Type, control.Name, property, outputPath);
                 }
 
                 // if control is container for other controls
@@ -399,7 +399,7 @@ namespace MetX.VB6ToCSharp.VB6
                     result.Append("//");
                 }
 
-                GetPropertyRow(result, TargetModule.Type, "", property, outPath);
+                GetPropertyRow(result, TargetModule.Type, "", property, outputPath);
             }
 
             // resume layout for each container
@@ -470,7 +470,7 @@ namespace MetX.VB6ToCSharp.VB6
             return code;
         }
 
-        public string GetModuleCode(ICodeLine parent, string outPath)
+        public string GetModuleCode(ICodeLine parent, string outputPath = null)
         {
             var result = new StringBuilder();
 
@@ -499,7 +499,7 @@ namespace MetX.VB6ToCSharp.VB6
 
             result.AppendLine();
             result.AppendLine($"namespace {ProjectNamespace}");
-            // start namepsace region
+            // start namespace region
             result.Append("{\r\n");
             var firstIndent = Tools.Indent(2);
             if (!string.IsNullOrEmpty(SourceModule.Comment))
@@ -536,7 +536,7 @@ namespace MetX.VB6ToCSharp.VB6
             // ********************************************************
 
             if (TargetModule.Type == "form")
-                ConvertFormCode(outPath, result);
+                ConvertFormCode(result, outputPath);
 
             // ********************************************************
             // enums
@@ -576,12 +576,14 @@ namespace MetX.VB6ToCSharp.VB6
             return code;
         }
 
-        public void GetPropertyRow(StringBuilder result, string type, string name, ControlProperty controlProperty,
-            string outPath)
+        public void GetPropertyRow(StringBuilder result, string type, string name, 
+            ControlProperty controlProperty,
+            string outputPath = null)
         {
             // exception for images
-            if (controlProperty.Name == "Icon" || controlProperty.Name == "Image" ||
-                controlProperty.Name == "BackgroundImage")
+            if (controlProperty.Name == "Icon" 
+                || controlProperty.Name == "Image" 
+                || controlProperty.Name == "BackgroundImage")
             {
                 // generate resx file and write there image extracted from VB6 frx file
                 var resourceName = string.Empty;
@@ -601,7 +603,7 @@ namespace MetX.VB6ToCSharp.VB6
                         break;
                 }
 
-                if (!WriteImage(SourceModule, resourceName, controlProperty.Value, outPath)) return;
+                if (!WriteImage(SourceModule, resourceName, controlProperty.Value, outputPath)) return;
 
                 switch (controlProperty.Name)
                 {
@@ -951,38 +953,48 @@ namespace MetX.VB6ToCSharp.VB6
 
         public void ParseParameters(List<Parameter> parameterList, string line)
         {
-            var position = 0;
-            var word = string.Empty;
             // parameters delimited by comma
-            var parts = line.Split(',').ToList().Select(p => p.Trim()).ToList();
+            var parts = line
+                .Split(',')
+                    .ToList()
+                .Select(p => p.Trim())
+                .ToList();
 
-            for (var index = 0; index < parts.Count; index++)
+            foreach (var part in parts)
             {
-                var part = parts[index];
-                var parameter = new Parameter();
-
-                parameter.Optional = part.StartsWith("Optional");
-                part = part.Replace("Optional", "").Trim();
-
-                parameter.Pass = part.StartsWith("ByVal") ? "ByVal" : "ByRef";
-                part = part.Replace("ByRef ", "");
-                part = part.Replace("ByVal ", "").Trim();
-                parameter.Name = part.TokenAt(1, " As ").Trim();
-                var type = part.TokenAt(2, " As ").Trim().TokenAt(1).Trim();
-                parameter.Type = "/* unknown */";
-                if (type != string.Empty)
+                var parameter = new Parameter
                 {
-                    var left = part.TokenAt(2, " As ").Replace(type, "");
+                    Optional = part.StartsWith("Optional")
+                };
+
+                var words = part.Replace("Optional", "").Trim();
+
+                parameter.Pass = words.StartsWith("ByVal") ? "ByVal" : "ByRef";
+                words = words.Replace("ByRef ", "");
+                words = words.Replace("ByVal ", "").Trim();
+
+                parameter.Name = words.TokenAt(1, " As ").Trim();
+                
+                var type = words.TokenAt(2, " As ").Trim().TokenAt(1).Trim();
+
+                parameter.Type = type; //"/* unknown */";
+                if (type.IsNotEmpty())
+                {
+                    var left = words
+                        .TokenAt(2, " As ")
+                        .Replace(type, "");
                     if (left.IsNotEmpty())
                     {
                         parameter.DefaultValue = left.Replace("= ", "");
                     }
                 }
 
+                if (parameter.Type == "String")
+                    parameter.Type = "string";
+
                 parameterList.Add(parameter);
 
                 // next parameter
-                position++;
             }
         }
 
@@ -1124,7 +1136,7 @@ namespace MetX.VB6ToCSharp.VB6
                     // comments
                     case "'":
                         var commentLines = line.Substring(1).Replace("\r", "").Split('\n');
-                        for (int i = 0; i < commentLines.Length; i++)
+                        for (var i = 0; i < commentLines.Length; i++)
                         {
                             commentLines[i] = "// " + commentLines[i] + "\n";
                         }
@@ -1397,7 +1409,7 @@ namespace MetX.VB6ToCSharp.VB6
             variable.Type = scope == "String" ? "string" : scope;
         }
 
-        public bool WriteImage(Module sourceModule, string resourceName, string value, string outPath)
+        public bool WriteImage(Module sourceModule, string resourceName, string value, string outputPath = null)
         {
             var temp = string.Empty;
             var offset = 0;
@@ -1405,7 +1417,8 @@ namespace MetX.VB6ToCSharp.VB6
             var sResxName = string.Empty;
             var position = 0;
 
-            position = value.IndexOf(":", 0);
+            position = value.IndexOf(":", 0, StringComparison.Ordinal);
+
             // "Form1.frx":0000;
             // old vb3 code has name without ""
             // CONTROL.FRX:0000
@@ -1424,25 +1437,26 @@ namespace MetX.VB6ToCSharp.VB6
             // exist file ?
 
             // get image
-            byte[] imageString;
+            Tools.GetFrxImage(Path.GetDirectoryName(sourceModule.FileName) + @"\" + frxFile, offset, out var imageString);
 
-            Tools.GetFrxImage(Path.GetDirectoryName(sourceModule.FileName) + @"\" + frxFile, offset, out imageString);
-
-            if ((imageString.GetLength(0) - 8) > 0)
+            if (!string.IsNullOrEmpty(outputPath)
+                && (imageString.GetLength(0) - 8) > 0)
             {
-                if (File.Exists(outPath + resourceName))
+                var resourcePath = Path.Combine(outputPath, resourceName);
+                if (File.Exists(resourcePath))
                 {
-                    File.Delete(outPath + resourceName);
+                    File.SetAttributes(resourcePath, FileAttributes.Normal);
+                    File.Delete(resourcePath);
                 }
 
-                FileStream stream =
-                    stream = new FileStream(outPath + resourceName, FileMode.CreateNew, FileAccess.Write);
-                var writer = new BinaryWriter(stream);
-                writer.Write(imageString, 8, imageString.GetLength(0) - 8);
-                stream.Close();
-                writer.Close();
+                var stream = new FileStream(resourcePath, FileMode.CreateNew, FileAccess.Write);
+                using (var writer = new BinaryWriter(stream))
+                {
+                    writer.Write(imageString, 8, imageString.GetLength(0) - 8);
+                    stream.Close();
+                    writer.Close();
+                }
 
-                // write
                 TargetModule.ImageList.Add(resourceName);
                 return true;
             }

@@ -11,13 +11,17 @@ namespace MetX.VB6ToCSharp.Tests
     [TestClass]
     public class CAssocItem_CodeShouldBeWellFormed
     {
-        const string inputFilePath = @"CAssocItem.cls";
-        const string outputPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC";
+        const string InputFilePath = @"CAssocItem.cls";
+        const string OutputPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC";
 
         [TestMethod]
         public void ProperlyTranslate_CAssocItem_cs()
         {
-            List<string> musts = new List<string>
+            ICodeLine parent = new EmptyParent(-1);
+            var converter = new ModuleConverter(parent);
+            var code = converter.GenerateCode(parent, InputFilePath); // OutputPath);
+
+            var message = LookFor(code, true, new []
             {
                 "// freeware", 
                 "            return sGetToken",
@@ -26,9 +30,9 @@ namespace MetX.VB6ToCSharp.Tests
                 "            public string Key;",
                 "        {\n}",
                 "public string Value",
-            };
+            });
 
-            List<string> noNos = new List<string>
+            message += LookFor(code, false, new []
             {
                 "get;", "set;", 
                 "{;", "};", 
@@ -38,37 +42,35 @@ namespace MetX.VB6ToCSharp.Tests
                 "assumed;", 
                 "risk.         //",
                 "        ;",
-            };
+            });
 
-            ICodeLine parent = new EmptyParent(-1); 
-            var converter = new ModuleConverter(parent);
-            var code = converter.GenerateCode(parent, inputFilePath, outputPath);
-            
+            Assert.IsTrue(message == string.Empty,
+                $"\n==========\n{message}\n{code}");
+        }
+
+        public static string LookFor(string code, bool mustHave, string[] list)
+        {
             Assert.IsNotNull(code);
             Assert.IsTrue(code.Length > 0);
 
-            var noNoList = "\nShould not contain:\n";
-            foreach (var noNo in noNos)
+            var i = 0;
+            var message = "";
+            if(mustHave)
             {
-                if(code.Contains(noNo))
-                    noNoList += $"  {noNo}\n";
+                foreach (var item in list)
+                    if (!code.Contains(item))
+                        message += $"{++i}:  {item}\n";
+            }
+            else
+            {
+                foreach (var item in list)
+                    if (code.Contains(item))
+                        message += $"{++i}:  {item}\n";
             }
 
-            var mustList = "\nMust contain:\n";
-            foreach (var must in musts)
-            {
-                if(!code.Contains(must))
-                    mustList += $"  {must}\n";
-            }
-
-            mustList += "\r\n";
-            Console.WriteLine("\n" + code);
-
-            foreach (var noNo in noNos) 
-                Assert.IsFalse(code.Contains(noNo), noNoList + "\n" + mustList);
-
-            foreach (var must in musts) 
-                Assert.IsTrue(code.Contains(must), mustList);
+            return message == "" 
+                ? "" 
+                : $"----------\nCode {(mustHave ? "is missing" : "must not have")}:\n{message}\n";
         }
 
 
