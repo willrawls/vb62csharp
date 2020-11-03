@@ -993,8 +993,6 @@ namespace MetX.VB6ToCSharp.VB6
                     parameter.Type = "string";
 
                 parameterList.Add(parameter);
-
-                // next parameter
             }
         }
 

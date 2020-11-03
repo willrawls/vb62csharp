@@ -74,7 +74,7 @@ namespace MetX.VB6ToCSharp.Tests
         }
 
 
-        [TestMethod, Ignore("Never going to happen this way")]
+        /*[TestMethod, Ignore("Never going to happen this way")]
         public void WithBlockReplacementTest()
         {
             var code =
@@ -98,7 +98,7 @@ End With";
             var actual = block.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);
-        }
+        }*/
 
 
     }
