@@ -16,7 +16,9 @@ namespace MetX.VB6ToCSharp.Structure
         }
 
         public int Indent { get; }
+        public string Before { get; set; }
         public string Line { get; set; }
+        public string After { get; set; }
         public ICodeLine Parent { get; set; }
 
         public bool IsEmpty() => true;

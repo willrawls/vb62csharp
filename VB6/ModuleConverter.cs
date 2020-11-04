@@ -1100,8 +1100,10 @@ namespace MetX.VB6ToCSharp.VB6
             {
                 line = reader.ReadLine();
                 iPosition = 0;
+                if (line.IsEmpty())
+                    continue;
 
-                if (line.IsNotEmpty())
+                //if (line.IsNotEmpty())
                 {
                     // check if next line is same command, join it together ?
                     while (line.Substring(line.Length - 1, 1) == "_")
@@ -1219,8 +1221,7 @@ namespace MetX.VB6ToCSharp.VB6
                         if (bEnum)
                         {
                             // first word is name, second =, thirt value if is preset
-                            enumItem = new EnumItem();
-                            enumItem.Comment = sComments;
+                            enumItem = new EnumItem {Comment = sComments};
                             sComments = string.Empty;
                             ParseEnumItem(enumItem, line);
                             // add item
@@ -1229,9 +1230,24 @@ namespace MetX.VB6ToCSharp.VB6
 
                         if (bProperty)
                         {
-                            // add line of property
-                            property.Block.Children.Add(_.Line(property, line));
-                        }
+                            line = line.Trim();
+                            if (property.Direction.ToLower() == "get"
+                                && line.FirstToken(" = ").ToLower() == property.Name.ToLower()
+                            )
+                            {
+                                property.Block.Children.Add(_.Line(property, "return " + line.TokensAfterFirst(" = ")));
+                            }
+                            else if (property.Direction.ToLower() == "set" || property.Direction.ToLower() == "let"
+                                && line.FirstToken(" = ").ToLower() == property.Name.ToLower()
+                            )
+                            {
+                                property.Line = "return " + line.TokensAfterFirst(" = ");
+                            }
+                            else
+                            {
+                                // add line of property
+                                property.Block.Children.Add(_.Line(property, line));
+                            }                        }
 
                         if (bProcedure)
                         {

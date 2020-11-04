@@ -12,7 +12,7 @@ namespace MetX.VB6ToCSharp.Tests
     public class CAssocItem_CodeShouldBeWellFormed
     {
         const string InputFilePath = @"CAssocItem.cls";
-        const string OutputPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC";
+        // const string OutputPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC";
 
         [TestMethod]
         public void ProperlyTranslate_CAssocItem_cs()
@@ -28,7 +28,7 @@ namespace MetX.VB6ToCSharp.Tests
                 "            return m_sValue;", 
                 "m_", 
                 "            public string Key;",
-                "        {\n}",
+                // "        {\n}",
                 "public string Value",
             });
 
@@ -38,7 +38,7 @@ namespace MetX.VB6ToCSharp.Tests
                 "{;", "};", 
                 "';", "*;", 
                 "F = ", 
-                "Value = ", 
+                // "Value = ", 
                 "assumed;", 
                 "risk.         //",
                 "        ;",
