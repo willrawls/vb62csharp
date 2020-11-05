@@ -23,7 +23,6 @@ namespace MetX.VB6ToCSharp.Tests
 
             var message = LookFor(code, true, new []
             {
-                "// freeware", 
                 "            return sGetToken",
                 "            return m_sValue;", 
                 "m_", 
@@ -34,6 +33,7 @@ namespace MetX.VB6ToCSharp.Tests
 
             message += LookFor(code, false, new []
             {
+                "// freeware",
                 "get;", "set;", 
                 "{;", "};", 
                 "';", "*;", 

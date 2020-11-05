@@ -883,9 +883,9 @@ namespace MetX.VB6ToCSharp.VB6
                 }
 
                 // remark
-                if (line[0] == '\'') // '
+                if (translatedLine.Trim().StartsWith(@"'"))
                 {
-                    translatedLine = translatedLine.Replace("'", "//");
+                    translatedLine = "// " + translatedLine.Substring(1);
                 }
 
                 // & to +
