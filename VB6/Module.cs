@@ -23,7 +23,7 @@ namespace MetX.VB6ToCSharp.VB6
         public List<IAmAProperty> PropertyList;
         public string Type;
 
-        public List<Variable> VariableList;
+        public VariableList VariableList;
         public string Version;
 
         public Module(ICodeLine parent) : base(parent)
@@ -31,7 +31,7 @@ namespace MetX.VB6ToCSharp.VB6
             FormPropertyList = new List<ControlProperty>();
             ControlList = new List<Control>();
             ImageList = new List<string>();
-            VariableList = new List<Variable>();
+            VariableList = new VariableList();
             PropertyList = new List<IAmAProperty>();
             ProcedureList = new List<Procedure>();
             EnumList = new List<Enum>();

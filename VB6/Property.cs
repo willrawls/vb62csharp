@@ -29,7 +29,7 @@ namespace MetX.VB6ToCSharp.VB6
             TargetModule = targetModule;
         }
 
-        public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
+        public void ConvertParts(IAmAProperty sourceProperty)
         {
             throw new NotImplementedException();
         }
@@ -37,6 +37,11 @@ namespace MetX.VB6ToCSharp.VB6
         public override string GenerateCode()
         {
             throw new NotImplementedException();
+        }
+
+        public string DetermineBackingVariable()
+        {
+            return "unknown(p)";
         }
     }
 }

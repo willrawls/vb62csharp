@@ -19,6 +19,7 @@ namespace MetX.VB6ToCSharp.CSharp
         public string Type { get; set; }
         public bool Valid { get; set; }
         public string Value { get; set; }
+        public Module TargetModule { get; set; }
 
         public CSharpProperty(ICodeLine parent) : base(parent, null)
         {
@@ -27,7 +28,7 @@ namespace MetX.VB6ToCSharp.CSharp
             Let = new CSharpPropertyPart(this, PropertyPartType.Let);
         }
 
-        public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
+        public void ConvertParts(IAmAProperty sourceProperty)
         {
             var localSourceProperty = (Property)sourceProperty;
             CSharpPropertyPart targetPart;
@@ -68,6 +69,26 @@ namespace MetX.VB6ToCSharp.CSharp
             }
         }
 
+        public string DetermineBackingVariable()
+        {
+            if (Get == null
+                || !Get.Encountered
+                || Get.Children?.Count == 0)
+                return "unknown(dbv1)";
+
+            foreach (var child in Get.Children.Where(x => x.Line?.Contains("return") == true))
+            {
+                var possible = child.Line
+                    .TokenBetween("return", ";")
+                    .Trim();
+                if (possible.IsNotEmpty() && !possible.Contains(" "))
+                {
+                    return possible;
+                }
+            }
+            return "unknown(dbv2)";
+        }
+
         public override string GenerateCode()
         {
             var result = new StringBuilder();
@@ -94,7 +115,27 @@ namespace MetX.VB6ToCSharp.CSharp
                 }
 
             var letSet = Set.Encountered ? Set : Let;
-            var propertyHeader = $"public {Type ?? "object"} {Name}";
+
+            if (string.IsNullOrEmpty(Type))
+            {
+                // Attempt to resolve type
+                if (Get.Encountered && Get.Children.IsNotEmpty())
+                {
+                    result.AppendLine(Get.GenerateCode());
+                }
+
+            }
+
+            if (string.IsNullOrEmpty(Type))
+            {
+                var backingVariable = DetermineBackingVariable();
+                if (TargetModule.VariableList.Contains(backingVariable))
+                {
+                    Type = TargetModule.VariableList[backingVariable].Type;
+                }
+            }
+
+            var propertyHeader = $"public {Type ?? "unknown"} {Name}";
 
             if(Line.IsNotEmpty())
             {

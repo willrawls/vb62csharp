@@ -69,9 +69,9 @@ namespace MetX.VB6ToCSharp.VB6
             return code;
         }
 
-        public bool ConvertFile(ICodeLine parent, string filename, string outputPath)
+        public bool ConvertFile(string filename, string outputPath)
         {
-            var code = GenerateCode(parent, filename, outputPath);
+            var code = GenerateCode(filename, outputPath);
             if (code.IsEmpty()) 
                 return false;
 
@@ -86,7 +86,7 @@ namespace MetX.VB6ToCSharp.VB6
             return code.IsNotEmpty();
         }
 
-        public string GenerateCode(ICodeLine parent, string inputFilename, string outputPath = null)
+        public string GenerateCode(string inputFilename, string outputPath = null)
         {
             var version = string.Empty;
             
@@ -153,7 +153,7 @@ namespace MetX.VB6ToCSharp.VB6
                     return null;
                 }
 
-                SourceModule = new Module(parent)
+                SourceModule = new Module(FirstParent)
                 {
                     Version = version ?? "1.0",
                     FileName = inputFilename
@@ -187,7 +187,7 @@ namespace MetX.VB6ToCSharp.VB6
             }
 
             // generate output file
-            var code = GetModuleCode(parent, outputPath);
+            var code = GetModuleCode(outputPath);
             return code;
         }
 
@@ -433,7 +433,7 @@ namespace MetX.VB6ToCSharp.VB6
             return result.ToString();
         }
 
-        public string ConvertSourceProperties(int indentLevel)
+        public string GenerateProperties(int indentLevel)
         {
             if (TargetModule.PropertyList.Count <= 0)
                 return string.Empty;
@@ -443,40 +443,32 @@ namespace MetX.VB6ToCSharp.VB6
 
             result.AppendLine();
             foreach (var property in TargetModule.PropertyList)
+            {
+                property.TargetModule = TargetModule;
                 result.AppendLine(
                     firstIndent +
                     Massage.AllLinesNow(
-                        property.GenerateCode())
+                        property
+                            .GenerateCode())
                 );
-
+            }
             var code = result.ToString();
             return code;
         }
 
         public string ConvertVariablesInCode(int indentLevel)
         {
-            var result = new StringBuilder();
-            result.AppendLine();
-
-            foreach (var variable in TargetModule.VariableList)
-            {
-                // string Result = null;
-                // All public cause I really don't like anything but public stuff
-                result.AppendLine(Indent2 + "public " + (variable.Type.IsEmpty() ? "object" : variable.Type) + " " +
-                                  variable.Name + ";");
-            }
-
-            var code = result.ToString();
+            var code = TargetModule.VariableList.GenerateCode(indentLevel);
             return code;
         }
 
-        public string GetModuleCode(ICodeLine parent, string outputPath = null)
+        public string GetModuleCode(string outputPath = null)
         {
             var result = new StringBuilder();
 
             // convert source to target
-            if (TargetModule == null) 
-                TargetModule = new Module(parent);
+            if (TargetModule == null)
+                TargetModule = new Module(FirstParent);
 
             ConvertSource.Module(SourceModule, TargetModule);
 
@@ -557,7 +549,7 @@ namespace MetX.VB6ToCSharp.VB6
             // ********************************************************
 
             if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
-                result.AppendLine(ConvertSourceProperties(3));
+                result.AppendLine(GenerateProperties(3));
 
             // ********************************************************
             // procedures
@@ -1284,6 +1276,14 @@ namespace MetX.VB6ToCSharp.VB6
 
                     if (bProperty)
                     {
+                        if (string.IsNullOrEmpty(property.Type))
+                        {
+                            var backingVariable = property.DetermineBackingVariable();
+                            if (TargetModule.VariableList.Contains(backingVariable))
+                            {
+                                property.Type = TargetModule.VariableList[backingVariable].Type;
+                            }
+                        }
                         SourceModule.PropertyList.Add(property);
                         bProperty = false;
                     }

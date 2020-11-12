@@ -1,3 +1,5 @@
+using MetX.VB6ToCSharp.VB6;
+
 namespace MetX.VB6ToCSharp.Interface
 {
     public interface IAmAProperty : IGenerate
@@ -10,6 +12,10 @@ namespace MetX.VB6ToCSharp.Interface
         bool Valid { get; set; }
         string Value { get; set; }
 
-        void ConvertSourcePropertyParts(IAmAProperty sourceProperty);
+        Module TargetModule { get; set; }
+
+        void ConvertParts(IAmAProperty sourceProperty);
+
+        string DetermineBackingVariable();
     }
 }

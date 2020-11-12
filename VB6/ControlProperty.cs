@@ -17,13 +17,19 @@ namespace MetX.VB6ToCSharp.VB6
         public string Type { get; set; }
         public bool Valid { get; set; }
         public string Value { get; set; }
+        public Module TargetModule { get; set; }
 
         public ControlProperty(ICodeLine parent, int parentIndent) : base(parent, "")
         {
             PropertyList = new List<IAmAProperty>();
         }
 
-        public void ConvertSourcePropertyParts(IAmAProperty sourceProperty)
+        public void ConvertParts(IAmAProperty sourceProperty)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string DetermineBackingVariable()
         {
             throw new NotImplementedException();
         }

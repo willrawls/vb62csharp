@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
@@ -12,15 +13,15 @@ namespace MetX.VB6ToCSharp.Tests
     public class CAssocItem_CodeShouldBeWellFormed
     {
         const string InputFilePath = @"CAssocItem.cls";
-        // const string OutputPath = @"I:\OneDrive\data\code\Slice and Dice\SandyC";
 
         [TestMethod]
         public void ProperlyTranslate_CAssocItem_cs()
         {
             ICodeLine parent = new EmptyParent(-1);
             var converter = new ModuleConverter(parent);
-            var code = converter.GenerateCode(parent, InputFilePath); // OutputPath);
+            var code = converter.GenerateCode(InputFilePath);
 
+            // Must have
             var message = LookFor(code, true, new []
             {
                 "            return sGetToken",
@@ -31,6 +32,7 @@ namespace MetX.VB6ToCSharp.Tests
                 "public string Value",
             });
 
+            // Must not have
             message += LookFor(code, false, new []
             {
                 "// freeware",
@@ -45,7 +47,7 @@ namespace MetX.VB6ToCSharp.Tests
             });
 
             Assert.IsTrue(message == string.Empty,
-                $"\n==========\n{message}\n{code}");
+                $"\n==========\n{message}\n==========\n{code}");
         }
 
         public static string LookFor(string code, bool mustHave, string[] list)

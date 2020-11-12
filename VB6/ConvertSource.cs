@@ -33,7 +33,7 @@ namespace MetX.VB6ToCSharp.VB6
                     targetProperties.Add(targetProperty);
                 }
 
-                targetProperty.ConvertSourcePropertyParts(sourceProperty);
+                targetProperty.ConvertParts(sourceProperty);
             }
 
             return true;

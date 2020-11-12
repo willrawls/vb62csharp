@@ -25,7 +25,7 @@ namespace MetX.VB6ToCSharp.Tests
         public static CSharpProperty QuickCSharpProperty(string name = null, string type = null, string line = null)
         {
             ICodeLine parent = new EmptyParent();
-            CSharpProperty target = new CSharpProperty(parent)
+            var target = new CSharpProperty(parent)
             {
                 Name = name,
                 Type = type,
