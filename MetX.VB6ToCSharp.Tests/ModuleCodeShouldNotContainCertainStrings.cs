@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using MetX.Library;
 using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
@@ -44,10 +45,42 @@ namespace MetX.VB6ToCSharp.Tests
                 "assumed;", 
                 "risk.         //",
                 "        ;",
+                "delimiter.         //",
+            });
+
+            message += CheckOccurrences(code, new[]
+            {
+                "return m_sValue;",
             });
 
             Assert.IsTrue(message == string.Empty,
                 $"\n==========\n{message}\n==========\n{code}");
+
+            Console.WriteLine(code);
+        }
+
+        public static string CheckOccurrences(string code, string[] list, int minimum = 1, int maximum = -1)
+        {
+            Assert.IsNotNull(code);
+            Assert.IsTrue(code.Length > 0);
+
+            var i = 0;
+            var message = "";
+            if (maximum < minimum)
+                maximum = minimum;
+
+            foreach (var item in list)
+            {
+                var tokenCount = code.TokenCount(item);
+                if (tokenCount < minimum)
+                    message += $"{++i}:  To few of \"{item}\"\n";
+                if (tokenCount > maximum)
+                    message += $"{++i}:  To many of \"{item}\"\n";
+            }
+
+            return message == "" 
+                ? "" 
+                : $"----------\nOccurrences other than expected:\n{message}\n";
         }
 
         public static string LookFor(string code, bool mustHave, string[] list)

@@ -15,7 +15,7 @@ namespace MetX.VB6ToCSharp.VB6
             foreach (var sourceProperty in sourceProperties)
             {
                 var localSourceProperty = (Property)sourceProperty;
-                CSharpProperty targetProperty = null;
+                CSharpProperty targetProperty;
 
                 targetProperty = targetProperties.Cast<CSharpProperty>()
                     .FirstOrDefault(x => string

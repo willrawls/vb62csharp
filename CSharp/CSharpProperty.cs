@@ -61,6 +61,7 @@ namespace MetX.VB6ToCSharp.CSharp
                     out var translatedLine,
                     out var placeAtBottom, 
                     localSourceProperty);
+
                 if (translatedLine.IsNotEmpty())
                     targetPart.Children.Add(new Block(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())

@@ -1096,12 +1096,10 @@ namespace MetX.VB6ToCSharp.VB6
                     continue;
 
                 //if (line.IsNotEmpty())
+                // check if next line is same command, join it together ?
+                while (line.Substring(line.Length - 1, 1) == "_")
                 {
-                    // check if next line is same command, join it together ?
-                    while (line.Substring(line.Length - 1, 1) == "_")
-                    {
-                        line += reader.ReadLine();
-                    }
+                    line += reader.ReadLine();
                 }
 
                 // get first word in line
@@ -1127,13 +1125,13 @@ namespace MetX.VB6ToCSharp.VB6
 
                     // comments
                     case "'":
-                        var commentLines = line.Substring(1).Replace("\r", "").Split('\n');
-                        for (var i = 0; i < commentLines.Length; i++)
-                        {
-                            commentLines[i] = "// " + commentLines[i] + "\n";
-                        }
-
-                        sComments += string.Join("\n", commentLines);
+                        foreach (var commentLine in line.Lines(
+                            StringSplitOptions.RemoveEmptyEntries))
+                            sComments += "// " 
+                                + (commentLine.Left(1) == "'" 
+                                    ? commentLine.Substring(1)
+                                    : commentLine)
+                                + Environment.NewLine;
                         break;
 
                     // next can be declaration of variables
@@ -1239,7 +1237,8 @@ namespace MetX.VB6ToCSharp.VB6
                             {
                                 // add line of property
                                 property.Block.Children.Add(_.Line(property, line));
-                            }                        }
+                            }
+                        }
 
                         if (bProcedure)
                         {

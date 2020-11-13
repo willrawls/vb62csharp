@@ -293,6 +293,15 @@ namespace MetX.VB6ToCSharp.CSharp
         /// <returns></returns>
         public static string Transform(this string originalLine, string nextLine = null)
         {
+            if (originalLine.IsEmpty())
+                return "";
+
+            if (originalLine.Trim() == "")
+                return originalLine;
+
+            if (originalLine.Trim().StartsWith("//"))
+                return originalLine;
+
             var translatedLine = originalLine;
             translatedLine = translatedLine.HandleWith();
 
