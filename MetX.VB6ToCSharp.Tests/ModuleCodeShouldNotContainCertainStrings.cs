@@ -46,6 +46,7 @@ namespace MetX.VB6ToCSharp.Tests
                 "risk.         //",
                 "        ;",
                 "delimiter.         //",
+                "Ding "
             });
 
             message += CheckOccurrences(code, 1, new[]

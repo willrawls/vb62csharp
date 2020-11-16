@@ -3,6 +3,7 @@ using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MetX.VB6ToCSharp.CSharp
@@ -126,11 +127,14 @@ namespace MetX.VB6ToCSharp.CSharp
             if (string.IsNullOrEmpty(Type))
             {
                 // Attempt to resolve type
+                /*
                 if (Get.Encountered && Get.Children.IsNotEmpty())
                 {
                     var getCode = Get.GenerateCode();
                     result.AppendLine(getCode);
+                    result.AppendLine("Ding 3");
                 }
+                */
 
             }
 
@@ -167,6 +171,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 {
                     var getCode = Get.GenerateCode();
                     result.AppendLine(getCode);
+                    result.AppendLine("Ding 2");
                 }
 
                 if(letSet.Encountered)
