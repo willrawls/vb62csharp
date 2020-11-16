@@ -141,6 +141,10 @@ namespace MetX.VB6ToCSharp.CSharp
                 {
                     Type = TargetModule.VariableList[backingVariable].Type;
                 }
+                else
+                {
+                    // TODO
+                }
             }
 
             var propertyHeader = $"public {Type ?? "unknown"} {Name}";
