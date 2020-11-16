@@ -29,11 +29,6 @@ namespace MetX.VB6ToCSharp.VB6
             throw new NotImplementedException();
         }
 
-        public string DetermineBackingVariable()
-        {
-            throw new NotImplementedException();
-        }
-
         public override string GenerateCode()
         {
             throw new NotImplementedException();

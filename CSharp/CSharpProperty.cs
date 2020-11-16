@@ -1,9 +1,9 @@
-using System.Linq;
-using System.Text;
 using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
+using System.Linq;
+using System.Text;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
@@ -70,14 +70,19 @@ namespace MetX.VB6ToCSharp.CSharp
             }
         }
 
-        public string DetermineBackingVariable()
+        public static string DetermineBackingVariable(CSharpProperty target)
         {
-            if (Get == null
-                || !Get.Encountered
-                || Get.Children?.Count == 0)
-                return "unknown(dbv1)";
+            if (target.Get == null
+                || !target.Get.Encountered
+                || target.Get.Children == null
+                || target.Get.Children?.Count == 0)
+                return "object /*unknown(dbv1)*/";
 
-            foreach (var child in Get.Children.Where(x => x.Line?.Contains("return") == true))
+            foreach (var child in target
+                .Get
+                .Children
+                .Where(x => x
+                    .Line?.Contains("return") == true))
             {
                 var possible = child.Line
                     .TokenBetween("return", ";")
@@ -87,7 +92,8 @@ namespace MetX.VB6ToCSharp.CSharp
                     return possible;
                 }
             }
-            return "unknown(dbv2)";
+
+            return null;
         }
 
         public override string GenerateCode()
@@ -122,14 +128,15 @@ namespace MetX.VB6ToCSharp.CSharp
                 // Attempt to resolve type
                 if (Get.Encountered && Get.Children.IsNotEmpty())
                 {
-                    result.AppendLine(Get.GenerateCode());
+                    var getCode = Get.GenerateCode();
+                    result.AppendLine(getCode);
                 }
 
             }
 
             if (string.IsNullOrEmpty(Type))
             {
-                var backingVariable = DetermineBackingVariable();
+                var backingVariable = CSharpProperty.DetermineBackingVariable(this);
                 if (TargetModule.VariableList.Contains(backingVariable))
                 {
                     Type = TargetModule.VariableList[backingVariable].Type;
@@ -154,7 +161,8 @@ namespace MetX.VB6ToCSharp.CSharp
 
                 if (Get.Encountered)
                 {
-                    result.AppendLine(Get.GenerateCode());
+                    var getCode = Get.GenerateCode();
+                    result.AppendLine(getCode);
                 }
 
                 if(letSet.Encountered)

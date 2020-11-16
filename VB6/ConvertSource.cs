@@ -10,29 +10,39 @@ namespace MetX.VB6ToCSharp.VB6
 {
     public static class ConvertSource
     {
-        public static bool ClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties, IBlock parentBlock)
+        public static bool ClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties, Module parentBlock)
         {
+            var propertyIndex = 0;
             foreach (var sourceProperty in sourceProperties)
             {
                 var localSourceProperty = (Property)sourceProperty;
-                CSharpProperty targetProperty;
 
-                targetProperty = targetProperties.Cast<CSharpProperty>()
+                var targetProperty = targetProperties.Cast<CSharpProperty>()
                     .FirstOrDefault(x => string
                         .Equals(x.Name, sourceProperty.Name, StringComparison.CurrentCultureIgnoreCase));
 
                 if (targetProperty == null)
                 {
+                    if(parentBlock.Comment.IsEmpty() 
+                    && localSourceProperty.Comment.IsNotEmpty()
+                    && propertyIndex == 0
+                    && parentBlock.Comment.IsEmpty())
+                    {
+                        parentBlock.Comment = sourceProperty.Comment;
+                        sourceProperty.Comment = null;
+                    }
+
+                    var convertedType = Tools.VariableTypeConvert(sourceProperty.Type);
                     targetProperty = new CSharpProperty(parentBlock)
                     {
                         Name = sourceProperty.Name.Trim(),
                         Comment = sourceProperty.Comment,
                         Scope = sourceProperty.Scope,
-                        Type = Tools.VariableTypeConvert(sourceProperty.Type),
+                        Type = convertedType,
                     };
                     targetProperties.Add(targetProperty);
                 }
-
+                propertyIndex++;
                 targetProperty.ConvertParts(sourceProperty);
             }
 

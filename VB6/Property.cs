@@ -22,26 +22,23 @@ namespace MetX.VB6ToCSharp.VB6
 
         public Module TargetModule { get; set; }
 
-        public Property(Module targetModule) : base(targetModule.Parent, null)
+        public Property(Module targetModule, string comment) : base(targetModule.Parent, null)
         {
             Block = new Block(this);
             Parameters = new List<Parameter>();
             TargetModule = targetModule;
+            Parent = TargetModule;
+            Comment = comment;
         }
 
         public void ConvertParts(IAmAProperty sourceProperty)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Cast upward");
         }
 
         public override string GenerateCode()
         {
-            throw new NotImplementedException();
-        }
-
-        public string DetermineBackingVariable()
-        {
-            return "unknown(p)";
+            throw new NotImplementedException("Cast upward");
         }
     }
 }

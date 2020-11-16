@@ -1080,10 +1080,10 @@ namespace MetX.VB6ToCSharp.VB6
             var bEnd = false;
 
             Variable variable = null;
-            Property property = null;
-            Procedure procedure = null;
-            Enum enumItems = null;
-            EnumItem enumItem = null;
+            
+            Property vb6Property = null;
+            Procedure vb6Procedure = null;
+            Enum vb6EnumItems = null;
 
             if (TargetModule == null) 
                 TargetModule = new Module(FirstParent);
@@ -1155,27 +1155,27 @@ namespace MetX.VB6ToCSharp.VB6
                             case "Sub":
                             case "Function":
 
-                                procedure = new Procedure();
-                                procedure.Comment = sComments;
+                                vb6Procedure = new Procedure();
+                                vb6Procedure.Comment = sComments;
                                 sComments = string.Empty;
-                                ParseProcedureName(procedure, line);
+                                ParseProcedureName(vb6Procedure, line);
                                 bProcedure = true;
                                 break;
 
                             case "Enum":
-                                enumItems = new Enum();
-                                enumItems.Scope = sScope;
+                                vb6EnumItems = new Enum();
+                                vb6EnumItems.Scope = sScope;
                                 // next word is enum name
                                 iPosition++;
-                                enumItems.Name = GetWord(line, ref iPosition);
+                                vb6EnumItems.Name = GetWord(line, ref iPosition);
                                 bEnum = true;
                                 break;
 
                             case "Property":
-                                property = new Property(TargetModule);
-                                property.Comment = sComments ?? string.Empty;
+                                vb6Property = new Property(TargetModule, sComments);
+                                //property.Comment = sComments ?? string.Empty;
                                 sComments = string.Empty;
-                                ParsePropertyName(property, line);
+                                ParsePropertyName(vb6Property, line);
                                 bProperty = true;
                                 break;
 
@@ -1211,38 +1211,38 @@ namespace MetX.VB6ToCSharp.VB6
                         if (bEnum)
                         {
                             // first word is name, second =, thirt value if is preset
-                            enumItem = new EnumItem {Comment = sComments};
+                            var vb6EnumItem = new EnumItem {Comment = sComments};
                             sComments = string.Empty;
-                            ParseEnumItem(enumItem, line);
+                            ParseEnumItem(vb6EnumItem, line);
                             // add item
-                            enumItems.ItemList.Add(enumItem);
+                            vb6EnumItems.ItemList.Add(vb6EnumItem);
                         }
 
                         if (bProperty)
                         {
                             line = line.Trim();
-                            if (property.Direction.ToLower() == "get"
-                                && line.FirstToken(" = ").ToLower() == property.Name.ToLower()
+                            if (vb6Property.Direction.ToLower() == "get"
+                                && line.FirstToken(" = ").ToLower() == vb6Property.Name.ToLower()
                             )
                             {
-                                property.Block.Children.Add(_.Line(property, "return " + line.TokensAfterFirst(" = ")));
+                                vb6Property.Block.Children.Add(_.Line(vb6Property, "return " + line.TokensAfterFirst(" = ")));
                             }
-                            else if (property.Direction.ToLower() == "set" || property.Direction.ToLower() == "let"
-                                && line.FirstToken(" = ").ToLower() == property.Name.ToLower()
+                            else if (vb6Property.Direction.ToLower() == "set" || vb6Property.Direction.ToLower() == "let"
+                                && line.FirstToken(" = ").ToLower() == vb6Property.Name.ToLower()
                             )
                             {
-                                property.Line = "return " + line.TokensAfterFirst(" = ");
+                                vb6Property.Line = "return " + line.TokensAfterFirst(" = ");
                             }
                             else
                             {
                                 // add line of property
-                                property.Block.Children.Add(_.Line(property, line));
+                                vb6Property.Block.Children.Add(_.Line(vb6Property, line));
                             }
                         }
 
                         if (bProcedure)
                         {
-                            procedure.LineList.Add(line);
+                            vb6Procedure.LineList.Add(line);
                         }
 
                         break;
@@ -1269,27 +1269,29 @@ namespace MetX.VB6ToCSharp.VB6
                     //
                     if (bEnum)
                     {
-                        SourceModule.EnumList.Add(enumItems);
+                        SourceModule.EnumList.Add(vb6EnumItems);
                         bEnum = false;
                     }
 
                     if (bProperty)
                     {
-                        if (string.IsNullOrEmpty(property.Type))
+                        /*
+                        if (string.IsNullOrEmpty(vb6Property.Type))
                         {
-                            var backingVariable = property.DetermineBackingVariable();
+                            var backingVariable = vb6Property.DetermineBackingVariable();
                             if (TargetModule.VariableList.Contains(backingVariable))
                             {
-                                property.Type = TargetModule.VariableList[backingVariable].Type;
+                                vb6Property.Type = TargetModule.VariableList[backingVariable].Type;
                             }
                         }
-                        SourceModule.PropertyList.Add(property);
+                        */
+                        SourceModule.PropertyList.Add(vb6Property);
                         bProperty = false;
                     }
 
                     if (bProcedure)
                     {
-                        SourceModule.ProcedureList.Add(procedure);
+                        SourceModule.ProcedureList.Add(vb6Procedure);
                         bProcedure = false;
                     }
 
@@ -1376,7 +1378,8 @@ namespace MetX.VB6ToCSharp.VB6
             // type
             iPosition++;
             parameters = GetWord(line, ref iPosition);
-            property.Type = parameters;
+            if(parameters.IsNotEmpty())
+                property.Type = parameters;
         }
 
         public void ParseVariableDeclaration(Variable variable, string line)

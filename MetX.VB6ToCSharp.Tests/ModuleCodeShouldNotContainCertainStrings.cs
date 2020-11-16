@@ -48,7 +48,7 @@ namespace MetX.VB6ToCSharp.Tests
                 "delimiter.         //",
             });
 
-            message += CheckOccurrences(code, new[]
+            message += CheckOccurrences(code, 1, new[]
             {
                 "return m_sValue;",
             });
@@ -59,7 +59,8 @@ namespace MetX.VB6ToCSharp.Tests
             Console.WriteLine(code);
         }
 
-        public static string CheckOccurrences(string code, string[] list, int minimum = 1, int maximum = -1)
+        public static string CheckOccurrences(string code, int minimum, string[] list,
+            int maximum = -1)
         {
             Assert.IsNotNull(code);
             Assert.IsTrue(code.Length > 0);

@@ -15,7 +15,5 @@ namespace MetX.VB6ToCSharp.Interface
         Module TargetModule { get; set; }
 
         void ConvertParts(IAmAProperty sourceProperty);
-
-        string DetermineBackingVariable();
     }
 }
