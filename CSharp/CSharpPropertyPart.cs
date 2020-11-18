@@ -12,7 +12,6 @@ namespace MetX.VB6ToCSharp.CSharp
     {
         public AbstractBlock LinesAfter;
 
-        //public AbstractCodeBlock BlockAtTop;
         public bool Encountered;
 
         public List<Parameter> ParameterList;
@@ -41,12 +40,13 @@ namespace MetX.VB6ToCSharp.CSharp
             if(Line.IsNotEmpty())
             {
                 result.AppendLine(SecondIndentation + Line);
-                result.AppendLine(SecondIndentation + Before);
+                // result.AppendLine(SecondIndentation + Before);
             }
 
             foreach (ICodeLine codeLine in Children.Where(block => block.Line.IsNotEmpty()))
             {
                 codeLine.Before = codeLine.After = null;
+                codeLine.ResetIndent(Indent + 1);
                 var generatedCode = codeLine.GenerateCode();
                 result.Append(
                     Line.IsEmpty() 

@@ -14,7 +14,8 @@
         string SecondIndentation { get; }
 
         bool IsEmpty();
-
         bool IsNotEmpty();
+
+        void ResetIndent(int indentLevel);
     }
 }

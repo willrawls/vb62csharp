@@ -15,7 +15,7 @@ namespace MetX.VB6ToCSharp.Structure
             return string.Empty;
         }
 
-        public int Indent { get; }
+        public int Indent { get; set; }
         public string Before { get; set; }
         public string Line { get; set; }
         public string After { get; set; }
@@ -23,5 +23,13 @@ namespace MetX.VB6ToCSharp.Structure
 
         public bool IsEmpty() => true;
         public bool IsNotEmpty() => false;
+
+        public void ResetIndent()
+        {
+            if (Parent == null)
+                return;
+
+            Indent = Parent.Indent + 1;
+        }
     }
 }

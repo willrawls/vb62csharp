@@ -23,5 +23,9 @@ namespace MetX.VB6ToCSharp.Structure
 
         public bool IsEmpty() => true;
         public bool IsNotEmpty() => false;
+        public void ResetIndent()
+        {
+            return;
+        }
     }
 }

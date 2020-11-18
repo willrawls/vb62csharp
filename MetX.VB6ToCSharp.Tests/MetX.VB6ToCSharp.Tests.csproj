@@ -60,6 +60,7 @@
     <Compile Include="ModuleCodeShouldNotContainCertainStrings.cs" />
     <Compile Include="OneLineComplexTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScratchSpace.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

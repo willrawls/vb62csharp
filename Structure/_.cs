@@ -90,13 +90,14 @@ namespace MetX.VB6ToCSharp.Structure
             block.Children.Add(childLine);
             return block;
         }
-        
+
         /// <summary>
         /// Builds a Block with Line set and with 1 child code line
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="line"></param>
         /// <param name="childLine">Line added to Children</param>
+        /// <param name="childLineOfCode"></param>
         /// <returns>The new Block</returns>
         public static Block B(ICodeLine parent, string line, string childLineOfCode = null)
         {

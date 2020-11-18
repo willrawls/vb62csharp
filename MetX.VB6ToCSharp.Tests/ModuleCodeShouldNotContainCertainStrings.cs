@@ -74,9 +74,10 @@ namespace MetX.VB6ToCSharp.Tests
             foreach (var item in list)
             {
                 var tokenCount = code.TokenCount(item);
-                if (tokenCount < minimum)
+                var itemCount = tokenCount - 1;
+                if (itemCount < minimum)
                     message += $"{++i}:  To few of \"{item}\"\n";
-                if (tokenCount > maximum)
+                if (itemCount > maximum)
                     message += $"{++i}:  To many of \"{item}\"\n";
             }
 

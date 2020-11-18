@@ -2,6 +2,7 @@
 using MetX.Library;
 using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
+using MetX.VB6ToCSharp.VB6;
 
 // ReSharper disable InconsistentNaming
 
@@ -20,7 +21,7 @@ namespace MetX.VB6ToCSharp.Structure
         {
             Parent = parent ?? throw new ArgumentNullException(nameof(parent));
             Line = line;
-            _internalIndent = Indent;
+            _internalIndent = Parent.Indent + 1;
         }
 
         public LineOfCode(string line)
@@ -36,5 +37,6 @@ namespace MetX.VB6ToCSharp.Structure
         public virtual bool IsEmpty() => Line.IsEmpty();
 
         public virtual bool IsNotEmpty() => Line.IsNotEmpty();
+
     }
 }

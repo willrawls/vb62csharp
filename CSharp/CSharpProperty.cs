@@ -126,20 +126,6 @@ namespace MetX.VB6ToCSharp.CSharp
 
             if (string.IsNullOrEmpty(Type))
             {
-                // Attempt to resolve type
-                /*
-                if (Get.Encountered && Get.Children.IsNotEmpty())
-                {
-                    var getCode = Get.GenerateCode();
-                    result.AppendLine(getCode);
-                    result.AppendLine("Ding 3");
-                }
-                */
-
-            }
-
-            if (string.IsNullOrEmpty(Type))
-            {
                 var backingVariable = CSharpProperty.DetermineBackingVariable(this);
                 if (TargetModule.VariableList.Contains(backingVariable))
                 {
@@ -171,7 +157,6 @@ namespace MetX.VB6ToCSharp.CSharp
                 {
                     var getCode = Get.GenerateCode();
                     result.AppendLine(getCode);
-                    result.AppendLine("Ding 2");
                 }
 
                 if(letSet.Encountered)

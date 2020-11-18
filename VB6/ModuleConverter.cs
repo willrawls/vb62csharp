@@ -451,7 +451,6 @@ namespace MetX.VB6ToCSharp.VB6
                         property
                             .GenerateCode())
                 );
-                result.AppendLine("Ding 1");
             }
             var code = result.ToString();
             return code;
