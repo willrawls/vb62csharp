@@ -9,7 +9,7 @@
 
         ICodeLine Parent { get; set; }
 
-        int Indent { get; }
+        int Indent { get; set;  }
         string Indentation { get; }
         string SecondIndentation { get; }
 

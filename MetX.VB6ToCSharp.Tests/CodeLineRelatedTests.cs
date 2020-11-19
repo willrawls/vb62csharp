@@ -13,7 +13,7 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void Indentifier_Simple()
         {
-            var block = Quick.B(Quick.Top(0), "A", "B");
+            var block = Quick.Block(Quick.Top(0), "A", "B");
             Assert.AreEqual("    ", block.Indentation);
             Assert.AreEqual("        ", block.SecondIndentation);
         }
@@ -24,18 +24,18 @@ namespace MetX.VB6ToCSharp.Tests
         {
             ICodeLine parent = new EmptyParent(0);
 
-            var block1 = Quick.B(parent, "Fred", "One");
+            var block1 = Quick.Block(parent, "Fred", "One;");
 
-            AbstractBlock block2 = Quick.B(block1, "Two");
+            AbstractBlock block2 = Quick.Block(block1, "Two");
             block1.Children.Add(block2);
-            block1.Children.Add(Quick.B(block1, "Three"));
-            block2.Children.Add(Quick.B(block2, "Four"));
+            block1.Children.Add(Quick.Block(block1, "Three"));
+            block2.Children.Add(Quick.Block(block2, "Four"));
 
-            AbstractBlock block5 = Quick.B(block2, "Five");
+            AbstractBlock block5 = Quick.Block(block2, "Five");
             block2.Children.Add(block5);
 
-            block5.Children.Add(Quick.B(block5, "Six"));
-            block5.Children.Add(Quick.B(block5, "Seven", "Eight"));
+            block5.Children.Add(Quick.Block(block5, "Six"));
+            block5.Children.Add(Quick.Block(block5, "Seven", "Eight;"));
 
             const string expected =
 @"    Fred
@@ -73,7 +73,7 @@ namespace MetX.VB6ToCSharp.Tests
         public void BlockWithLineAndSubLineTest()
         {
             ICodeLine parent = new EmptyParent();
-            var block = Quick.B(parent, "Fred", "George");
+            var block = Quick.Block(parent, "Fred", "George;");
 
             var expected = "    Fred\r\n    {\r\n        George;\r\n    }\r\n";
             var actual = block.GenerateCode();

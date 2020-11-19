@@ -10,7 +10,11 @@ namespace MetX.VB6ToCSharp.Structure
 {
     public class LineOfCode : Indentifier, ICodeLine
     {
-        public int Indent => Parent.Indent + 1;
+        public int Indent
+        {
+            get => Parent.Indent + 1;
+            set => _internalIndent = value;
+        }
 
         public string Before { get; set; }
         public string Line { get; set; }

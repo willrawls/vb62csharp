@@ -35,12 +35,33 @@ namespace MetX.VB6ToCSharp.Tests
         }
 
         [TestMethod]
-        public void GetWith1ChildLine()
+        public void GetWithBlock()
         {
             var parent = CSharpPropertyTests.QuickCSharpProperty();
-            parent.Get.Children.Add(Quick.Line(parent.Get, "C"));
+            
+            parent.Get.Children.Add(Quick.Line(parent.Get, "string sAllKeyValues;"));
 
-            const string expected = "        get\r\n        {\r\n            C;\r\n        }\r\n";
+            var forEachBlock = Quick.Block(parent.Get, "foreach( var CurItem in mCol )", new ICodeLine[]
+            {
+                Quick.Line("sAllKeyValues +=  CurItem.Key + KeyValueDelimiter + CurItem.Value + ItemDelimiter;"),
+            });
+            parent.Get.Children.Add(forEachBlock);
+            
+            parent.Get.Children.Add(Quick.Line(parent.Get, "CurItem = null;"));
+            parent.Get.Children.Add(Quick.Line(parent.Get, "return sAllKeyValues;"));
+            
+            const string expected = 
+@"        get
+        {
+            string sAllKeyValues;
+            foreach( var CurItem in mCol )
+            {
+                sAllKeyValues +=  CurItem.Key + KeyValueDelimiter + CurItem.Value + ItemDelimiter;
+            }
+            CurItem = null;
+            return sAllKeyValues;
+        }
+";
             var actual = parent.Get.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MetX.Library;
 
 namespace MetX.VB6ToCSharp.VB6
 {
@@ -40,8 +41,11 @@ namespace MetX.VB6ToCSharp.VB6
 
         public bool Contains(string name)
         {
-            var nameLower = name.ToLower();
-            var result = this.Any(x => x.Name.ToLower() == nameLower);
+            if (name.IsEmpty())
+                return false;
+
+            var nameLower = name.Trim().ToLower();
+            var result = this.Any(x => x.Name?.Trim().ToLower() == nameLower);
             return result;
         }
     }

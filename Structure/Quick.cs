@@ -74,13 +74,25 @@ namespace MetX.VB6ToCSharp.Structure
         }
 
         /// <summary>
+        /// Builds a LineOfCode containing line
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="line">The line of code to encapsulate</param>
+        /// <returns></returns>
+        public static LineOfCode Line(string line)
+        {
+            var lineOfCode = new LineOfCode(new EmptyParent(), line);
+            return lineOfCode;
+        }
+
+        /// <summary>
         /// Builds a Block with Line set and with 1 child code line
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="line"></param>
         /// <param name="childLine"></param>
         /// <returns></returns>
-        public static Block B(ICodeLine parent, string line, ICodeLine childLine)
+        public static Block Block(ICodeLine parent, string line, ICodeLine childLine)
         {
             var block = new Block(parent, line);
             if (childLine == null) 
@@ -99,7 +111,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// <param name="childLine">Line added to Children</param>
         /// <param name="childLineOfCode"></param>
         /// <returns>The new Block</returns>
-        public static Block B(ICodeLine parent, string line, string childLineOfCode = null)
+        public static Block Block(ICodeLine parent, string line, string childLineOfCode = null)
         {
             var block = new Block(parent, line);
             if (childLineOfCode.IsEmpty()) 
@@ -107,6 +119,26 @@ namespace MetX.VB6ToCSharp.Structure
 
             var child = new LineOfCode(block, childLineOfCode);
             block.Children.Add(child);
+            return block;
+        }
+
+        /// <summary>
+        /// Builds a Block with Line set and with 1 child code line
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="line"></param>
+        /// <param name="childLine">Line added to Children</param>
+        /// <param name="childLineOfCode"></param>
+        /// <returns>The new Block</returns>
+        public static Block Block(ICodeLine parent, string line, ICodeLine[] children)
+        {
+            var block = new Block(parent, line);
+            foreach(var child in children)
+            {
+                child.Parent = block;
+                child.Indent = block.Indent + 1;
+                block.Children.Add(child);
+            }   
             return block;
         }
 

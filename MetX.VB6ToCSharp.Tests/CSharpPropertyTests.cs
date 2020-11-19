@@ -108,8 +108,8 @@ namespace MetX.VB6ToCSharp.Tests
                 PartType = PropertyPartType.Get,
                 Encountered = true,
             };
-            get.Children.Add(Quick.Line(get, "Testing"));
-            get.Children.Add(Quick.Line(get, "123"));
+            get.Children.Add(Quick.Line(get, "Testing;"));
+            get.Children.Add(Quick.Line(get, "123;"));
 
             var actual = get.GenerateCode();
             var expected = "    get\r\n    {\r\n        Testing;\r\n        123;\r\n    }\r\n";
