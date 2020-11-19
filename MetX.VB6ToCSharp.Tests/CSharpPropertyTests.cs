@@ -64,13 +64,13 @@ namespace MetX.VB6ToCSharp.Tests
             target.Get.Children.AddRange(
                 new List<ICodeLine>()
                 {
-                    _.Line(target.Get, "B"),
-                    _.Line(target.Get, "C")
+                    Quick.Line(target.Get, "B;"),
+                    Quick.Line(target.Get, "C;")
                 });
 
             target.Set.Line = "D";
             target.Set.Encountered = true;
-            target.Set.Children.Add(_.Line(target.Set, "E"));
+            target.Set.Children.Add(Quick.Line(target.Set, "E;"));
 
             var expected =
 @"    //  TheComment
@@ -108,8 +108,8 @@ namespace MetX.VB6ToCSharp.Tests
                 PartType = PropertyPartType.Get,
                 Encountered = true,
             };
-            get.Children.Add(_.Line(get, "Testing"));
-            get.Children.Add(_.Line(get, "123"));
+            get.Children.Add(Quick.Line(get, "Testing"));
+            get.Children.Add(Quick.Line(get, "123"));
 
             var actual = get.GenerateCode();
             var expected = "    get\r\n    {\r\n        Testing;\r\n        123;\r\n    }\r\n";

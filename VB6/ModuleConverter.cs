@@ -1225,7 +1225,7 @@ namespace MetX.VB6ToCSharp.VB6
                                 && line.FirstToken(" = ").ToLower() == vb6Property.Name.ToLower()
                             )
                             {
-                                vb6Property.Block.Children.Add(_.Line(vb6Property, "return " + line.TokensAfterFirst(" = ")));
+                                vb6Property.Block.Children.Add(Quick.Line(vb6Property, "return " + line.TokensAfterFirst(" = ")));
                             }
                             else if (vb6Property.Direction.ToLower() == "set" || vb6Property.Direction.ToLower() == "let"
                                 && line.FirstToken(" = ").ToLower() == vb6Property.Name.ToLower()
@@ -1236,7 +1236,7 @@ namespace MetX.VB6ToCSharp.VB6
                             else
                             {
                                 // add line of property
-                                vb6Property.Block.Children.Add(_.Line(vb6Property, line));
+                                vb6Property.Block.Children.Add(Quick.Line(vb6Property, line));
                             }
                         }
 

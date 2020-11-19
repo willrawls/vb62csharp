@@ -25,10 +25,10 @@ namespace MetX.VB6ToCSharp.Tests
         public void GetWithLineAnd1Child()
         {
             var parent = new EmptyParent();
-            var target = QuickCSharpPropertyPart(parent, "A");
-            target.Children.Add(_.Line(target, "C"));
+            CSharpPropertyPart target = QuickCSharpPropertyPart(parent, "var x = new A");
+            target.Children.Add(Quick.Line(target, "C = 'c',"));
 
-            const string expected = "    get\r\n    {\r\n        A\r\n        {\r\n            C;\r\n        }\r\n    }\r\n";
+            const string expected = "    get\r\n    {\r\n        var x = new A\r\n        {\r\n            C = 'c',\r\n        }\r\n    }\r\n";
             var actual = target.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);
@@ -38,7 +38,7 @@ namespace MetX.VB6ToCSharp.Tests
         public void GetWith1ChildLine()
         {
             var parent = CSharpPropertyTests.QuickCSharpProperty();
-            parent.Get.Children.Add(_.Line(parent.Get, "C"));
+            parent.Get.Children.Add(Quick.Line(parent.Get, "C"));
 
             const string expected = "        get\r\n        {\r\n            C;\r\n        }\r\n";
             var actual = parent.Get.GenerateCode();

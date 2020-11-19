@@ -34,19 +34,25 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var result = new StringBuilder();
             result.AppendLine(Indentation + $"{finalPartType}");
+
             if(Before.IsNotEmpty())
                 result.AppendLine(Indentation + Before);
 
+            
             if(Line.IsNotEmpty())
             {
                 result.AppendLine(SecondIndentation + Line);
-                // result.AppendLine(SecondIndentation + Before);
+                if (Before.IsNotEmpty())
+                    result.AppendLine(SecondIndentation + Before);
             }
 
-            foreach (ICodeLine codeLine in Children.Where(block => block.Line.IsNotEmpty()))
+
+            foreach (var codeLine in Children.Where(block => block.Line.IsNotEmpty()))
             {
-                codeLine.Before = codeLine.After = null;
-                codeLine.ResetIndent(Indent + 1);
+                //codeLine.Before = null;
+                //codeLine.After = null;
+
+                //codeLine.ResetIndent(Indent + 1);
                 var generatedCode = codeLine.GenerateCode();
                 result.Append(
                     Line.IsEmpty() 
@@ -63,10 +69,8 @@ namespace MetX.VB6ToCSharp.CSharp
                         : generatedCode.AddIndent());
             }
 
-            if(Line.IsNotEmpty())
-            {
+            if (Line.IsNotEmpty())
                 result.AppendLine(SecondIndentation + After);
-            }
 
             if(After.IsNotEmpty())
                 result.AppendLine(Indentation + After);

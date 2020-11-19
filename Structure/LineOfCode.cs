@@ -31,7 +31,8 @@ namespace MetX.VB6ToCSharp.Structure
 
         public virtual string GenerateCode()
         {
-            return Indentation + (Line.Transform() ?? "") + "\r\n";
+            return $"{Indentation}{Line ?? ""}\r\n";
+            //return Indentation + (Line.Transform() ?? "") + "\r\n";
         }
 
         public virtual bool IsEmpty() => Line.IsEmpty();

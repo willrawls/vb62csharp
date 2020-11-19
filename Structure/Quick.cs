@@ -6,8 +6,8 @@ using MetX.VB6ToCSharp.Interface;
 
 namespace MetX.VB6ToCSharp.Structure
 {
-    public static class _    // abcdefghijklmnopqrstuvwxyz
-                             // A--D-FGHIJK-MNOPQRSTUVWXYZ
+    public static class Quick 
+                          
     {
         /// <summary>
         /// Returns a new List<ICodeLine> adding up to two lines, setting the parent property on both, if provided
@@ -50,12 +50,12 @@ namespace MetX.VB6ToCSharp.Structure
             
             if(parent != null && line1.IsNotEmpty())
             {
-                lines.Add(_.Line(parent, line1));
+                lines.Add(Quick.Line(parent, line1));
             }
 
             if(parent != null && line2.IsNotEmpty())
             {
-                lines.Add(_.Line(parent, line2));
+                lines.Add(Quick.Line(parent, line2));
             }
 
             return lines;
