@@ -29,7 +29,7 @@ namespace MetX.VB6ToCSharp.Tests
                 "            return m_sValue;", 
                 "m_", 
                 "            public string Key;",
-                // "        {\n}",
+                "    public string F",
                 "public string Value",
             });
 
@@ -49,13 +49,13 @@ namespace MetX.VB6ToCSharp.Tests
                 "Ding "
             });
 
+            // One occurrence, no more, no less
             message += CheckOccurrences(code, 1, new[]
             {
                 "return m_sValue;",
             });
 
-            Assert.IsTrue(message == string.Empty,
-                $"\n==========\n{message}\n==========\n{code}");
+            Assert.IsTrue(message == string.Empty, $"\n==========\n{message}\n==========\n{code}");
 
             Console.WriteLine(code);
         }

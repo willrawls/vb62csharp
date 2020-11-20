@@ -445,11 +445,12 @@ namespace MetX.VB6ToCSharp.VB6
             foreach (var property in TargetModule.PropertyList)
             {
                 property.TargetModule = TargetModule;
+
                 result.AppendLine(
                     firstIndent +
                     Massage.AllLinesNow(
                         property
-                            .GenerateCode())
+                            .GenerateCode(indentLevel + 1))
                 );
             }
             var code = result.ToString();

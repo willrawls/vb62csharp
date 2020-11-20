@@ -133,10 +133,12 @@ namespace MetX.VB6ToCSharp.Structure
         public static Block Block(ICodeLine parent, string line, ICodeLine[] children)
         {
             var block = new Block(parent, line);
+            block.Before = "{";
+            block.After = "}";
             foreach(var child in children)
             {
                 child.Parent = block;
-                child.Indent = block.Indent + 1;
+                child.ResetIndent(parent.Indent + 1);
                 block.Children.Add(child);
             }   
             return block;

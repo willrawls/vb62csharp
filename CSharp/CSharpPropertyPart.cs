@@ -25,8 +25,10 @@ namespace MetX.VB6ToCSharp.CSharp
             LinesAfter = new Block(this);
         }
 
-        public override string GenerateCode()
+        public override string GenerateCode(int indentLevel)
         {
+            ResetIndent(indentLevel);
+
             var finalPartType = PartType.ToString().ToLower().Replace("let", "set");
 
             if (IsEmpty())
@@ -36,9 +38,10 @@ namespace MetX.VB6ToCSharp.CSharp
             result.AppendLine(Indentation + $"{finalPartType}");
 
             if(Before.IsNotEmpty())
+            {
                 result.AppendLine(Indentation + Before);
+            }
 
-            
             if(Line.IsNotEmpty())
             {
                 result.AppendLine(SecondIndentation + Line);
@@ -49,31 +52,38 @@ namespace MetX.VB6ToCSharp.CSharp
 
             foreach (var codeLine in Children.Where(block => block.Line.IsNotEmpty()))
             {
-                //codeLine.Before = null;
-                //codeLine.After = null;
 
-                //codeLine.ResetIndent(Indent + 1);
-                var generatedCode = codeLine.GenerateCode();
-                result.Append(
-                    Line.IsEmpty() 
-                        ? generatedCode 
-                        : generatedCode.AddIndent());
+                var generatedCode = codeLine.GenerateCode(indentLevel + 1);
+                string massagedLine;
+
+                if (Line.IsEmpty())
+                    massagedLine = generatedCode;
+                else
+                    massagedLine = generatedCode.AddIndent();
+                result.Append(massagedLine);
             }
 
             foreach (var blockAfter in LinesAfter.Children.Where(line => line.IsNotEmpty()))
             {
-                var generatedCode = blockAfter.GenerateCode();
-                result.Append(
-                    Line.IsEmpty() 
-                        ? generatedCode 
-                        : generatedCode.AddIndent());
+                blockAfter.ResetIndent(indentLevel + 1);
+                var generatedCode = blockAfter.GenerateCode(indentLevel + 1);
+                string blockLine;
+                if (Line.IsEmpty())
+                    blockLine = generatedCode;
+                else
+                    blockLine = generatedCode.AddIndent();
+                result.Append(blockLine);
             }
 
             if (Line.IsNotEmpty())
+            {
                 result.AppendLine(SecondIndentation + After);
+            }
 
             if(After.IsNotEmpty())
+            {
                 result.AppendLine(Indentation + After);
+            }
 
             var code = result.ToString();
             return code;

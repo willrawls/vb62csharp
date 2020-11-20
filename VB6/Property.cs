@@ -36,7 +36,7 @@ namespace MetX.VB6ToCSharp.VB6
             throw new NotImplementedException("Cast upward");
         }
 
-        public override string GenerateCode()
+        public override string GenerateCode(int indentLevel)
         {
             throw new NotImplementedException("Cast upward");
         }

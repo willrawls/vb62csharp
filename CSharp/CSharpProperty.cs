@@ -97,8 +97,10 @@ namespace MetX.VB6ToCSharp.CSharp
             return null;
         }
 
-        public override string GenerateCode()
+        public override string GenerateCode(int indentLevel)
         {
+            ResetIndent(indentLevel);
+
             var result = new StringBuilder();
 
             // possible comment
@@ -155,7 +157,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
                 if (Get.Encountered)
                 {
-                    var getCode = Get.GenerateCode();
+                    var getCode = Get.GenerateCode(indentLevel + 1);
                     result.AppendLine(getCode);
                 }
 
@@ -164,7 +166,7 @@ namespace MetX.VB6ToCSharp.CSharp
                     if (letSet.IsEmpty())
                         result.AppendLine(SecondIndentation + "{ get; set; } // Was set only");
                     else
-                        result.AppendLine(letSet.GenerateCode());
+                        result.AppendLine(letSet.GenerateCode(indentLevel + 1));
                 }
                 result.AppendLine(Indentation + After);
             }

@@ -63,7 +63,7 @@ namespace MetX.VB6ToCSharp.Tests
     }
 ";
 
-            var actual = block1.GenerateCode();
+            var actual = block1.GenerateCode(1);
 
             Console.WriteLine(actual);
             Assert.AreEqual("\n" + expected, "\n" + actual);
@@ -76,7 +76,7 @@ namespace MetX.VB6ToCSharp.Tests
             var block = Quick.Block(parent, "Fred", "George;");
 
             var expected = "    Fred\r\n    {\r\n        George;\r\n    }\r\n";
-            var actual = block.GenerateCode();
+            var actual = block.GenerateCode(1);
             Assert.AreEqual("\n" + expected, "\n" + actual);
         }
     }

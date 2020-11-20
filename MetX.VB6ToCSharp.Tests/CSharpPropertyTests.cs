@@ -17,7 +17,7 @@ namespace MetX.VB6ToCSharp.Tests
             var target = QuickCSharpProperty("F", "G");
 
             const string expected = "    public G F { get; set; }\r\n";
-            var actual = target.GenerateCode();
+            var actual = target.GenerateCode(1);
 
             Extensions.AreEqualFormatted(expected, actual);
         }
@@ -39,8 +39,8 @@ namespace MetX.VB6ToCSharp.Tests
         {
             var target = QuickCSharpProperty("F", "G", "H");
             
-            const string expected = "    H\r\n    public G F { get; set; }\r\n";
-            var actual = target.GenerateCode();
+            const string expected = "H\r\npublic G F { get; set; }\r\n";
+            var actual = target.GenerateCode(0);
 
             Extensions.AreEqualFormatted(expected, actual);
         }
@@ -95,7 +95,7 @@ namespace MetX.VB6ToCSharp.Tests
 
     }
 ";
-            var actual = target.GenerateCode();
+            var actual = target.GenerateCode(1);
             Extensions.AreEqualFormatted(expected, actual);
         }
 
@@ -111,7 +111,7 @@ namespace MetX.VB6ToCSharp.Tests
             get.Children.Add(Quick.Line(get, "Testing;"));
             get.Children.Add(Quick.Line(get, "123;"));
 
-            var actual = get.GenerateCode();
+            var actual = get.GenerateCode(1);
             var expected = "    get\r\n    {\r\n        Testing;\r\n        123;\r\n    }\r\n";
             Extensions.AreEqualFormatted(expected, actual);
         }

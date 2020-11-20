@@ -2,6 +2,6 @@
 {
     public interface IGenerate
     {
-        string GenerateCode();
+        string GenerateCode(int indentLevel);
     }
 }

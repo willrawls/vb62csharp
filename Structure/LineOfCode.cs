@@ -33,10 +33,10 @@ namespace MetX.VB6ToCSharp.Structure
             Line = line;
         }
 
-        public virtual string GenerateCode()
+        public virtual string GenerateCode(int indent)
         {
+            ResetIndent(indent);
             return $"{Indentation}{Line ?? ""}\r\n";
-            //return Indentation + (Line.Transform() ?? "") + "\r\n";
         }
 
         public virtual bool IsEmpty() => Line.IsEmpty();

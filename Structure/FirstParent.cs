@@ -10,11 +10,6 @@ namespace MetX.VB6ToCSharp.Structure
             Indent = indent;
         }
 
-        public string GenerateCode()
-        {
-            return string.Empty;
-        }
-
         public int Indent { get; set; }
         public string Before { get; set; }
         public string Line { get; set; }
@@ -30,6 +25,11 @@ namespace MetX.VB6ToCSharp.Structure
                 return;
 
             Indent = Parent.Indent + 1;
+        }
+
+        public string GenerateCode(int indentLevel)
+        {
+            return string.Empty;
         }
     }
 }
