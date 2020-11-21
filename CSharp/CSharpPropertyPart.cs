@@ -52,7 +52,6 @@ namespace MetX.VB6ToCSharp.CSharp
 
             foreach (var codeLine in Children.Where(block => block.Line.IsNotEmpty()))
             {
-
                 var generatedCode = codeLine.GenerateCode(indentLevel + 1);
                 string massagedLine;
 

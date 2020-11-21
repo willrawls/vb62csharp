@@ -22,14 +22,14 @@ namespace MetX.VB6ToCSharp.Structure
             if (Line.IsNotEmpty())
                 result.AppendLine(Indentation + Line);
 
-            if (Before.IsNotEmpty())
+            if (Before.IsNotEmpty() && Children.IsNotEmpty())
                 result.AppendLine(Indentation + Before);
 
             if (Children.IsNotEmpty())
                 foreach (var codeLine in Children)
                     result.Append(codeLine.GenerateCode(indentLevel + 1));
 
-            if (After.IsNotEmpty())
+            if (After.IsNotEmpty() && Children.IsNotEmpty())
                 result.AppendLine(Indentation + After);
 
             var code = result.ToString();

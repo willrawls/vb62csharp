@@ -64,9 +64,14 @@ namespace MetX.VB6ToCSharp.CSharp
                     localSourceProperty);
 
                 if (translatedLine.IsNotEmpty())
-                    targetPart.Children.Add(new Block(this, translatedLine));
+                    targetPart.Children.Add(new Line(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
                     targetPart.LinesAfter.Children.Add(new Block(this, placeAtBottom));
+
+                targetPart.Children.ExamineAndAdjust();
+                targetPart.LinesAfter.ExamineAndAdjust();
+
+
                 targetPart.Encountered = true;
             }
         }

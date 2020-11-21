@@ -1,13 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MetX.Library;
+using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.VB6;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Extensions
     {
+        public static void ExamineAndAdjust(this IList<ICodeLine> lines)
+        {
+            throw new Exception("Start here");
+        }
+
         public static string AddIndent(this string line, int indentLevelToAdd = 1)
         {
             if (indentLevelToAdd < 1)
