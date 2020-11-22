@@ -4,15 +4,17 @@ using System.Linq;
 using System.Text;
 using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
+using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Extensions
     {
-        public static void ExamineAndAdjust(this IList<ICodeLine> lines)
+        public static CodeLines ExamineAndAdjust(this CodeLines lines)
         {
             throw new Exception("Start here");
+            return lines;
         }
 
         public static string AddIndent(this string line, int indentLevelToAdd = 1)

@@ -10,7 +10,7 @@ namespace MetX.VB6ToCSharp.CSharp
 {
     public class CSharpPropertyPart : AbstractBlock, IGenerate, ICodeLine
     {
-        public AbstractBlock LinesAfter;
+        public CodeLines LinesAfter;
 
         public bool Encountered;
 
@@ -22,7 +22,7 @@ namespace MetX.VB6ToCSharp.CSharp
             Parent = parent;
             PartType = propertyPartType;
             ParameterList = new List<Parameter>();
-            LinesAfter = new Block(this);
+            LinesAfter = new CodeLines();
         }
 
         public override string GenerateCode(int indentLevel)
@@ -62,7 +62,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 result.Append(massagedLine);
             }
 
-            foreach (var blockAfter in LinesAfter.Children.Where(line => line.IsNotEmpty()))
+            foreach (var blockAfter in LinesAfter.Where(line => line.IsNotEmpty()))
             {
                 blockAfter.ResetIndent(indentLevel + 1);
                 var generatedCode = blockAfter.GenerateCode(indentLevel + 1);

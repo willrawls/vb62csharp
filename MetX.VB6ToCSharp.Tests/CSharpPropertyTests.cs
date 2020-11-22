@@ -62,7 +62,7 @@ namespace MetX.VB6ToCSharp.Tests
             target.Get.Encountered = true;
             target.Get.Line = "A";
             target.Get.Children.AddRange(
-                new List<ICodeLine>()
+                new CodeLines
                 {
                     Quick.Line(target.Get, "B;"),
                     Quick.Line(target.Get, "C;")

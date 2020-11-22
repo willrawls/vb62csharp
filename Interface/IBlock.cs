@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
+using MetX.VB6ToCSharp.Structure;
 
 namespace MetX.VB6ToCSharp.Interface
 {
     public interface IBlock : ICodeLine
     {
-        string After { get; set; }
-        string Before { get; set; }
-        List<ICodeLine> Children { get; set; }
+        CodeLines Children { get; set; }
     }
 }

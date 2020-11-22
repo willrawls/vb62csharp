@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
@@ -45,8 +47,7 @@ namespace MetX.VB6ToCSharp.CSharp
             targetPart.Encountered = true;
 
             targetPart.Children.Add(new Block(this));
-            targetPart.LinesAfter = new Block(this);
-
+            
             for (var i = 0; i < localSourceProperty.Block.Children.Count; i++)
             {
                 var originalLine = localSourceProperty.Block.Children[i];
@@ -64,13 +65,15 @@ namespace MetX.VB6ToCSharp.CSharp
                     localSourceProperty);
 
                 if (translatedLine.IsNotEmpty())
-                    targetPart.Children.Add(new Line(this, translatedLine));
+                    targetPart.Children.Add(new LineOfCode(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
-                    targetPart.LinesAfter.Children.Add(new Block(this, placeAtBottom));
-
+                {
+                    var linesAtBottom = placeAtBottom.Lines(StringSplitOptions.RemoveEmptyEntries);
+                    foreach(var bottomLine in linesAtBottom)
+                        targetPart.LinesAfter.Add(new LineOfCode(this, bottomLine));
+                }
                 targetPart.Children.ExamineAndAdjust();
                 targetPart.LinesAfter.ExamineAndAdjust();
-
 
                 targetPart.Encountered = true;
             }

@@ -44,13 +44,9 @@ namespace MetX.VB6ToCSharp.Tests
         Two
         {
             Four
-            {
-            }
             Five
             {
                 Six
-                {
-                }
                 Seven
                 {
                     Eight;
@@ -58,8 +54,6 @@ namespace MetX.VB6ToCSharp.Tests
             }
         }
         Three
-        {
-        }
     }
 ";
 

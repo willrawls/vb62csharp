@@ -5,6 +5,7 @@ using System.Linq;
 using MetX.Library;
 using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
+using MetX.VB6ToCSharp.Structure;
 
 namespace MetX.VB6ToCSharp.VB6
 {
@@ -1120,7 +1121,7 @@ namespace MetX.VB6ToCSharp.VB6
                                 Valid = true,
                                 InvisibleAtRuntime = false,
                                 // add some necessary properties
-                                Children = new List<ICodeLine>
+                                Children = new CodeLines
                                 {
                                     new ControlProperty(targetModule, 2)
                                     {
