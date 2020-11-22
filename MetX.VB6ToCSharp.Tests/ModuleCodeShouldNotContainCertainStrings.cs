@@ -46,7 +46,10 @@ namespace MetX.VB6ToCSharp.Tests
                 "risk.         //",
                 "        ;",
                 "delimiter.         //",
-                "Ding "
+                "Ding ",
+                "                            public string Value",
+                "                    //",
+
             });
 
             // One occurrence, no more, no less

@@ -13,7 +13,7 @@ namespace MetX.VB6ToCSharp.CSharp
     {
         public static CodeLines ExamineAndAdjust(this CodeLines lines)
         {
-            throw new Exception("Start here");
+            //throw new Exception("Start here");
             return lines;
         }
 
