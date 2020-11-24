@@ -29,5 +29,12 @@ namespace MetX.VB6ToCSharp.Structure
 
             return string.Empty;
         }
+
+        public override void ResetIndent(int indentLevel)
+        {
+            _internalIndent = indentLevel;
+            _indentation = null;
+            _secondIndentation = null;
+        }
     }
 }

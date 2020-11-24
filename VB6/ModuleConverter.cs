@@ -35,6 +35,43 @@ namespace MetX.VB6ToCSharp.VB6
             FirstParent = firstParent;
         }
 
+        public void SetIndentsRecursively()
+        {
+            TargetModule.ResetIndent(0);
+
+            foreach (Enum @enum in TargetModule.EnumList)
+            {
+                
+            }
+
+            foreach (Control control in TargetModule.ControlList)
+            {
+                control.ResetIndent(1);
+            }
+
+            foreach (var procedure in TargetModule.ProcedureList)
+            {
+                procedure.ResetIndent(1);
+            }
+
+            foreach (IAmAProperty property in TargetModule.PropertyList)
+            {
+                property.ResetIndent(1);
+            }
+
+            foreach (var variable in TargetModule.VariableList)
+            {
+                variable.ResetIndent(1);
+            }
+
+            foreach (var formProperty in TargetModule.FormPropertyList)
+            {
+                formProperty.ResetIndent(1);
+            }
+            
+        }
+
+
         public string ConvertEnumCode(int indentLevel)
         {
             var result = new StringBuilder();
@@ -428,7 +465,10 @@ namespace MetX.VB6ToCSharp.VB6
         {
             var result = new StringBuilder();
             foreach (var procedure in TargetModule.ProcedureList)
-                result.AppendLine(procedure.GenerateCode(indentLevel));
+            {
+                procedure.ResetIndent(1);
+                result.AppendLine(procedure.GenerateCode());
+            }
 
             return result.ToString();
         }
@@ -472,6 +512,7 @@ namespace MetX.VB6ToCSharp.VB6
                 TargetModule = new Module(FirstParent);
 
             ConvertSource.Module(SourceModule, TargetModule);
+            SetIndentsRecursively();
 
             // ********************************************************
             // common class

@@ -1195,6 +1195,8 @@ namespace MetX.VB6ToCSharp.VB6
             // process procedures
             Procedures(sourceModule, targetModule.ProcedureList);
 
+            targetModule.ResetIndent(0);
+            
             return true;
         }
 

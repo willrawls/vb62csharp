@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MetX.VB6ToCSharp.CSharp;
 
 namespace MetX.VB6ToCSharp.VB6
 {
-    public class Procedure
+    public class Procedure : Indentifier
     {
         public string Comment;
 
@@ -29,14 +30,12 @@ namespace MetX.VB6ToCSharp.VB6
             ParameterList = new List<Parameter>();
         }
 
-        public string GenerateCode(int indentLevel)
+        public string GenerateCode()
         {
             var result = new StringBuilder();
-            var firstIndent = Tools.Indent(indentLevel);
-            var secondIndent = Tools.Indent(indentLevel + 1);
 
             // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
-            result.Append(firstIndent + Scope + " ");
+            result.Append(Indentation + Scope + " ");
             switch (Type)
             {
                 case ProcedureType.ProcedureSub:
@@ -61,23 +60,30 @@ namespace MetX.VB6ToCSharp.VB6
             }
 
             // start body
-            result.AppendLine(firstIndent + "{");
+            result.AppendLine(Indentation + "{");
 
             foreach (var line in LineList.Select(l => l.Trim()))
                 if (line.Length > 0)
-                    result.AppendLine(secondIndent + line + ";");
+                    result.AppendLine($"{SecondIndentation}{line};");
                 else
                     result.AppendLine();
 
             foreach (var line in BottomLineList.Select(l => l.Trim()))
                 if (line.Length > 0)
-                    result.AppendLine($"{secondIndent}{line};");
+                    result.AppendLine($"{SecondIndentation}{line};");
                 else
                     result.AppendLine();
 
             // end procedure
-            result.AppendLine(firstIndent + "}");
+            result.AppendLine(Indentation + "}");
             return result.ToString();
+        }
+
+        public override void ResetIndent(int indentLevel)
+        {
+            _internalIndent = indentLevel;
+            _indentation = null;
+            _secondIndentation = null;
         }
     }
 }

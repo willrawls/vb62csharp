@@ -46,8 +46,9 @@ namespace MetX.VB6ToCSharp.CSharp
             targetPart.ParameterList = localSourceProperty.Parameters;
             targetPart.Encountered = true;
 
-            targetPart.Children.Add(new Block(this));
-            
+            var block = new Block(this);
+            targetPart.Children.Add(block);
+
             for (var i = 0; i < localSourceProperty.Block.Children.Count; i++)
             {
                 var originalLine = localSourceProperty.Block.Children[i];
@@ -55,7 +56,7 @@ namespace MetX.VB6ToCSharp.CSharp
                     ? localSourceProperty.Block.Children[i+1]
                     : null;
                 var line = originalLine.Line.Trim();
-                if (!line.IsNotEmpty()) continue;
+                if (line.IsEmpty()) continue;
 
                 ConvertSource.GetPropertyLine(
                     line, 

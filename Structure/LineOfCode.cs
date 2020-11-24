@@ -10,12 +10,6 @@ namespace MetX.VB6ToCSharp.Structure
 {
     public class LineOfCode : Indentifier, ICodeLine
     {
-        public int Indent
-        {
-            get => Parent.Indent + 1;
-            set => _internalIndent = value;
-        }
-
         public string Before { get; set; }
         public string Line { get; set; }
         public string After { get; set; }
@@ -25,7 +19,6 @@ namespace MetX.VB6ToCSharp.Structure
         {
             Parent = parent ?? throw new ArgumentNullException(nameof(parent));
             Line = line;
-            _internalIndent = Parent.Indent + 1;
         }
 
         public LineOfCode(string line)
@@ -43,5 +36,11 @@ namespace MetX.VB6ToCSharp.Structure
 
         public virtual bool IsNotEmpty() => Line.IsNotEmpty();
 
+        public override void ResetIndent(int indentLevel)
+        {
+            _internalIndent = indentLevel;
+            _indentation = null;
+            _secondIndentation = null;
+        }
     }
 }

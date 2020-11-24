@@ -31,11 +31,12 @@ namespace MetX.VB6ToCSharp.CSharp
             }
         }
 
-        public void ResetIndent(int indentLevel)
+        public int Indent
         {
-            _internalIndent = indentLevel;
-            _indentation = null;
-            _secondIndentation = null;
+            get => _internalIndent;
+            set => _internalIndent = value;
         }
+
+        public abstract void ResetIndent(int indentLevel);
     }
 }
