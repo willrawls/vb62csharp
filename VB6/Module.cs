@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Drawing;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 
@@ -35,6 +37,42 @@ namespace MetX.VB6ToCSharp.VB6
             PropertyList = new List<IAmAProperty>();
             ProcedureList = new List<Procedure>();
             EnumList = new List<Enum>();
+            ResetIndentsRecursively = ModuleRIC;
+        }
+
+        public int ModuleRIC(int indentLevel)
+        {
+            foreach (var item in FormPropertyList)
+            {
+                item.ResetIndent(indentLevel + 1);
+            }
+
+            foreach (var item in ControlList)
+            {
+                item.ResetIndent(indentLevel + 1);
+            }
+
+            foreach (var item in ImageList) { }
+
+            foreach (var item in VariableList)
+            {
+                item.ResetIndent(indentLevel + 1);
+            }
+
+
+            foreach (var item in PropertyList)
+            {
+                item.ResetIndent(indentLevel + 1);
+            }
+            
+            foreach (var item in ProcedureList)
+            {
+                item.ResetIndent(indentLevel + 1);
+            }
+
+            foreach (var item in EnumList) { }
+
+            return indentLevel;
         }
     }
 }

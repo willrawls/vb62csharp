@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 
@@ -69,7 +70,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// <returns></returns>
         public static LineOfCode Line(ICodeLine parent, string line)
         {
-            var lineOfCode = new LineOfCode(parent, line);
+            var lineOfCode = new LineOfCode(parent, null, line);
             return lineOfCode;
         }
 
@@ -81,7 +82,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// <returns></returns>
         public static LineOfCode Line(string line)
         {
-            var lineOfCode = new LineOfCode(new EmptyParent(), line);
+            var lineOfCode = new LineOfCode(new EmptyParent(), null, line);
             return lineOfCode;
         }
 
@@ -133,12 +134,10 @@ namespace MetX.VB6ToCSharp.Structure
         public static Block Block(ICodeLine parent, string line, ICodeLine[] children)
         {
             var block = new Block(parent, line);
-            block.Before = "{";
-            block.After = "}";
             foreach(var child in children)
             {
                 child.Parent = block;
-                child.ResetIndent(parent.Indent + 1);
+                child.ResetIndent(block.Indent + 1);
                 block.Children.Add(child);
             }   
             return block;

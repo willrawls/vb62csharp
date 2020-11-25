@@ -11,10 +11,10 @@ namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Extensions
     {
-        public static CodeLines ExamineAndAdjust(this CodeLines lines)
+        public static CodeLineList ExamineAndAdjust(this CodeLineList lineList)
         {
             //throw new Exception("Start here");
-            return lines;
+            return lineList;
         }
 
         public static string AddIndent(this string line, int indentLevelToAdd = 1)

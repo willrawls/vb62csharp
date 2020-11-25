@@ -788,7 +788,7 @@ namespace MetX.VB6ToCSharp.VB6
 
             foreach (var sourceControl in sourceControlList)
             {
-                var targetControl = new Control(targetModule)
+                var targetControl = new Control(targetModule, null)
                 {
                     Name = sourceControl.Name,
                     Owner = sourceControl.Owner,
@@ -1079,7 +1079,7 @@ namespace MetX.VB6ToCSharp.VB6
             if (targetModule.MenuUsed)
             {
                 // add main menu control
-                var control = new Control(targetModule)
+                var control = new Control(targetModule, null)
                 {
                     Name = "MainMenu",
                     Owner = targetModule.Name,
@@ -1112,7 +1112,7 @@ namespace MetX.VB6ToCSharp.VB6
                         if (targetProperty.Name.Contains($"TabCaption({index})"))
                         {
                             // new tab
-                            var control = new Control(targetModule)
+                            var control = new Control(targetModule, null)
                             {
                                 Type = "TabPage",
                                 Name = "tabPage" + index.ToString(),
@@ -1121,7 +1121,7 @@ namespace MetX.VB6ToCSharp.VB6
                                 Valid = true,
                                 InvisibleAtRuntime = false,
                                 // add some necessary properties
-                                Children = new CodeLines
+                                Children = new CodeLineList
                                 {
                                     new ControlProperty(targetModule, 2)
                                     {

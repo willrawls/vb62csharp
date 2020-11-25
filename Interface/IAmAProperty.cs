@@ -15,7 +15,6 @@ namespace MetX.VB6ToCSharp.Interface
 
         Module TargetModule { get; set; }
 
-        void ConvertParts(IAmAProperty sourceProperty);
         void ResetIndent(int indentLevel);
     }
 }

@@ -66,15 +66,15 @@ namespace MetX.VB6ToCSharp.CSharp
                     localSourceProperty);
 
                 if (translatedLine.IsNotEmpty())
-                    targetPart.Children.Add(new LineOfCode(this, translatedLine));
+                    targetPart.Children.Add(new LineOfCode(this, null, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
                 {
                     var linesAtBottom = placeAtBottom.Lines(StringSplitOptions.RemoveEmptyEntries);
                     foreach(var bottomLine in linesAtBottom)
-                        targetPart.LinesAfter.Add(new LineOfCode(this, bottomLine));
+                        targetPart.LineListAfter.Add(new LineOfCode(this, null, bottomLine));
                 }
                 targetPart.Children.ExamineAndAdjust();
-                targetPart.LinesAfter.ExamineAndAdjust();
+                targetPart.LineListAfter.ExamineAndAdjust();
 
                 targetPart.Encountered = true;
             }

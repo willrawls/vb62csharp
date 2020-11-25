@@ -466,7 +466,7 @@ namespace MetX.VB6ToCSharp.VB6
             var result = new StringBuilder();
             foreach (var procedure in TargetModule.ProcedureList)
             {
-                procedure.ResetIndent(1);
+                procedure.ResetIndent(indentLevel);
                 result.AppendLine(procedure.GenerateCode());
             }
 
@@ -847,7 +847,7 @@ namespace MetX.VB6ToCSharp.VB6
                                     TargetModule = new Module(FirstParent);
 
                                 // new control
-                                control = new Control(TargetModule)
+                                control = new Control(TargetModule, null)
                                 {
                                     Name = sName,
                                     Type = sType

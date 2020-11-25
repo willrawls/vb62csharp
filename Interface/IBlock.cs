@@ -5,6 +5,6 @@ namespace MetX.VB6ToCSharp.Interface
 {
     public interface IBlock : ICodeLine
     {
-        CodeLines Children { get; set; }
+        CodeLineList Children { get; set; }
     }
 }

@@ -13,9 +13,12 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void Indentifier_Simple()
         {
-            var block = Quick.Block(Quick.Top(0), "A", "B");
-            Assert.AreEqual("    ", block.Indentation);
-            Assert.AreEqual("        ", block.SecondIndentation);
+            var top = Quick.Top();
+            var block = Quick.Block(top, "A", "B");
+            Assert.AreEqual(0, block.Children.Count);
+
+            block.Children.Add(Quick.Line(block, "Fred"));
+            Assert.AreEqual(2, block.Children[0].Indent);
         }
 
         

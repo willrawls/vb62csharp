@@ -41,15 +41,16 @@ namespace MetX.VB6ToCSharp.Tests
                 "{;", "};", 
                 "';", "*;", 
                 "F = ", 
-                // "Value = ", 
                 "assumed;", 
                 "risk.         //",
                 "        ;",
                 "delimiter.         //",
                 "Ding ",
-                "                            public string Value",
-                "                    //",
-
+                "                    //",                           // Wrong indentation
+                "        public class CAssocItem",                  // Wrong indentation
+                "                public string Key;",               // Wrong indentation
+                "                            public string Value",  // Wrong indentation
+                "                    //  Retrieves the Nth",        // Wrong indentation
             });
 
             // One occurrence, no more, no less
