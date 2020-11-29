@@ -15,10 +15,12 @@ namespace MetX.VB6ToCSharp.Tests
         {
             var top = Quick.Top();
             var block = Quick.Block(top, "A", "B");
-            Assert.AreEqual(0, block.Children.Count);
+            
+            block.ResetIndent(0);
+            Assert.AreEqual(1, block.Children.Count, block.GenerateCode());
 
             block.Children.Add(Quick.Line(block, "Fred"));
-            Assert.AreEqual(2, block.Children[0].Indent);
+            Assert.AreEqual(1, block.Children[0].Indent);
         }
 
         
@@ -60,7 +62,8 @@ namespace MetX.VB6ToCSharp.Tests
     }
 ";
 
-            var actual = block1.GenerateCode(1);
+            block1.ResetIndent(1);
+            var actual = block1.GenerateCode();
 
             Console.WriteLine(actual);
             Assert.AreEqual("\n" + expected, "\n" + actual);
@@ -73,7 +76,10 @@ namespace MetX.VB6ToCSharp.Tests
             var block = Quick.Block(parent, "Fred", "George;");
 
             var expected = "    Fred\r\n    {\r\n        George;\r\n    }\r\n";
-            var actual = block.GenerateCode(1);
+            
+            block.ResetIndent(1);
+            var actual = block.GenerateCode();
+            
             Assert.AreEqual("\n" + expected, "\n" + actual);
         }
     }

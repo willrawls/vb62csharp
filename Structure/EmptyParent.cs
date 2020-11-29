@@ -1,4 +1,5 @@
-﻿using MetX.VB6ToCSharp.CSharp;
+﻿using System.CodeDom.Compiler;
+using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 
 namespace MetX.VB6ToCSharp.Structure
@@ -24,9 +25,11 @@ namespace MetX.VB6ToCSharp.Structure
             return;
         }
 
-        public string GenerateCode(int indentLevel)
+        public string Final => GenerateCode();
+
+        public string GenerateCode()
         {
-            ResetIndent(indentLevel);
+            // ResetIndent(Indent); // indentLevel);
 
             return string.Empty;
         }

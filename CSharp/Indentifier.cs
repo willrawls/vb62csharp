@@ -1,15 +1,13 @@
 ﻿using MetX.Library;
 using MetX.VB6ToCSharp.VB6;
 
-// ReSharper disable InconsistentNaming
-
 namespace MetX.VB6ToCSharp.CSharp
 {
     public abstract class Indentifier
     {
         protected string _indentation;
         protected string _secondIndentation;
-        protected int _internalIndent = 0;
+        protected int _internalIndent;
 
         public string Indentation
         {

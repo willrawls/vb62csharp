@@ -19,11 +19,8 @@ namespace MetX.VB6ToCSharp.VB6
 
         public bool Valid;
 
-        public Control(ICodeLine parent, Func<int, int> resetIndentsRecursively, string line = null) : base(parent, resetIndentsRecursively, line)
+        public Control(ICodeLine parent, string line = null) : base(parent, line)
         {
-            Parent = parent;
-            Line = line;
-            ResetIndentsRecursively = resetIndentsRecursively;
         }
     }
 }

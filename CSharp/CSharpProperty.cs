@@ -24,11 +24,21 @@ namespace MetX.VB6ToCSharp.CSharp
         public string Value { get; set; }
         public Module TargetModule { get; set; }
 
-        public CSharpProperty(ICodeLine parent) : base(parent, null)
+        public CSharpProperty(ICodeLine parent) : base(parent)
         {
+            ResetIndentsRecursively = CSharpPropertyResetIndentsRecursively;
             Get = new CSharpPropertyPart(this, PropertyPartType.Get);
             Set = new CSharpPropertyPart(this, PropertyPartType.Set);
             Let = new CSharpPropertyPart(this, PropertyPartType.Let);
+
+        }
+
+        private int CSharpPropertyResetIndentsRecursively(int indentLevel)
+        {
+            Get.ResetIndent(indentLevel + 1);
+            Set.ResetIndent(indentLevel + 1);
+            Let.ResetIndent(indentLevel + 1);
+            return indentLevel;
         }
 
         public void ConvertParts(IAmAProperty sourceProperty)
@@ -66,12 +76,12 @@ namespace MetX.VB6ToCSharp.CSharp
                     localSourceProperty);
 
                 if (translatedLine.IsNotEmpty())
-                    targetPart.Children.Add(new LineOfCode(this, null, translatedLine));
+                    targetPart.Children.Add(new LineOfCode(this, translatedLine));
                 if (placeAtBottom.IsNotEmpty())
                 {
                     var linesAtBottom = placeAtBottom.Lines(StringSplitOptions.RemoveEmptyEntries);
                     foreach(var bottomLine in linesAtBottom)
-                        targetPart.LineListAfter.Add(new LineOfCode(this, null, bottomLine));
+                        targetPart.LineListAfter.Add(new LineOfCode(this, bottomLine));
                 }
                 targetPart.Children.ExamineAndAdjust();
                 targetPart.LineListAfter.ExamineAndAdjust();
@@ -106,9 +116,9 @@ namespace MetX.VB6ToCSharp.CSharp
             return null;
         }
 
-        public override string GenerateCode(int indentLevel)
+        public override string GenerateCode()
         {
-            ResetIndent(indentLevel);
+            ResetIndent(Indent); // Will set recursively
 
             var result = new StringBuilder();
 
@@ -166,7 +176,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
                 if (Get.Encountered)
                 {
-                    var getCode = Get.GenerateCode(indentLevel + 1);
+                    var getCode = Get.GenerateCode();
                     result.AppendLine(getCode);
                 }
 
@@ -175,7 +185,7 @@ namespace MetX.VB6ToCSharp.CSharp
                     if (letSet.IsEmpty())
                         result.AppendLine(SecondIndentation + "{ get; set; } // Was set only");
                     else
-                        result.AppendLine(letSet.GenerateCode(indentLevel + 1));
+                        result.AppendLine(letSet.GenerateCode());
                 }
                 result.AppendLine(Indentation + After);
             }

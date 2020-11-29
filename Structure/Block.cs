@@ -13,9 +13,9 @@ namespace MetX.VB6ToCSharp.Structure
            SetupBlock(parent, line, "{", "}");
         }
 
-        public override string GenerateCode(int indentLevel)
+        public override string GenerateCode()
         {
-            ResetIndent(indentLevel);
+            ResetIndent(Indent);
 
             var result = new StringBuilder();
 
@@ -27,7 +27,7 @@ namespace MetX.VB6ToCSharp.Structure
 
             if (Children.IsNotEmpty())
                 foreach (var codeLine in Children)
-                    result.Append(codeLine.GenerateCode(indentLevel + 1));
+                    result.Append(codeLine.GenerateCode());
 
             if (After.IsNotEmpty() && Children.IsNotEmpty())
                 result.AppendLine(Indentation + After);

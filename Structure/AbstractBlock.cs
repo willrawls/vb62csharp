@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 
@@ -11,16 +12,18 @@ namespace MetX.VB6ToCSharp.Structure
 
         public CodeLineList Children { get; set; }
 
-        protected AbstractBlock(ICodeLine parent, Func<int, int> resetIndentsRecursively, string line = null) : base(parent, resetIndentsRecursively, line)
+        protected int AbstractBlockResetIndentsRecursively(int startingIndentLevel)
         {
-            Parent = parent;
-            ResetIndentsRecursively = resetIndentsRecursively;
-            Children = new CodeLineList();
+            foreach(var child in Children)
+                child.ResetIndent(startingIndentLevel + 1);
+            return startingIndentLevel;
         }
 
-        protected AbstractBlock(ICodeLine parent, string line = null) : base(parent, null, line)
+        protected AbstractBlock(ICodeLine parent, string line = null) 
+            : base(parent, line)
         {
             Children = new CodeLineList();
+            ResetIndentsRecursively = AbstractBlockResetIndentsRecursively;
         }
 
         public override bool IsEmpty() => Line.IsEmpty() && Children?.Count == 0;

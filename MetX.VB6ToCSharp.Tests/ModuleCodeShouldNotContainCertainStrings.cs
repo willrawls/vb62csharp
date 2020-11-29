@@ -28,7 +28,7 @@ namespace MetX.VB6ToCSharp.Tests
                 "            return sGetToken",
                 "            return m_sValue;", 
                 "m_", 
-                "            public string Key;",
+                "        public string Key;",
                 "    public string F",
                 "public string Value",
             });

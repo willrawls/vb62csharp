@@ -23,9 +23,20 @@ namespace MetX.VB6ToCSharp.CSharp
             PartType = propertyPartType;
             ParameterList = new List<Parameter>();
             LineListAfter = new CodeLineList();
+            ResetIndentsRecursively = CSharpPropertyPartResetIndentsRecursively;
         }
 
-        public override string GenerateCode(int indentLevel)
+        private int CSharpPropertyPartResetIndentsRecursively(int indentLevel)
+        {
+            Indent = indentLevel;
+            foreach (var child in Children)
+            {
+                child.ResetIndent(indentLevel + 1);
+            }
+            return indentLevel;
+        }
+
+        public override string GenerateCode()
         {
             // ResetIndent(indentLevel);
 
@@ -52,7 +63,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
             foreach (var codeLine in Children.Where(block => block.Line.IsNotEmpty()))
             {
-                var generatedCode = codeLine.GenerateCode(indentLevel + 1);
+                var generatedCode = codeLine.GenerateCode();
                 string massagedLine;
 
                 if (Line.IsEmpty())
@@ -65,7 +76,7 @@ namespace MetX.VB6ToCSharp.CSharp
             foreach (var blockAfter in LineListAfter.Where(line => line.IsNotEmpty()))
             {
                 // blockAfter.ResetIndent(indentLevel + 1);
-                var generatedCode = blockAfter.GenerateCode(indentLevel + 1);
+                var generatedCode = blockAfter.GenerateCode();
                 string blockLine;
                 if (Line.IsEmpty())
                     blockLine = generatedCode;

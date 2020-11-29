@@ -15,20 +15,16 @@ namespace MetX.VB6ToCSharp.Structure
         public string After { get; set; }
         public ICodeLine Parent { get; set; }
 
-        public LineOfCode(ICodeLine parent, Func<int, int> resetIndentsRecursively, string line = null)
+        public LineOfCode(ICodeLine parent, string line = null)
         {
             Parent = parent ?? throw new ArgumentNullException(nameof(parent));
-            ResetIndentsRecursively = resetIndentsRecursively;
             Line = line;
         }
 
-        public LineOfCode(ICodeLine parent, string line = null) : this(parent, null, line)
-        {
-        }
+        public string Final => GenerateCode();
 
-        public virtual string GenerateCode(int indent)
+        public virtual string GenerateCode()
         {
-            ResetIndent(indent);
             return $"{Indentation}{Line ?? ""}\r\n";
         }
 
@@ -36,7 +32,7 @@ namespace MetX.VB6ToCSharp.Structure
 
         public virtual bool IsNotEmpty() => Line.IsNotEmpty();
 
-        public Func<int, int> ResetIndentsRecursively;
+        protected Func<int, int> ResetIndentsRecursively;
 
         public override void ResetIndent(int indentLevel)
         {

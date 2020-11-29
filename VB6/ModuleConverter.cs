@@ -238,8 +238,7 @@ namespace MetX.VB6ToCSharp.VB6
                     result.Append("//");
                 }
 
-                result.Append(Tools.Indent(2) + " public System.Windows.Forms." + control.Type + " " + control.Name +
-                              ";\r\n");
+                result.Append(Tools.Indent(2) + " public System.Windows.Forms." + control.Type + " " + control.Name + ";\r\n");
             }
 
             result.Append(Indent2 + "/// <summary>\r\n");
@@ -443,7 +442,7 @@ namespace MetX.VB6ToCSharp.VB6
             foreach (var control in TargetModule.ControlList)
             {
                 // check if control is container
-                if ((control.Container) && !(control.Type == "MenuItem") && !(control.Type == "MainMenu"))
+                if ((control.Container) && control.Type != "MenuItem" && control.Type != "MainMenu")
                 {
                     if (!control.Valid)
                     {
@@ -461,45 +460,43 @@ namespace MetX.VB6ToCSharp.VB6
             result.Append(Indent2 + "#endregion\r\n");
         }
 
-        public string ConvertProcedures(int indentLevel)
+        public string ConvertProcedures()
         {
             var result = new StringBuilder();
             foreach (var procedure in TargetModule.ProcedureList)
             {
-                procedure.ResetIndent(indentLevel);
                 result.AppendLine(procedure.GenerateCode());
             }
 
             return result.ToString();
         }
 
-        public string GenerateProperties(int indentLevel)
+        public string GenerateProperties()
         {
             if (TargetModule.PropertyList.Count <= 0)
                 return string.Empty;
 
             var result = new StringBuilder();
-            var firstIndent = Tools.Indent(indentLevel);
-
+            //var firstIndent = Tools.Indent(indentLevel);
+            
             result.AppendLine();
             foreach (var property in TargetModule.PropertyList)
             {
                 property.TargetModule = TargetModule;
+                property.ResetIndent(TargetModule.Indent + 2);
 
                 result.AppendLine(
-                    firstIndent +
-                    Massage.AllLinesNow(
-                        property
-                            .GenerateCode(indentLevel + 1))
+                    // firstIndent +
+                    Massage.AllLinesNow(property.Final)
                 );
             }
             var code = result.ToString();
             return code;
         }
 
-        public string ConvertVariablesInCode(int indentLevel)
+        public string ConvertVariablesInCode()
         {
-            var code = TargetModule.VariableList.GenerateCode(indentLevel);
+            var code = TargetModule.VariableList.GenerateCode(TargetModule.Indent + 2);
             return code;
         }
 
@@ -512,7 +509,6 @@ namespace MetX.VB6ToCSharp.VB6
                 TargetModule = new Module(FirstParent);
 
             ConvertSource.Module(SourceModule, TargetModule);
-            SetIndentsRecursively();
 
             // ********************************************************
             // common class
@@ -535,8 +531,13 @@ namespace MetX.VB6ToCSharp.VB6
             result.AppendLine($"namespace {ProjectNamespace}");
             // start namespace region
             result.Append("{\r\n");
-            var firstIndent = Tools.Indent(2);
-            if (!string.IsNullOrEmpty(SourceModule.Comment))
+            var firstIndent = Tools.Indent(1);
+
+            if(SourceModule.Comment.IsEmpty())
+                SourceModule.Comment = SourceModule.PropertyList?.FirstOrDefault()?.Comment 
+                                    ?? SourceModule.ProcedureList?.FirstOrDefault()?.Comment;
+
+            if (SourceModule.Comment.IsNotEmpty())
             {
                 result.Append($"{firstIndent}/// <summary>\r\n");
                 result.Append($"{firstIndent}///   {SourceModule.Comment}.\r\n");
@@ -584,21 +585,21 @@ namespace MetX.VB6ToCSharp.VB6
             // ********************************************************
 
             if (TargetModule.VariableList.Count > 0)
-                result.AppendLine(ConvertVariablesInCode(3));
+                result.AppendLine(ConvertVariablesInCode()); // 3));
 
             // ********************************************************
             // properties has only forms and classes
             // ********************************************************
 
             if ((TargetModule.Type == "form") || (TargetModule.Type == "class"))
-                result.AppendLine(GenerateProperties(3));
+                result.AppendLine(GenerateProperties()); // 2));
 
             // ********************************************************
             // procedures
             // ********************************************************
 
             if (TargetModule.ProcedureList.Count > 0)
-                result.Append(ConvertProcedures(3));
+                result.Append(ConvertProcedures()); // 2));
 
             // end class
             result.AppendLine($"{firstIndent}}}");

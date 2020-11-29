@@ -70,7 +70,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// <returns></returns>
         public static LineOfCode Line(ICodeLine parent, string line)
         {
-            var lineOfCode = new LineOfCode(parent, null, line);
+            var lineOfCode = new LineOfCode(parent, line);
             return lineOfCode;
         }
 
@@ -82,7 +82,7 @@ namespace MetX.VB6ToCSharp.Structure
         /// <returns></returns>
         public static LineOfCode Line(string line)
         {
-            var lineOfCode = new LineOfCode(new EmptyParent(), null, line);
+            var lineOfCode = new LineOfCode(new EmptyParent(), line);
             return lineOfCode;
         }
 

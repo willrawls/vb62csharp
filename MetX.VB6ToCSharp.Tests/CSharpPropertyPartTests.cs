@@ -16,7 +16,9 @@ namespace MetX.VB6ToCSharp.Tests
             var target = QuickCSharpPropertyPart(parent, "A");
 
             const string expected = "    get\r\n    {\r\n        A\r\n        {\r\n        }\r\n    }\r\n";
-            var actual = target.GenerateCode(1);
+
+            target.ResetIndent(1);
+            var actual = target.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);
         }
@@ -29,7 +31,9 @@ namespace MetX.VB6ToCSharp.Tests
             target.Children.Add(Quick.Line(target, "C = 'c',"));
 
             const string expected = "    get\r\n    {\r\n        var x = new A\r\n        {\r\n            C = 'c',\r\n        }\r\n    }\r\n";
-            var actual = target.GenerateCode(1);
+            
+            target.ResetIndent(1);
+            var actual = target.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);
         }
@@ -62,7 +66,8 @@ namespace MetX.VB6ToCSharp.Tests
             return sAllKeyValues;
         }
 ";
-            var actual = parent.Get.GenerateCode(2);
+            parent.ResetIndent(1);
+            var actual = parent.Get.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);
         }

@@ -21,7 +21,9 @@ namespace MetX.VB6ToCSharp.Structure
         public bool IsEmpty() => true;
         public bool IsNotEmpty() => false;
 
-        public string GenerateCode(int indentLevel)
+        public string Final => GenerateCode();
+
+        public string GenerateCode()
         {
             return string.Empty;
         }

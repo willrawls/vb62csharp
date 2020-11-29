@@ -14,9 +14,9 @@ namespace MetX.VB6ToCSharp.VB6
         public string Scope;
         public string Type;
 
-        public string GenerateCode(int indentLevel)
+        public string GenerateCode()
         {
-            var result = Tools.Indent(indentLevel)
+            var result = Tools.Indent(Indent)
                 + "public " // Scope
                 + (Type.IsEmpty() ? "unknown" : Type) + " "
                 + Name + ";";

@@ -13,8 +13,8 @@ namespace MetX.VB6ToCSharp.VB6
             sb.AppendLine();
             foreach (var variable in this)
             {
-                // All public cause I really don't like anything but public stuff
-                sb.AppendLine(variable.GenerateCode(indentLevel + 1));
+                variable.ResetIndent(indentLevel);
+                sb.AppendLine(variable.GenerateCode());
             }
 
             return sb.ToString();
