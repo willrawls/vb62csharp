@@ -46,20 +46,18 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("Exit Property", "return; // ???"),
                 new XReplace("Exit Function", "return; // ???"),
                 new XReplace("Exit Sub", "return;"),
-                new XReplace("For Each ", "foreach( var "),
                 new XReplace(" In ", " in "),
                 new XReplace(";;", ";"),
+                new XReplace("{;", "{"),
                 new XReplace("; = ", " = "),
                 new XReplace("{ get; set; }", ";"),
                 new XReplace("Static", "static"),
                 new XReplace("String", "string"),
-                new XReplace("Collection", "Dictionary<string,string>()"),
-                new XReplace("using System.Dictionary<string,string>()s",
-                    "using System.Collections"),
+                new XReplace("Collection", "Dictionary<string,string>"),
+                new XReplace("using System.Dictionary<string,string>()s", "using System.Collections"),
                 new XReplace("True", "true"),
                 new XReplace("False", "false"),
-                new XReplace("private ",
-                    "public "), // Because I believe everything should be public
+                new XReplace("private ", "public "), // Because I believe everything should be public
                 new XReplace("Err.Clear", string.Empty),
                 new XReplace("Err.Number", "ex"),
                 new XReplace("Me.", "this."),
@@ -75,6 +73,8 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("Next ", "} // "),
                 new XReplace(" & ", " + "),
                 new XReplace("Integer", "int"),
+                new XReplace(".[", "["),
+                new XReplace(" As ", " unknownType "),
             };
 
         /// <summary>
@@ -105,6 +105,7 @@ namespace MetX.VB6ToCSharp.CSharp
             new List<XReplace>
             {
                 new XReplace("' ", "// "),
+                new XReplace("foreach( var ", "foreach(var ", " )", " ) {"),
                 new XReplace("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. "),
             };
 
@@ -211,11 +212,11 @@ namespace MetX.VB6ToCSharp.CSharp
             if (line.IsEmpty())
                 return string.Empty;
 
-            //line = line.Trim();
             if (line.Trim().EndsWith(";"))
                 return line;
 
-            if (LineContainsAnyOfTheseThenShouldHaveASemiColon.Any(x => line.Contains(x)) == false
+            if (LineContainsAnyOfTheseThenShouldHaveASemiColon
+                    .Any(x => line.Contains(x)) == false
                 && LineDoesNotContainAnyOfThese.Any(x => line.Contains(x) == false && !line.EndsWith(":")))
             {
                 if(nextLine.IsEmpty() || !nextLine.Contains("{"))
@@ -365,7 +366,8 @@ namespace MetX.VB6ToCSharp.CSharp
                 }
 
                 if (iterations > 98)
-                    throw new Exception("Too many tries in StartsWithReplaceNow");
+                    lineOfCode += " // TODO: Check: Too many iterations during StartsWithReplaceNow";
+                //throw new Exception("Too many tries in StartsWithReplaceNow");
             }
 
             return lineOfCode;

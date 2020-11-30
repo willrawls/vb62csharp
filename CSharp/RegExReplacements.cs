@@ -75,6 +75,11 @@ namespace MetX.VB6ToCSharp.CSharp
                 new Regex(@"For (.+) = (.*) To (.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
                 "for(var $1 = $2; $1 < $3; $1++) //SOB//"),
 
+            // For Each x In y
+            new RegexReplace(
+                new Regex(@"For Each (.+) In (.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "foreach(var $1 in $2) //SOB//"),
+
             // Mid$(x,y) ---
             new RegexReplace(
                 new Regex(@"Mid\$*\((.+),(.+)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
