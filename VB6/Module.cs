@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Windows.Forms.VisualStyles;
+using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 
@@ -73,6 +75,49 @@ namespace MetX.VB6ToCSharp.VB6
             foreach (var item in EnumList) { }
 
             return indentLevel;
+        }
+
+        public void ExamineAndAdjust()
+        {
+            foreach (var item in FormPropertyList)
+            {
+                item.Type = item.Type.ExamineAndAdjustLine(CurrentlyInArea.Class);
+            }
+
+            foreach (var item in ControlList)
+            {
+                item.Type = item.Type.ExamineAndAdjustLine(CurrentlyInArea.Class);
+            }
+
+            foreach (var item in ImageList)
+            {
+                // Not needed?
+            }
+
+            foreach (var item in VariableList)
+            {
+                item.Type = item.Type.ExamineAndAdjustLine(CurrentlyInArea.Class);
+            }
+
+
+            foreach (var item in PropertyList)
+            {
+                item.Type = item.Type.ExamineAndAdjustLine(CurrentlyInArea.Class);
+            }
+
+            foreach (var item in ProcedureList)
+            {
+                for (var i = 0; i < item.LineList.Count; i++)
+                {
+                    item.LineList[i] = item.LineList[i].ExamineAndAdjustLine(CurrentlyInArea.Class);
+                }
+            }
+
+            foreach (var item in EnumList)
+            {
+                // Not needed?
+            }
+
         }
     }
 }

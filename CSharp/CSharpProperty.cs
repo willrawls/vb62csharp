@@ -83,8 +83,8 @@ namespace MetX.VB6ToCSharp.CSharp
                     foreach(var bottomLine in linesAtBottom)
                         targetPart.LineListAfter.Add(new LineOfCode(this, bottomLine));
                 }
-                targetPart.Children.ExamineAndAdjust();
-                targetPart.LineListAfter.ExamineAndAdjust();
+                targetPart.ExamineAndAdjust();
+                targetPart.ExamineAndAdjust();
 
                 targetPart.Encountered = true;
             }

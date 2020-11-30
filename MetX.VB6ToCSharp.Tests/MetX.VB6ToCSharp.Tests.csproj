@@ -52,10 +52,13 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CAssocArray_CodeShouldBeWellFormed.cs" />
     <Compile Include="CodeLineRelatedTests.cs" />
     <Compile Include="CSharpPropertyPartTests.cs" />
     <Compile Include="CSharpPropertyTests.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="CheckConvertedCode.cs" />
+    <Compile Include="ExtensionTests.cs" />
     <Compile Include="MassageTests.cs" />
     <Compile Include="ModuleCodeShouldNotContainCertainStrings.cs" />
     <Compile Include="OneLineComplexTests.cs" />
@@ -72,6 +75,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CAssocArray.cls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="CAssocItem.cls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

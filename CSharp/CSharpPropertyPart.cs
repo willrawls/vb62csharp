@@ -98,5 +98,12 @@ namespace MetX.VB6ToCSharp.CSharp
             var code = result.ToString();
             return code;
         }
+
+        public void ExamineAndAdjust()
+        {
+            Line = Line.ExamineAndAdjustLine(CurrentlyInArea.Property);
+            Children.ExamineAndAdjust(CurrentlyInArea.Property);
+            LineListAfter.ExamineAndAdjust(CurrentlyInArea.Property);
+        }
     }
 }

@@ -74,6 +74,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("Add(", "Add( "),
                 new XReplace("Next ", "} // "),
                 new XReplace(" & ", " + "),
+                new XReplace("Integer", "int"),
             };
 
         /// <summary>
