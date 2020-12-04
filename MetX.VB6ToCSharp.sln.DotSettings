@@ -29,4 +29,5 @@
 	<s:Boolean x:Key="/Default/Environment/UnitTesting/DisabledProviders/=xUnit/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Blockify/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Indentifier/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Regexify/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=wrappable/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

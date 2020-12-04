@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.RegularExpressions;
 using MetX.Library;
+using MetX.VB6ToCSharp.Interface;
+using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
 
 namespace MetX.VB6ToCSharp.CSharp
@@ -54,6 +58,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("Static", "static"),
                 new XReplace("String", "string"),
                 new XReplace("Collection", "Dictionary<string,string>"),
+                new XReplace("System.Dictionary<string,string>", "System.Collection"),
                 new XReplace("using System.Dictionary<string,string>()s", "using System.Collections"),
                 new XReplace("True", "true"),
                 new XReplace("False", "false"),
@@ -74,7 +79,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace(" & ", " + "),
                 new XReplace("Integer", "int"),
                 new XReplace(".[", "["),
-                new XReplace(" As ", " unknownType "),
+                new XReplace(" As ", " /*As*/ "),
             };
 
         /// <summary>
@@ -117,6 +122,51 @@ namespace MetX.VB6ToCSharp.CSharp
             {
                 new XReplace("foreach(", null, null, " )"),
             };
+
+        public static string FindCodeBetweenBraces(this string target)
+        {
+            var input = target;
+            var regex = new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))", RegexOptions.Singleline);
+            var matches = regex.Matches(input);
+            if(matches?.Count > 0)
+            {
+                var result = matches[0].Groups[1].Value;
+                return result;
+            }
+
+            return "";
+        }
+
+        public static Block AsBlock(this string target, ICodeLine parent)
+        {
+            var result = Quick.Block(parent, null);
+            var inner = target;
+            while (inner.FindCodeBetweenBraces().IsNotEmpty())
+            {
+
+            }
+            
+            foreach(var line in target.Lines().Where((x) => x.IsNotEmpty()))
+            {
+                ICodeLine child;
+                if()
+                result.Children.Add(child);
+            }            return result;
+        }
+
+        public static string Regexify(this string target)
+        {
+            var result = target
+                .Replace("{", "\\{")
+                .Replace("}", "\\}")
+                .Replace("[", "\\[")
+                .Replace("]", "\\]")
+                .Replace("(", "\\(")
+                .Replace(")", "\\)")
+                .Replace(".", "\\.")
+                .Replace("*", "\\*");
+            return result;
+        }
 
         /// <summary>
         ///     When line starts with X and ends with Y:
@@ -392,6 +442,20 @@ namespace MetX.VB6ToCSharp.CSharp
                 }
 
             return lineOfCode;
+        }
+
+        public static bool FindCodeBetweenBraces(this string target, out string before, out string mostInner, out string after, out int indexOfMostInner)
+        {
+            var input = target;
+            var regex = new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))", RegexOptions.Singleline);
+            var matches = regex.Matches(input);
+            if (matches?.Count > 0)
+            {
+                var result = matches[0].Groups[1].Value;
+                return result;
+            }
+
+            return "";
         }
     }
 }

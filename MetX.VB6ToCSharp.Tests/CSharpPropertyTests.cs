@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using MetX.VB6ToCSharp.CSharp;
+﻿using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,21 +14,22 @@ namespace MetX.VB6ToCSharp.Tests
             var target = QuickCSharpProperty("F", "G");
 
             const string expected = "    public G F { get; set; }\r\n";
-            
+
             target.ResetIndent(1);
             var actual = target.GenerateCode();
 
             Extensions.AreEqualFormatted(expected, actual);
         }
 
-        public static CSharpProperty QuickCSharpProperty(string name = null, string type = null, string line = null)
+        public static CSharpProperty QuickCSharpProperty(string name = null, string type = null,
+            string line = null)
         {
             ICodeLine parent = new EmptyParent();
             var target = new CSharpProperty(parent)
             {
                 Name = name,
                 Type = type,
-                Line = line,
+                Line = line
             };
             return target;
         }
@@ -40,9 +38,9 @@ namespace MetX.VB6ToCSharp.Tests
         public void NoChildrenWithLine()
         {
             var target = QuickCSharpProperty("F", "G", "H");
-            
+
             const string expected = "H\r\npublic G F { get; set; }\r\n";
-            
+
             target.ResetIndent(0);
             var actual = target.GenerateCode();
 
@@ -60,7 +58,7 @@ namespace MetX.VB6ToCSharp.Tests
             {
                 Comment = "' TheComment",
                 Name = "F",
-                Type = "G",
+                Type = "G"
             };
 
             target.Get.Encountered = true;
@@ -77,7 +75,7 @@ namespace MetX.VB6ToCSharp.Tests
             target.Set.Children.Add(Quick.Line(target.Set, "E;"));
 
             var expected =
-@"    //  TheComment
+                @"    //  TheComment
     public G F
     {
         get
@@ -111,7 +109,7 @@ namespace MetX.VB6ToCSharp.Tests
             var get = new CSharpPropertyPart(parent, PropertyPartType.Get)
             {
                 PartType = PropertyPartType.Get,
-                Encountered = true,
+                Encountered = true
             };
             get.Children.Add(Quick.Line(get, "Testing;"));
             get.Children.Add(Quick.Line(get, "123;"));
@@ -123,5 +121,3 @@ namespace MetX.VB6ToCSharp.Tests
         }
     }
 }
-
-

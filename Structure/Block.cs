@@ -10,7 +10,7 @@ namespace MetX.VB6ToCSharp.Structure
         public Block(ICodeLine parent, string line = null)
             : base(parent, line)
         {
-           SetupBlock(parent, line, "{", "}");
+            SetupBlock(parent, line, "{", "}");
         }
 
         public override string GenerateCode()
@@ -53,13 +53,34 @@ namespace MetX.VB6ToCSharp.Structure
             {
                 codeLine.Parent = this;
                 if (Parent is AbstractBlock)
-                    ((Block)codeLine).SetupChildren();
+                    ((Block) codeLine).SetupChildren();
             }
         }
 
         public override string ToString()
         {
             return Line;
+        }
+
+        public override bool Equals(object blockObject)
+        {
+            if (!(blockObject is Block))
+                return false;
+
+            var otherBlock = (Block) blockObject;
+
+            if (Line != otherBlock.Line)
+                return false;
+            if (Children.Count != otherBlock.Children.Count)
+                return false;
+            for (var index = 0; index < Children.Count; index++)
+            {
+                var child = Children[index];
+                if (otherBlock.Children[index].Line != child.Line)
+                    return false;
+            }
+
+            return true;
         }
     }
 }

@@ -158,7 +158,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 }
             }
 
-            var propertyHeader = $"public {Type ?? "unknownTypeFor"}{Name} {Name}";
+            var propertyHeader = $"public {Type ?? "unknownTypeFor" + Name} {Name}";
 
             if(Line.IsNotEmpty())
             {

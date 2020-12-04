@@ -23,7 +23,7 @@ namespace MetX.VB6ToCSharp.Tests
             var message = CheckConvertedCode.LookFor(code, true, new[]
             {
                 "public Dictionary<string,string> mCol;",
-                @"foreach( var CurItem in mCol ) {",
+                @"foreach(var CurItem in mCol) {",
                 "                    sAllKeyValues +=",
                 "static string ",
                 "Add(sKey, sValue);",
