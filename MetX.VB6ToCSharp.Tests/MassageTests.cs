@@ -41,7 +41,8 @@ namespace MetX.VB6ToCSharp.Tests
         [DataTestMethod]
         public void FindMatching_Simple(string target, int startAtIndex, string expected)
         {
-            var actual = target.FindCodeBetweenBraces();
+            var result = target.FindCodeBetweenBraces(out var before, out var actual, out var after, out var index);
+            Assert.IsTrue(result);
             Assert.AreEqual(expected, actual);
         }
 
@@ -50,7 +51,7 @@ namespace MetX.VB6ToCSharp.Tests
         [DataTestMethod]
         public void FindCodeBetweenBraces_Simple(string target, string[] expected)
         {
-            bool result = target.FindCodeBetweenBraces(out string before, out string mostInner, out string after);
+            var result = target.FindCodeBetweenBraces(out var before, out var mostInner, out var after, out var index);
 
             Assert.IsTrue(result);
             Assert.AreEqual(expected[0], before);
@@ -65,13 +66,13 @@ namespace MetX.VB6ToCSharp.Tests
             var parent = new EmptyParent();
             var expected = Quick.Block(parent, null);
             expected.Children.Add(Quick.Line(expected, "var someLine = ofCode;"));
-            //expected.Children.Add(Quick.Line(expected, "if(a)"));
+            
             var ifBlock = Quick.Block(expected, "if(a)");
             ifBlock.Children.Add(Quick.Line(ifBlock, "b();"));
             expected.Children.Add(ifBlock);
 
             var actualParent = new EmptyParent();
-            var actual = target.FindCodeBetweenBraces().AsBlock(actualParent);
+            var actual = target.AsBlock(actualParent);
 
             Assert.IsTrue(expected.Equals(actual), 
                 "\r\nExpected: " + expected.GenerateCode()
@@ -81,7 +82,7 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void Regexify_Simple()
         {
-            string actual = "{}.[]()*a1".Regexify();
+            var actual = "{}.[]()*a1".Regexify();
             Assert.AreEqual("\\{\\}\\.\\[\\]\\(\\)\\*a1", actual);
         }
     }

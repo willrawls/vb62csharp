@@ -123,6 +123,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("foreach(", null, null, " )"),
             };
 
+        /*
         public static string FindCodeBetweenBraces(this string target)
         {
             var input = target;
@@ -136,22 +137,32 @@ namespace MetX.VB6ToCSharp.CSharp
 
             return "";
         }
+        */
 
         public static Block AsBlock(this string target, ICodeLine parent)
         {
             var result = Quick.Block(parent, null);
             var inner = target;
-            while (inner.FindCodeBetweenBraces().IsNotEmpty())
+            while (inner.FindCodeBetweenBraces(
+                out var before,
+                out var insideBraces,
+                out var after,
+                out var index))
             {
+                foreach (var lineBefore in before.Lines())
+                    result.Children.Add(Quick.Line(result, lineBefore));
 
+                var innerBlock = Quick.Block(result, null);
+                foreach(var innerLine in insideBraces.Lines().Where(x => x.IsNotEmpty()))
+                    innerBlock.Children.Add(Quick.Line(innerLine));
+
+                foreach (var lineAfter in after.Lines().Where(x => x.IsNotEmpty()))
+                    result.Children.Add(Quick.Line(result, lineAfter));
+
+                result = innerBlock;
             }
-            
-            foreach(var line in target.Lines().Where((x) => x.IsNotEmpty()))
-            {
-                ICodeLine child;
-                if()
-                result.Children.Add(child);
-            }            return result;
+
+            return result;
         }
 
         public static string Regexify(this string target)
@@ -444,18 +455,26 @@ namespace MetX.VB6ToCSharp.CSharp
             return lineOfCode;
         }
 
-        public static bool FindCodeBetweenBraces(this string target, out string before, out string mostInner, out string after, out int indexOfMostInner)
+        public static bool FindCodeBetweenBraces(this string target, out string before, out string insideTheMostOuterBraces, out string after, out int indexOfMostInner)
         {
             var input = target;
             var regex = new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))", RegexOptions.Singleline);
-            var matches = regex.Matches(input);
-            if (matches?.Count > 0)
+            var splits = regex.Split(input).Where(s => s.Length > 0).ToArray();
+            
+            if (splits.Length > 0)
             {
-                var result = matches[0].Groups[1].Value;
-                return result;
+                before = splits[0];
+                insideTheMostOuterBraces = splits[1];
+                after = splits[2];
+                indexOfMostInner = target.IndexOf(insideTheMostOuterBraces, StringComparison.InvariantCultureIgnoreCase);
+                return true;
             }
 
-            return "";
+            before = null;
+            insideTheMostOuterBraces = target;
+            after = null;
+            indexOfMostInner = 0;
+            return false;
         }
     }
 }
