@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.RegularExpressions;
 using MetX.Library;
@@ -13,20 +12,20 @@ namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Massage
     {
-        private static List<string> LineContainsAnyOfTheseThenShouldHaveASemiColon =
+        private static readonly List<string> LineContainsAnyOfTheseThenShouldHaveASemiColon =
             new List<string>
             {
                 "{", "}",
                 "foreach",
                 "while",
-                "if(", 
-                "if (", 
-                "else",
+                "if(",
+                "if (",
+                "else"
             };
 
-        private static List<string> LineDoesNotContainAnyOfThese = new List<string>
+        private static readonly List<string> LineDoesNotContainAnyOfThese = new List<string>
         {
-            "//",
+            "//"
         };
 
         /// <summary>
@@ -36,9 +35,7 @@ namespace MetX.VB6ToCSharp.CSharp
         ///     Add A as a line below the end
         /// </summary>
         public static List<XReplace> AboveAndBelowReplacements { get; set; } =
-            new List<XReplace>
-            {
-            };
+            new List<XReplace>();
 
         /// <summary>
         ///     When line contains X:
@@ -59,10 +56,12 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("String", "string"),
                 new XReplace("Collection", "Dictionary<string,string>"),
                 new XReplace("System.Dictionary<string,string>", "System.Collection"),
-                new XReplace("using System.Dictionary<string,string>()s", "using System.Collections"),
+                new XReplace("using System.Dictionary<string,string>()s",
+                    "using System.Collections"),
                 new XReplace("True", "true"),
                 new XReplace("False", "false"),
-                new XReplace("private ", "public "), // Because I believe everything should be public
+                new XReplace("private ",
+                    "public "), // Because I believe everything should be public
                 new XReplace("Err.Clear", string.Empty),
                 new XReplace("Err.Number", "ex"),
                 new XReplace("Me.", "this."),
@@ -79,7 +78,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace(" & ", " + "),
                 new XReplace("Integer", "int"),
                 new XReplace(".[", "["),
-                new XReplace(" As ", " /*As*/ "),
+                new XReplace(" As ", " /*As*/ ")
             };
 
         /// <summary>
@@ -90,7 +89,7 @@ namespace MetX.VB6ToCSharp.CSharp
             new List<XReplace>
             {
                 new XReplace(";;", ";"),
-                new XReplace(":;", "~~~"),
+                new XReplace(":;", "~~~")
             };
 
         /// <summary>
@@ -98,9 +97,9 @@ namespace MetX.VB6ToCSharp.CSharp
         ///     Replace Z with A
         /// </summary>
         public static List<XReplace> StartsAndEndsWithReplacements { get; set; } =
-            new List<XReplace>()
+            new List<XReplace>
             {
-                new XReplace("Set", "Nothing", "Set", ""),
+                new XReplace("Set", "Nothing", "Set", "")
             };
 
         /// <summary>
@@ -111,58 +110,53 @@ namespace MetX.VB6ToCSharp.CSharp
             {
                 new XReplace("' ", "// "),
                 new XReplace("foreach( var ", "foreach(var ", " )", " ) {"),
-                new XReplace("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. "),
+                new XReplace("On Error GoTo ", "// TODO: Rewrite try/catch and/or goto. ")
             };
 
         /// <summary>
         ///     When a line starts with X, Replace Y with Z, Append A
         /// </summary>
         public static List<XReplace> WhenStartsWithReplaceOtherReplacements { get; set; } =
-            new List<XReplace>()
+            new List<XReplace>
             {
-                new XReplace("foreach(", null, null, " )"),
+                new XReplace("foreach(", null, null, " )")
             };
 
-        /*
-        public static string FindCodeBetweenBraces(this string target)
-        {
-            var input = target;
-            var regex = new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))", RegexOptions.Singleline);
-            var matches = regex.Matches(input);
-            if(matches?.Count > 0)
-            {
-                var result = matches[0].Groups[1].Value;
-                return result;
-            }
-
-            return "";
-        }
-        */
 
         public static Block AsBlock(this string target, ICodeLine parent)
         {
             var result = Quick.Block(parent, null);
+            result.Before = null;
+            result.After = null;
+            var topBlock = result;
+
             var inner = target;
-            while (inner.FindCodeBetweenBraces(
-                out var before,
-                out var insideBraces,
-                out var after,
-                out var index))
+            
+            const int maxIterations = 1000;
+            var iterations = 0;
+
+            while (++iterations < maxIterations
+                   && inner.FindCodeBetweenBraces(
+                       out var before,
+                       out var insideBraces,
+                       out var after,
+                       out var index))
             {
-                foreach (var lineBefore in before.Lines())
-                    result.Children.Add(Quick.Line(result, lineBefore));
+                var beforeLines = before.Lines(StringSplitOptions.RemoveEmptyEntries);
+                var insideBracesLines = insideBraces.Lines(StringSplitOptions.RemoveEmptyEntries);
+                var afterLines = after.Lines(StringSplitOptions.RemoveEmptyEntries);
 
+                result.Children.AddLines(result, beforeLines);
                 var innerBlock = Quick.Block(result, null);
-                foreach(var innerLine in insideBraces.Lines().Where(x => x.IsNotEmpty()))
-                    innerBlock.Children.Add(Quick.Line(innerLine));
-
-                foreach (var lineAfter in after.Lines().Where(x => x.IsNotEmpty()))
-                    result.Children.Add(Quick.Line(result, lineAfter));
+                innerBlock.Children.AddLines(innerBlock, insideBracesLines);
+                result.Children.Add(innerBlock);
+                result.Children.AddLines(result, afterLines);
 
                 result = innerBlock;
+                inner = insideBraces;
             }
 
-            return result;
+            return topBlock;
         }
 
         public static string Regexify(this string target)
@@ -192,7 +186,6 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var lineOfCode = originalLineOfCode;
             foreach (var entry in AboveAndBelowReplacements)
-            {
                 while (lineOfCode.ToLower().StartsWith(entry.X.ToLower()) &&
                        lineOfCode.ToLower().EndsWith(entry.Y.ToLower()))
                 {
@@ -203,7 +196,6 @@ namespace MetX.VB6ToCSharp.CSharp
                     lineOfCode = entry.Z + Environment.NewLine + lineOfCode + Environment.NewLine +
                                  entry.A;
                 }
-            }
 
             return lineOfCode;
         }
@@ -269,7 +261,6 @@ namespace MetX.VB6ToCSharp.CSharp
         /// <returns></returns>
         public static string DetermineIfLineGetsASemicolon(string line, string nextLine)
         {
-
             if (line.IsEmpty())
                 return string.Empty;
 
@@ -278,13 +269,12 @@ namespace MetX.VB6ToCSharp.CSharp
 
             if (LineContainsAnyOfTheseThenShouldHaveASemiColon
                     .Any(x => line.Contains(x)) == false
-                && LineDoesNotContainAnyOfThese.Any(x => line.Contains(x) == false && !line.EndsWith(":")))
-            {
-                if(nextLine.IsEmpty() || !nextLine.Contains("{"))
-                     return line + ";";
-            }
+                && LineDoesNotContainAnyOfThese.Any(x =>
+                    line.Contains(x) == false && !line.EndsWith(":")))
+                if (nextLine.IsEmpty() || !nextLine.Contains("{"))
+                    return line + ";";
 
-            if(line.Trim() == ";")
+            if (line.Trim() == ";")
                 line = "";
             return line;
         }
@@ -300,9 +290,8 @@ namespace MetX.VB6ToCSharp.CSharp
                 return lines;
 
             for (var i = 0; i < lines.Count; i++)
-            {
-                lines[i] = DetermineIfLineGetsASemicolon(lines[i], i+1 < lines.Count ? lines[i+1] : null);
-            }
+                lines[i] = DetermineIfLineGetsASemicolon(lines[i],
+                    i + 1 < lines.Count ? lines[i + 1] : null);
 
             return lines;
         }
@@ -320,10 +309,8 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var lineOfCode = originalLineOfCode;
             foreach (var entry in EndsWithReplacements)
-            {
                 while (lineOfCode.ToLower().EndsWith(entry.X.ToLower()))
                     lineOfCode = lineOfCode.Replace(entry.X.ToLower(), entry.Z);
-            }
 
             return lineOfCode;
         }
@@ -384,7 +371,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
             if (translatedLine.Trim() == ";")
                 translatedLine = string.Empty;
-            
+
             return translatedLine;
         }
 
@@ -427,7 +414,8 @@ namespace MetX.VB6ToCSharp.CSharp
                 }
 
                 if (iterations > 98)
-                    lineOfCode += " // TODO: Check: Too many iterations during StartsWithReplaceNow";
+                    lineOfCode +=
+                        " // TODO: Check: Too many iterations during StartsWithReplaceNow";
                 //throw new Exception("Too many tries in StartsWithReplaceNow");
             }
 
@@ -455,18 +443,20 @@ namespace MetX.VB6ToCSharp.CSharp
             return lineOfCode;
         }
 
-        public static bool FindCodeBetweenBraces(this string target, out string before, out string insideTheMostOuterBraces, out string after, out int indexOfMostInner)
+        public static bool FindCodeBetweenBraces(this string target, out string before,
+            out string insideTheMostOuterBraces, out string after, out int indexOfMostInner)
         {
             var input = target;
-            var regex = new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))", RegexOptions.Singleline);
+            var regex = new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))"); //, RegexOptions.Singleline);
             var splits = regex.Split(input).Where(s => s.Length > 0).ToArray();
-            
-            if (splits.Length > 0)
+
+            if (splits.Length == 3)
             {
-                before = splits[0];
+                before = splits[0] + "{";
                 insideTheMostOuterBraces = splits[1];
                 after = splits[2];
-                indexOfMostInner = target.IndexOf(insideTheMostOuterBraces, StringComparison.InvariantCultureIgnoreCase);
+                indexOfMostInner = regex.Match(target, 0).Index;
+                // indexOfMostInner = target.IndexOf(insideTheMostOuterBraces, StringComparison.InvariantCultureIgnoreCase);
                 return true;
             }
 

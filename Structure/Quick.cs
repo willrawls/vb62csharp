@@ -104,6 +104,11 @@ namespace MetX.VB6ToCSharp.Structure
             return block;
         }
 
+        public static Block Block()
+        {
+            return Block(new EmptyParent(), null);
+        }
+
         /// <summary>
         /// Builds a Block with Line set and with 1 child code line
         /// </summary>

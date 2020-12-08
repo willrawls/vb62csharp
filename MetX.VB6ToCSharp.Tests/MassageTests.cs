@@ -63,8 +63,8 @@ namespace MetX.VB6ToCSharp.Tests
         public void AsBlock_Simple()
         {
             var target = "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
-            var parent = new EmptyParent();
-            var expected = Quick.Block(parent, null);
+            
+            var expected = Quick.Block();
             expected.Children.Add(Quick.Line(expected, "var someLine = ofCode;"));
             
             var ifBlock = Quick.Block(expected, "if(a)");
