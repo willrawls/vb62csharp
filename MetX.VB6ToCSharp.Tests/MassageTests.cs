@@ -63,20 +63,20 @@ namespace MetX.VB6ToCSharp.Tests
         public void AsBlock_Simple()
         {
             var target = "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
-            
-            var expected = Quick.Block();
-            expected.Children.Add(Quick.Line(expected, "var someLine = ofCode;"));
-            
-            var ifBlock = Quick.Block(expected, "if(a)");
-            ifBlock.Children.Add(Quick.Line(ifBlock, "b();"));
-            expected.Children.Add(ifBlock);
+            var expected = 
+@"    foreach(var y in z)
+    {
+        var someLine = ofCode;
+        if(a)
+        {
+            b();
+        }
+    }
+";
+            var actual = target.AsBlock();
+            var actualCode = actual.GenerateCode();
 
-            var actualParent = new EmptyParent();
-            var actual = target.AsBlock(actualParent);
-
-            Assert.IsTrue(expected.Equals(actual), 
-                "\r\nExpected: " + expected.GenerateCode()
-                + "Actual: " + actual.GenerateCode());
+            Assert.AreEqual(expected, actualCode, "\r\nExpected: " + expected + "Actual: " + actualCode);
         }
 
         [TestMethod]

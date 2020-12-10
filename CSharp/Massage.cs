@@ -123,8 +123,11 @@ namespace MetX.VB6ToCSharp.CSharp
             };
 
 
-        public static Block AsBlock(this string target, ICodeLine parent)
+        public static Block AsBlock(this string target, ICodeLine parent = null)
         {
+            if(parent == null)
+                parent = new EmptyParent();
+
             var result = Quick.Block(parent, null);
             result.Before = null;
             result.After = null;
