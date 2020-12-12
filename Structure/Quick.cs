@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MetX.Library;
+using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 
 // ReSharper disable PossibleNullReferenceException
@@ -115,16 +117,29 @@ namespace MetX.VB6ToCSharp.Structure
         /// <param name="parent"></param>
         /// <param name="line"></param>
         /// <param name="childLine">Line added to Children</param>
-        /// <param name="childLineOfCode"></param>
+        /// <param name="childLines"></param>
         /// <returns>The new Block</returns>
-        public static Block Block(ICodeLine parent, string line, string childLineOfCode = null)
+        public static Block Block(ICodeLine parent, string line, string childLines = null)
         {
             var block = new Block(parent, line);
-            if (childLineOfCode.IsEmpty()) 
+            if (childLines.IsEmpty()) 
                 return block;
 
-            var child = new LineOfCode(block, childLineOfCode);
-            block.Children.Add(child);
+            if (!childLines.Contains("\n"))
+            {
+                var child = new LineOfCode(block, childLines);
+                block.Children.Add(child);
+                return block;
+            }
+
+            foreach(var lineOfCode in 
+                childLines.Lines().Trimmed()
+                .Where(x => x.Length > 0))
+            {
+                block.Children.AddLine(block, lineOfCode);
+                //block.Children.AddLines(block, childLineOfCode.Lines().SelectMany(l => l.Trim));
+            }
+
             return block;
         }
 

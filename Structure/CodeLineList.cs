@@ -18,5 +18,12 @@ namespace MetX.VB6ToCSharp.Structure
                 AddLine(parent, lineOfCode);
             return this;
         }
+
+        public CodeLineList MergeChildren(Block block)
+        {
+            foreach (var child in block.Children)
+                Add(child);
+            return this;
+        }
     }
 }

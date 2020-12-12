@@ -12,6 +12,28 @@ namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Extensions
     {
+        public static string[] RemoveEmpty(this string[] target)
+        {
+            if (target.IsEmpty())
+                return new string[] { };
+
+            var strings = target.AsList().Where(l => l.Trim().IsNotEmpty()).ToArray();
+            return strings;
+        }
+
+        public static string[] MakeACopy(this IList<string> target)
+        {
+            if (target.IsEmpty())
+                return new string[]{};
+            
+            var result = new string[target.Count];
+
+            for (var i = 0; i < target.Count; i++)
+                result[i] = target[i];
+
+            return result;
+        }
+
         public static string CSharpTypeEquivalent(this string target)
         {
             if (target.IsEmpty())

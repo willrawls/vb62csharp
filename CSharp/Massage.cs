@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using MetX.Library;
@@ -160,6 +161,72 @@ namespace MetX.VB6ToCSharp.CSharp
             }
 
             return topBlock;
+        }
+
+        public static bool MissingAny(this string target, string mustHave1, string mustHave2)
+        {
+            return target.MissingAny(new[] {mustHave1, mustHave2});
+        }
+
+        public static bool MissingAny(this string target, string[] mustHaves)
+        {
+            return !mustHaves.All(target.Contains);
+        }
+
+        public static string[] Trimmed(this string[] target)
+        {
+            if (target.IsEmpty())
+                return target;
+
+            var result = target.MakeACopy();
+            for (var i = 0; i < target.Length; i++)
+                if (target[i].IsNotEmpty())
+                    target[i] = target[i].Trim();
+            return target;
+        }
+
+        public static ICodeLine AsBlock2(this string target, ICodeLine parent = null)
+        {
+            if (parent == null)
+                parent = new EmptyParent();
+
+            if(target.MissingAny("{", "}"))
+                return Quick.Block(parent, target);
+
+            var before = target.FirstToken("{");
+            var after = target.LastToken("}");
+            
+            string codeInsideOutermostBraces;
+            if (after.Length == 0)
+            {
+                var lengthToSlice = target.Length - before.Length - 2;
+                if (lengthToSlice > 0)
+                    codeInsideOutermostBraces = target.Substring(before.Length + 1, lengthToSlice);
+                else
+                    codeInsideOutermostBraces = target;
+            }
+            else
+            {
+                codeInsideOutermostBraces = target.Substring(before.Length + 1, target.Length - before.Length - after.Length - 2);
+            }
+            
+            var block = new Block(parent);
+            if (before.Trim().Length > 0)
+                block.Children.AddLines(block, before.Lines().Trimmed().RemoveEmpty());
+
+            if (codeInsideOutermostBraces.MissingAny("{", "}"))
+            {
+                // no further sub braces
+                block.Children.AddLines(block, codeInsideOutermostBraces.Lines().Trimmed().RemoveEmpty());
+                if (after.Trim().Length > 0)
+                    block.Children.AddLines(block, after.Lines().Trimmed().RemoveEmpty());
+                return block;
+            }
+
+            var innerBlock = codeInsideOutermostBraces.AsBlock2(block);
+            block.Children.Add(innerBlock);
+            //block.Children.MergeChildren(block);
+            return block;
         }
 
         public static string Regexify(this string target)

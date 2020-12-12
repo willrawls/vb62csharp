@@ -63,8 +63,8 @@ namespace MetX.VB6ToCSharp.Tests
         public void AsBlock_Simple()
         {
             var target = "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
-            var expected = 
-@"    foreach(var y in z)
+            var expected = @"
+    foreach(var y in z)
     {
         var someLine = ofCode;
         if(a)
@@ -74,9 +74,29 @@ namespace MetX.VB6ToCSharp.Tests
     }
 ";
             var actual = target.AsBlock();
-            var actualCode = actual.GenerateCode();
+            var actualCode = "\n" + actual.GenerateCode();
 
             Assert.AreEqual(expected, actualCode, "\r\nExpected: " + expected + "Actual: " + actualCode);
+        }
+
+        [TestMethod]
+        public void AsBlock2_Simple()
+        {
+            var target = "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
+            var expected = @"
+    foreach(var y in z)
+    {
+        var someLine = ofCode;
+        if(a)
+        {
+            b();
+        }
+    }
+";
+            var block = target.AsBlock2();
+                var actual = "\n" + block.GenerateCode();
+
+            Assert.AreEqual(expected, actual, "\r\nExpected: " + expected + "Actual: " + actual);
         }
 
         [TestMethod]
