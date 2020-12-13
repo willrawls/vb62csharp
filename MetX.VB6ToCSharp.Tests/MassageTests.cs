@@ -59,6 +59,7 @@ namespace MetX.VB6ToCSharp.Tests
             Assert.AreEqual(expected[2], after);
         }
 
+        /*
         [TestMethod]
         public void AsBlock_Simple()
         {
@@ -73,14 +74,16 @@ namespace MetX.VB6ToCSharp.Tests
         }
     }
 ";
-            var actual = target.AsBlock();
+            var parent = new EmptyParent();
+            var actual = target.AsBlock(parent, true);
             var actualCode = "\n" + actual.GenerateCode();
 
             Assert.AreEqual(expected, actualCode, "\r\nExpected: " + expected + "Actual: " + actualCode);
         }
+        */
 
         [TestMethod]
-        public void AsBlock2_Simple()
+        public void AsBlock_Simple()
         {
             var target = "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
             var expected = @"
@@ -93,10 +96,12 @@ namespace MetX.VB6ToCSharp.Tests
         }
     }
 ";
-            var block = target.AsBlock2();
+            var parent = new EmptyParent();
+            var block = target.AsBlock(parent, true);
                 var actual = "\n" + block.GenerateCode();
 
-            Assert.AreEqual(expected, actual, "\r\nExpected: " + expected + "Actual: " + actual);
+                var message = "\r\nExpected: " + expected + "Actual: " + actual;
+                Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]

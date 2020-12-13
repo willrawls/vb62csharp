@@ -124,6 +124,7 @@ namespace MetX.VB6ToCSharp.CSharp
             };
 
 
+        /*
         public static Block AsBlock(this string target, ICodeLine parent = null)
         {
             if(parent == null)
@@ -162,6 +163,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
             return topBlock;
         }
+        */
 
         public static bool MissingAny(this string target, string mustHave1, string mustHave2)
         {
@@ -185,7 +187,7 @@ namespace MetX.VB6ToCSharp.CSharp
             return target;
         }
 
-        public static ICodeLine AsBlock2(this string target, ICodeLine parent = null)
+        public static ICodeLine AsBlock(this string target, ICodeLine parent, bool noOuterBraces)
         {
             if (parent == null)
                 parent = new EmptyParent();
@@ -211,19 +213,31 @@ namespace MetX.VB6ToCSharp.CSharp
             }
             
             var block = new Block(parent);
+            if (noOuterBraces)
+            {
+                block.Before = null;
+                block.After = null;
+            }
+
             if (before.Trim().Length > 0)
                 block.Children.AddLines(block, before.Lines().Trimmed().RemoveEmpty());
 
             if (codeInsideOutermostBraces.MissingAny("{", "}"))
             {
                 // no further sub braces
-                block.Children.AddLines(block, codeInsideOutermostBraces.Lines().Trimmed().RemoveEmpty());
+                var statementBeforeOpeningBrace = block.Children[block.Children.Count - 1];
+                block.Children.Remove(statementBeforeOpeningBrace);
+
+                var block2 = Quick.Block(block, statementBeforeOpeningBrace.Line);
+                block2.Children.AddLines(block, codeInsideOutermostBraces.Lines().Trimmed().RemoveEmpty());
+                block.Children.Add(block2);
+
                 if (after.Trim().Length > 0)
                     block.Children.AddLines(block, after.Lines().Trimmed().RemoveEmpty());
                 return block;
             }
 
-            var innerBlock = codeInsideOutermostBraces.AsBlock2(block);
+            var innerBlock = codeInsideOutermostBraces.AsBlock(block, false);
             block.Children.Add(innerBlock);
             //block.Children.MergeChildren(block);
             return block;
