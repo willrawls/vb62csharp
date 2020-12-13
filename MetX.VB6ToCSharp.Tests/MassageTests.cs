@@ -34,16 +34,23 @@ namespace MetX.VB6ToCSharp.Tests
         }
 
         [DataTestMethod]
-               //           1         2         3         4     
-               // 0123456789 123456789 123456789 123456789 12345
-        [DataRow("1x { { y } } z", 0, 4, 3, 11, "1x {", " { y } ", "} z")]
+        [DataRow("012{4567}90", 0, 4, 3, 8, "012", "4567", "90")]
+        [DataRow("012 { 4567 } 90", 0, 5, 4, 11, "012 ", " 4567 ", " 90")]
+
+        //           1         2         3         4     
+        // 0123456789 123456789 123456789 123456789 12345
+        [DataRow("1x { { y } } z",
+            // StartAt, Code, Open, Close
+               0,       4,    3,    11, 
+            "1x ", " { y } ", " z")]
 
                //           1         2         3         4         5         6         7         8   
                // 0123456789 123456789 1 2 3456789 123456789 123456789 123456 7 89 12345 6 78 9 012345
         [DataRow("2foreach(var y in z) {\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n}",
-            0, 22, 21, 80, 
-            "2foreach(var y in z) {", 
-            "\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n",
+            // StartAt, Code, Open, Close
+               0,       22,   21,   80, 
+            "2foreach(var y in z) ", 
+            "\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n", 
             "")]
 
                //           1         2           3         4         5           6            7      
@@ -53,13 +60,12 @@ namespace MetX.VB6ToCSharp.Tests
             " if(a) \r\n",
             " b(); \r\n",
             "\r\n")]
-
-        public void FindMatching_Simple(
-            string startingCode, 
+               public void FindMatching_Simple(string startingCode,
             int startLookingAtIndex, 
             int expectedIndexOfCode,
             int expectedIndexOfOpenBrace,
             int expectedIndexOfCloseBrace,
+            
             string expectedBeforeOpenBrace,
             string expectedCodeFoundInsideBraces,
             string expectedAfterCloseBrace

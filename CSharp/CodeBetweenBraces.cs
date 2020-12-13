@@ -37,12 +37,16 @@ namespace MetX.VB6ToCSharp.CSharp
             FindResult = splits.Length == 3;
             if (!FindResult) return;
 
-            BeforeOpenBrace = splits[0] + "{";
+            BeforeOpenBrace = splits[0];
             CodeFoundInsideBraces = splits[1];
-            AfterCloseBrace = splits[2];
-            IndexOfCode = CodeBetweenBraces.Regex.Match(startingCode, 0).Index;
+            AfterCloseBrace = splits[2].Substring(1);
+            IndexOfCode = CodeBetweenBraces.Regex.Match(startingCode, 0).Index + 1;
             IndexOfOpenBrace = IndexOfCode - 1;
-            IndexOfCloseBrace = startingCode.Length + IndexOfCode + 1;
+            IndexOfCloseBrace = startingCode.LastIndexOf('}');
+            // 012{4567}90
+            // IndexOfOpenBrace = 3
+            // IndexOfCode = 4
+            // IndexOfCloseBrace = 8
         }
 
         public static CodeBetweenBraces Factory(string code, int startAtIndex = 0)
@@ -112,48 +116,50 @@ namespace MetX.VB6ToCSharp.CSharp
             if (Equals(other))
                 return "";
 
-            var differences = new StringBuilder();
+            var differences = new StringBuilder("\r\n");
 
             if (ReferenceEquals(this, other)) return "";
             if (ReferenceEquals(null, other)) return "Other is null";
 
-            differences.AppendLine("--- Differences found:");
+            differences.AppendLine("--- Begin Differences found:");
 
             var comparison = string.Compare(StartingCode, other.StartingCode, StringComparison.InvariantCulture);
             if (comparison != 0)
-                differences.AppendLine($"StartingCode [[{StartingCode}]] \\r\\n[[{other.StartingCode}]]\\r\\n");
+                differences.AppendLine($@"StartingCode [[{StartingCode}]]\r\n[[{other.StartingCode}]]");
 
             comparison = string.Compare(BeforeOpenBrace, other.BeforeOpenBrace, StringComparison.InvariantCulture);
             if (comparison != 0) 
-                differences.AppendLine($"BeforeOpenBrace [[{BeforeOpenBrace}]] \\r\\n[[{other.BeforeOpenBrace}]]\\r\\n");
+                differences.AppendLine($@"BeforeOpenBrace {BeforeOpenBrace}, {other.BeforeOpenBrace}");
 
             comparison = string.Compare(CodeFoundInsideBraces, other.CodeFoundInsideBraces, StringComparison.InvariantCulture);
             if (comparison != 0)
-                differences.AppendLine($"CodeFoundInsideBraces [[{CodeFoundInsideBraces}]] \\r\\n[[{other.CodeFoundInsideBraces}]]\\r\\n");
+                differences.AppendLine($@"CodeFoundInsideBraces [[{CodeFoundInsideBraces}]], [[{other.CodeFoundInsideBraces}]]");
 
             comparison = string.Compare(AfterCloseBrace, other.AfterCloseBrace, StringComparison.InvariantCulture);
             if (comparison != 0)
-                differences.AppendLine($"AfterCloseBrace [[{AfterCloseBrace}]] \\r\\n[[{other.AfterCloseBrace}]]\\r\\n");
+                differences.AppendLine($@"AfterCloseBrace {AfterCloseBrace}, {other.AfterCloseBrace}");
 
             comparison = IndexOfOpenBrace.CompareTo(other.IndexOfOpenBrace);
             if (comparison != 0) 
-                differences.AppendLine($"IndexOfOpenBrace [[{IndexOfOpenBrace}]] \\r\\n[[{other.IndexOfOpenBrace}]]\\r\\n");
+                differences.AppendLine($@"IndexOfOpenBrace {IndexOfOpenBrace}, {other.IndexOfOpenBrace}");
 
             comparison = IndexOfCloseBrace.CompareTo(other.IndexOfCloseBrace);
             if (comparison != 0)
-                differences.AppendLine($"IndexOfCloseBrace [[{IndexOfCloseBrace}]] \\r\\n[[{other.IndexOfCloseBrace}]]\\r\\n");
+                differences.AppendLine($@"IndexOfCloseBrace {IndexOfCloseBrace}, {other.IndexOfCloseBrace}");
 
             comparison = StartedLookingAtIndex.CompareTo(other.StartedLookingAtIndex);
             if (comparison != 0)
-                differences.AppendLine($"StartedLookingAtIndex [[{StartedLookingAtIndex}]] \\r\\n[[{other.StartedLookingAtIndex}]]\\r\\n");
+                differences.AppendLine($@"StartedLookingAtIndex {StartedLookingAtIndex}, {other.StartedLookingAtIndex}");
 
             comparison = IndexOfCode.CompareTo(other.IndexOfCode);
             if (comparison != 0) 
-                differences.AppendLine($"IndexOfCode [[{IndexOfCode}]] \\r\\n[[{other.IndexOfCode}]]\\r\\n");
+                differences.AppendLine($@"IndexOfCode {IndexOfCode}, {other.IndexOfCode}");
 
 
             if (FindResult != other.FindResult)
-                differences.AppendLine($"FindResult: [[{FindResult}]] [[{other.FindResult}]]");
+                differences.AppendLine($@"FindResult: {FindResult} {other.FindResult}");
+
+            differences.AppendLine("--- End Differences:");
 
             return differences.ToString();
         }
