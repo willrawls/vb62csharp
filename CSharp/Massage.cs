@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
@@ -527,6 +526,7 @@ namespace MetX.VB6ToCSharp.CSharp
             return lineOfCode;
         }
 
+        /*
         public static bool FindCodeBetweenBraces(this string target, out string before,
             out string insideTheMostOuterBraces, out string after, out int indexOfMostInner)
         {
@@ -550,5 +550,6 @@ namespace MetX.VB6ToCSharp.CSharp
             indexOfMostInner = 0;
             return false;
         }
+        */
     }
 }

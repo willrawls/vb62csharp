@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using MetX.Scripts;
+using System.Linq;
+using MetX.Library;
 using MetX.VB6ToCSharp.CSharp;
-using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
-using MetX.VB6ToCSharp.VB6;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MetX.VB6ToCSharp.Tests
@@ -35,35 +33,63 @@ namespace MetX.VB6ToCSharp.Tests
             Assert.IsFalse(actual.Contains("{;"));
         }
 
-        [DataRow("x { { y } } z", 0, " { y } ")]
-        [DataRow("foreach(var y in z) {\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n}",  0, "\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n")]
-        [DataRow("foreach(var y in z) {\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n}", 25, " b(); \r\n}")]
         [DataTestMethod]
-        public void FindMatching_Simple(string target, int startAtIndex, string expected)
+               //           1         2         3         4     
+               // 0123456789 123456789 123456789 123456789 12345
+        [DataRow("1x { { y } } z", 0, 4, 3, 11, "1x {", " { y } ", "} z")]
+
+               //           1         2         3         4         5         6         7         8   
+               // 0123456789 123456789 1 2 3456789 123456789 123456789 123456 7 89 12345 6 78 9 012345
+        [DataRow("2foreach(var y in z) {\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n}",
+            0, 22, 21, 80, 
+            "2foreach(var y in z) {", 
+            "\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n",
+            "")]
+
+               //           1         2           3         4         5           6            7      
+               // 0123456789 123456789 1 2 3456789 123456789 123456789 123456 7 89 12345 6 78 9 012345
+        [DataRow("3foreach(var y in z) {\r\n    var someLine = ofCode; if(a) \r\n{ b(); \r\n}\r\n}",
+            50, 60, 59, 68,
+            " if(a) \r\n",
+            " b(); \r\n",
+            "\r\n")]
+
+        public void FindMatching_Simple(
+            string startingCode, 
+            int startLookingAtIndex, 
+            int expectedIndexOfCode,
+            int expectedIndexOfOpenBrace,
+            int expectedIndexOfCloseBrace,
+            string expectedBeforeOpenBrace,
+            string expectedCodeFoundInsideBraces,
+            string expectedAfterCloseBrace
+            )
         {
-            var result = target.FindCodeBetweenBraces(out var before, out var actual, out var after, out var index);
-            Assert.IsTrue(result);
-            Assert.AreEqual(expected, actual);
+            var actual = CodeBetweenBraces.Factory(startingCode, startLookingAtIndex);
+
+            Assert.IsNotNull(actual);
+            
+            var expected = new CodeBetweenBraces
+            {
+                StartingCode = startingCode,
+                StartedLookingAtIndex = startLookingAtIndex,
+                FindResult = true,
+                IndexOfCode = expectedIndexOfCode,
+                AfterCloseBrace = expectedAfterCloseBrace,
+                CodeFoundInsideBraces = expectedCodeFoundInsideBraces,
+                IndexOfOpenBrace = expectedIndexOfOpenBrace,
+                IndexOfCloseBrace = expectedIndexOfCloseBrace,
+                BeforeOpenBrace = expectedBeforeOpenBrace,
+            };
+
+            Assert.AreEqual(expected, actual, expected.Diff(actual));
         }
 
-        // code, before the most inner {, between { }, after the most inner
-        [DataRow("x { { y } } z", "x {", " { y } ", "} z")]
-        [DataTestMethod]
-        public void FindCodeBetweenBraces_Simple(string target, string[] expected)
-        {
-            var result = target.FindCodeBetweenBraces(out var before, out var mostInner, out var after, out var index);
-
-            Assert.IsTrue(result);
-            Assert.AreEqual(expected[0], before);
-            Assert.AreEqual(expected[1], mostInner);
-            Assert.AreEqual(expected[2], after);
-        }
-
-        /*
         [TestMethod]
         public void AsBlock_Simple()
         {
-            var target = "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
+            var target =
+                "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
             var expected = @"
     foreach(var y in z)
     {
@@ -74,34 +100,22 @@ namespace MetX.VB6ToCSharp.Tests
         }
     }
 ";
-            var parent = new EmptyParent();
-            var actual = target.AsBlock(parent, true);
-            var actualCode = "\n" + actual.GenerateCode();
+            var expectedLines = expected.Lines().Where(line => line.IsNotEmpty()).ToList();
 
-            Assert.AreEqual(expected, actualCode, "\r\nExpected: " + expected + "Actual: " + actualCode);
-        }
-        */
-
-        [TestMethod]
-        public void AsBlock_Simple()
-        {
-            var target = "foreach(var y in z) {\r\n    var someLine = ofCode;\r\n    if(a)\r\n{ b();\r\n}\r\n}";
-            var expected = @"
-    foreach(var y in z)
-    {
-        var someLine = ofCode;
-        if(a)
-        {
-            b();
-        }
-    }
-";
             var parent = new EmptyParent();
             var block = target.AsBlock(parent, true);
-                var actual = "\n" + block.GenerateCode();
+            var actualCode = block.GenerateCode();
+            var actualLines = actualCode.Lines().Where(line => line.IsNotEmpty()).ToList();
 
-                var message = "\r\nExpected: " + expected + "Actual: " + actual;
-                Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expectedLines.Count, actualLines.Count);
+
+            for (var index = 0; index < actualLines.Count; index++)
+            {
+                var actualLine = actualLines[index];
+                var expectedLine = expectedLines[index];
+                //var message = $"\r\nExpected:\r\n\t[[[{expectedLine}]]]\r\nActual:\r\n\t[[[{actualLine}]]]";
+                Assert.AreEqual(expectedLine, actualLine);
+            }
         }
 
         [TestMethod]
