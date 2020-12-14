@@ -12,6 +12,11 @@ namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Extensions
     {
+        public static CodeBetweenBraces CodeBetweenBraces(this string target)
+        {
+            return CSharp.CodeBetweenBraces.Factory(target);
+        }
+
         public static string[] RemoveEmpty(this string[] target)
         {
             if (target.IsEmpty())

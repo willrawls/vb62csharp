@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using MetX.Library;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
@@ -16,22 +17,19 @@ namespace MetX.VB6ToCSharp.CSharp
 
         public int IndexOfOpenBrace;
         public int IndexOfCloseBrace;
-        public int StartedLookingAtIndex;
         public int IndexOfCode;
         public bool FindResult;
 
-        public static Regex Regex =
-            new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))",
-                RegexOptions.Compiled);
+        public static Regex Regex = new Regex("{((?>[^{}]+|{(?<c>)|}(?<-c>))*(?(c)(?!)))}", RegexOptions.Compiled);
 
         public CodeBetweenBraces() { }
 
-        public CodeBetweenBraces(string startingCode, int startLookingAtIndex)
+        public CodeBetweenBraces(string startingCode)
         {
             StartingCode = startingCode;
-            StartedLookingAtIndex = startLookingAtIndex;
+            // StartedLookingAtIndex = startLookingAtIndex;
 
-            var splits = CodeBetweenBraces.Regex.Split(startingCode).Where(s => s.Length > 0).ToArray();
+            var splits = Regex.Split(startingCode); //.Where(s => s.Length > 0).ToArray();
 
                 
             FindResult = splits.Length == 3;
@@ -39,19 +37,19 @@ namespace MetX.VB6ToCSharp.CSharp
 
             BeforeOpenBrace = splits[0];
             CodeFoundInsideBraces = splits[1];
-            AfterCloseBrace = splits[2].Substring(1);
-            IndexOfCode = CodeBetweenBraces.Regex.Match(startingCode, 0).Index + 1;
+            AfterCloseBrace = splits[2];
+
+            if (AfterCloseBrace.TokenCount("}") > 2)
+                AfterCloseBrace = splits[2].TokensAfterFirst("}");
+
+            IndexOfCode = Regex.Match(startingCode).Index + 1;
             IndexOfOpenBrace = IndexOfCode - 1;
             IndexOfCloseBrace = startingCode.LastIndexOf('}');
-            // 012{4567}90
-            // IndexOfOpenBrace = 3
-            // IndexOfCode = 4
-            // IndexOfCloseBrace = 8
         }
 
-        public static CodeBetweenBraces Factory(string code, int startAtIndex = 0)
+        public static CodeBetweenBraces Factory(string code)
         {
-            var result = new CodeBetweenBraces(code, startAtIndex);
+            var result = new CodeBetweenBraces(code);
             return result;
         }
 
@@ -59,7 +57,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
         public bool Equals(CodeBetweenBraces other)
         {
-            return StartingCode == other.StartingCode && BeforeOpenBrace == other.BeforeOpenBrace && CodeFoundInsideBraces == other.CodeFoundInsideBraces && AfterCloseBrace == other.AfterCloseBrace && IndexOfOpenBrace == other.IndexOfOpenBrace && IndexOfCloseBrace == other.IndexOfCloseBrace && StartedLookingAtIndex == other.StartedLookingAtIndex && IndexOfCode == other.IndexOfCode && FindResult == other.FindResult;
+            return StartingCode == other.StartingCode && BeforeOpenBrace == other.BeforeOpenBrace && CodeFoundInsideBraces == other.CodeFoundInsideBraces && AfterCloseBrace == other.AfterCloseBrace && IndexOfOpenBrace == other.IndexOfOpenBrace && IndexOfCloseBrace == other.IndexOfCloseBrace && IndexOfCode == other.IndexOfCode && FindResult == other.FindResult;
         }
 
         public override int GetHashCode()
@@ -72,7 +70,6 @@ namespace MetX.VB6ToCSharp.CSharp
                 hashCode = (hashCode * 397) ^ (AfterCloseBrace != null ? AfterCloseBrace.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ IndexOfOpenBrace;
                 hashCode = (hashCode * 397) ^ IndexOfCloseBrace;
-                hashCode = (hashCode * 397) ^ StartedLookingAtIndex;
                 hashCode = (hashCode * 397) ^ IndexOfCode;
                 hashCode = (hashCode * 397) ^ FindResult.GetHashCode();
                 return hashCode;
@@ -102,9 +99,6 @@ namespace MetX.VB6ToCSharp.CSharp
             var indexOfCloseBraceComparison = IndexOfCloseBrace.CompareTo(other.IndexOfCloseBrace);
             if (indexOfCloseBraceComparison != 0) return indexOfCloseBraceComparison;
                 
-            var startedFindAtIndexComparison = StartedLookingAtIndex.CompareTo(other.StartedLookingAtIndex);
-            if (startedFindAtIndexComparison != 0) return startedFindAtIndexComparison;
-                
             var indexOfCodeComparison = IndexOfCode.CompareTo(other.IndexOfCode);
             if (indexOfCodeComparison != 0) return indexOfCodeComparison;
 
@@ -125,19 +119,19 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var comparison = string.Compare(StartingCode, other.StartingCode, StringComparison.InvariantCulture);
             if (comparison != 0)
-                differences.AppendLine($@"StartingCode [[{StartingCode}]]\r\n[[{other.StartingCode}]]");
+                differences.AppendLine($@"StartingCode __{StartingCode}__\r\n__{other.StartingCode}__");
 
             comparison = string.Compare(BeforeOpenBrace, other.BeforeOpenBrace, StringComparison.InvariantCulture);
             if (comparison != 0) 
-                differences.AppendLine($@"BeforeOpenBrace {BeforeOpenBrace}, {other.BeforeOpenBrace}");
+                differences.AppendLine($@"BeforeOpenBrace __{BeforeOpenBrace}__, __{other.BeforeOpenBrace}__");
 
             comparison = string.Compare(CodeFoundInsideBraces, other.CodeFoundInsideBraces, StringComparison.InvariantCulture);
             if (comparison != 0)
-                differences.AppendLine($@"CodeFoundInsideBraces [[{CodeFoundInsideBraces}]], [[{other.CodeFoundInsideBraces}]]");
+                differences.AppendLine($@"CodeFoundInsideBraces __{CodeFoundInsideBraces}__, __{other.CodeFoundInsideBraces}__");
 
             comparison = string.Compare(AfterCloseBrace, other.AfterCloseBrace, StringComparison.InvariantCulture);
             if (comparison != 0)
-                differences.AppendLine($@"AfterCloseBrace {AfterCloseBrace}, {other.AfterCloseBrace}");
+                differences.AppendLine($@"AfterCloseBrace __{AfterCloseBrace}__, __{other.AfterCloseBrace}__");
 
             comparison = IndexOfOpenBrace.CompareTo(other.IndexOfOpenBrace);
             if (comparison != 0) 
@@ -146,10 +140,6 @@ namespace MetX.VB6ToCSharp.CSharp
             comparison = IndexOfCloseBrace.CompareTo(other.IndexOfCloseBrace);
             if (comparison != 0)
                 differences.AppendLine($@"IndexOfCloseBrace {IndexOfCloseBrace}, {other.IndexOfCloseBrace}");
-
-            comparison = StartedLookingAtIndex.CompareTo(other.StartedLookingAtIndex);
-            if (comparison != 0)
-                differences.AppendLine($@"StartedLookingAtIndex {StartedLookingAtIndex}, {other.StartedLookingAtIndex}");
 
             comparison = IndexOfCode.CompareTo(other.IndexOfCode);
             if (comparison != 0) 
