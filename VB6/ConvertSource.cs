@@ -995,6 +995,13 @@ namespace MetX.VB6ToCSharp.VB6
                         translatedLine += "();";
                 }
 
+                // Class_Initialize
+                translatedLine = translatedLine.Replace("void Class_Initialize", sourceProperty.Name);
+                translatedLine = translatedLine.Replace("public void Class_Terminate", "~" + sourceProperty.Name);
+                translatedLine = translatedLine.Replace("private void Class_Terminate", "~" + sourceProperty.Name);
+                translatedLine = translatedLine.Replace("protected void Class_Terminate", "~" + sourceProperty.Name);
+                translatedLine = translatedLine.Replace("void Class_Terminate", "~" + sourceProperty.Name);
+
                 if (translatedLine.Contains("On Error Resume Next"))
                 {
                     placeAtBottom = @"
@@ -1009,7 +1016,7 @@ namespace MetX.VB6ToCSharp.VB6
             }
 
             if (translatedLine.IsNotEmpty())
-                translatedLine = Massage.Transform(translatedLine, nextLine);
+                translatedLine = translatedLine.Transform(nextLine);
         }
 
         public static string HandleWith(this string translatedLine)

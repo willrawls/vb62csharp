@@ -78,7 +78,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace(" & ", " + "),
                 new XReplace("Integer", "int"),
                 new XReplace(".[", "["),
-                new XReplace(" As ", " /*As*/ ")
+                new XReplace(" As ", " /*As*/ "),
             };
 
         /// <summary>
@@ -122,47 +122,6 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("foreach(", null, null, " )")
             };
 
-
-        /*
-        public static Block AsBlock(this string target, ICodeLine parent = null)
-        {
-            if(parent == null)
-                parent = new EmptyParent();
-
-            var result = Quick.Block(parent, null);
-            result.Before = null;
-            result.After = null;
-            var topBlock = result;
-
-            var inner = target;
-            
-            const int maxIterations = 1000;
-            var iterations = 0;
-
-            while (++iterations < maxIterations
-                   && inner.FindCodeBetweenBraces(
-                       out var before,
-                       out var insideBraces,
-                       out var after,
-                       out var index))
-            {
-                var beforeLines = before.Lines(StringSplitOptions.RemoveEmptyEntries);
-                var insideBracesLines = insideBraces.Lines(StringSplitOptions.RemoveEmptyEntries);
-                var afterLines = after.Lines(StringSplitOptions.RemoveEmptyEntries);
-
-                result.Children.AddLines(result, beforeLines);
-                var innerBlock = Quick.Block(result, null);
-                innerBlock.Children.AddLines(innerBlock, insideBracesLines);
-                result.Children.Add(innerBlock);
-                result.Children.AddLines(result, afterLines);
-
-                result = innerBlock;
-                inner = insideBraces;
-            }
-
-            return topBlock;
-        }
-        */
 
         public static bool MissingAny(this string target, string mustHave1, string mustHave2)
         {
@@ -238,7 +197,6 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var innerBlock = codeInsideOutermostBraces.AsBlock(block, false);
             block.Children.Add(innerBlock);
-            //block.Children.MergeChildren(block);
             return block;
         }
 

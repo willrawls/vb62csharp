@@ -10,7 +10,7 @@ namespace MetX.VB6ToCSharp.Tests
     [TestClass]
     public class CAssocArray_CodeShouldBeWellFormed
     {
-        const string InputFilePath = "CAssocArray.cls";
+        private const string InputFilePath = "CAssocArray.cls";
 
         [TestMethod]
         public void ProperlyTranslate_CAssocArray_cs()
