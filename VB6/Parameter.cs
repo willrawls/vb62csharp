@@ -1,8 +1,5 @@
 namespace MetX.VB6ToCSharp.VB6
 {
-    /// <summary>
-    /// TODO - Add class summary
-    /// </summary>
     public class Parameter
     {
         public string Name;

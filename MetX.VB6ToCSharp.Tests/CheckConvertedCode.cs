@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MetX.VB6ToCSharp.Tests
 {
-    public class CheckConvertedCode
+    public static class CheckConvertedCode
     {
         public static string CheckOccurrences(string code, int minimum, string[] list,
             int maximum = -1)
@@ -33,6 +33,22 @@ namespace MetX.VB6ToCSharp.Tests
             return message == ""
                 ? ""
                 : $"----------\nOccurrences other than expected:\n{message}\n";
+        }
+
+        public static string MustHave(this string code, string codeMustContain)
+        {
+            return CheckConvertedCode.LookFor(code, true, new[]
+            {
+                codeMustContain
+            });
+        }
+
+        public static string MustNotHave(this string code, string codeMustNotContain)
+        {
+            return CheckConvertedCode.LookFor(code, false, new[]
+            {
+                codeMustNotContain
+            });
         }
 
         public static string LookFor(string code, bool mustHave, string[] list)

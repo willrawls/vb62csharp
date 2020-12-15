@@ -3,9 +3,6 @@ using MetX.VB6ToCSharp.CSharp;
 
 namespace MetX.VB6ToCSharp.VB6
 {
-    /// <summary>
-    /// TODO - Add class summary
-    /// </summary>
     public class Variable : Indentifier
     {
         public string Comment;
