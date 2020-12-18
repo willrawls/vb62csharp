@@ -27,6 +27,10 @@ namespace MetX.VB6ToCSharp.Tests
         [DataRow("TreeToAll_AddChildren(sAll, CurChild);")]
         [DataRow("public void TreeToAll_AddChildren()")]
         [DataRow("foreach( var CurNode in tvwX.Nodes)")]
+        [DataRow("int CurSubItem;")]
+        [DataRow("(CurNode.Tag)")]
+        [DataRow("while(CurChild == null)")]
+        [DataRow("TreeToAll_AddChildren(sAll, CurNode);")]
         public void MustContain(string textToFind)
         {
             ICodeLine parent = new EmptyParent(-1);
@@ -53,6 +57,15 @@ namespace MetX.VB6ToCSharp.Tests
         [DataRow("Integer")]
         [DataRow("UBound(NodeStack)")]
         [DataRow("static")]
+        [DataRow("Is null")]
+        [DataRow("(.Tag)")]
+        [DataRow("        .Value.Substring")]
+        [DataRow("static CurSubItem /*As*/ int;")]
+        [DataRow("(                                                                                        ")]
+        [DataRow(@"        };
+")]
+        [DataRow(@"        ;
+")]
         public void MustNotContain(string textToFind)
         {
             ICodeLine parent = new EmptyParent(-1);
