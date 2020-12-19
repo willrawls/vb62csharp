@@ -7,6 +7,7 @@ using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
+using Module = MetX.VB6ToCSharp.VB6.Module;
 
 namespace MetX.VB6ToCSharp.CSharp
 {
@@ -78,7 +79,14 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace(" & ", " + "),
                 new XReplace("Integer", "int"),
                 new XReplace(".[", "["),
-                new XReplace(" As ", " /*As*/ "),
+                //new XReplace(" As ", " /*As*/ "),
+                new XReplace("Is Null", "== null"),
+                new XReplace("Is null", "== null"),
+                new XReplace("is null", "== null"),
+                new XReplace("Loop;", "}"),
+                new XReplace("Loop", "}"),
+                new XReplace("Class_Initialize", "CurrentModuleName"),
+                new XReplace("Class_Terminate", "~CurrentModuleName"),
             };
 
         /// <summary>
@@ -246,7 +254,7 @@ namespace MetX.VB6ToCSharp.CSharp
         /// </summary>
         /// <param name="originalLineOfCode"></param>
         /// <returns></returns>
-        public static string BlanketReplaceNow(string originalLineOfCode)
+        public static string BlanketReplaceNow(string originalLineOfCode, string currentModuleName)
         {
             if (originalLineOfCode.IsEmpty())
                 return originalLineOfCode;
@@ -256,7 +264,9 @@ namespace MetX.VB6ToCSharp.CSharp
             {
                 var iterations = 0;
                 while (++iterations < 100 && lineOfCode.ToLower().Contains(entry.X.ToLower()))
-                    lineOfCode = lineOfCode.Replace(entry.X, entry.Y);
+                    lineOfCode = lineOfCode
+                        .Replace(entry.X, entry.Y)
+                        .Replace("CurrentModuleName", currentModuleName);
             }
 
             return lineOfCode;
@@ -356,7 +366,7 @@ namespace MetX.VB6ToCSharp.CSharp
             return lineOfCode;
         }
 
-        public static string AllLinesNow(string translatedLine)
+        public static string AllLinesNow(string translatedLine, Module sourceModule)
         {
             if (translatedLine.IsEmpty())
                 return string.Empty;
@@ -370,7 +380,7 @@ namespace MetX.VB6ToCSharp.CSharp
             {
                 var line = lines[i];
                 var nextLine = i < lines.Count - 1 ? lines[i + 1] : null;
-                result.AppendLine(Transform(line, nextLine));
+                result.AppendLine(Transform(line, sourceModule, nextLine));
             }
 
             var code = result.ToString();
@@ -380,9 +390,12 @@ namespace MetX.VB6ToCSharp.CSharp
         /// <summary>
         ///     Run all blanket and specialized replacements now
         /// </summary>
+        /// <param name="originalLine"></param>
+        /// <param name="currentModuleName"></param>
+        /// <param name="nextLine"></param>
         /// <param name="translatedLine"></param>
         /// <returns></returns>
-        public static string Transform(this string originalLine, string nextLine = null)
+        public static string Transform(this string originalLine, Module sourceModule, string nextLine = null)
         {
             if (originalLine.IsEmpty())
                 return "";
@@ -396,7 +409,7 @@ namespace MetX.VB6ToCSharp.CSharp
             var translatedLine = originalLine;
             translatedLine = translatedLine.HandleWith();
 
-            translatedLine = BlanketReplaceNow(translatedLine);
+            translatedLine = BlanketReplaceNow(translatedLine, sourceModule.Name);
             translatedLine = StartsWithReplaceNow(translatedLine);
             translatedLine = EndsWithReplaceNow(translatedLine);
 

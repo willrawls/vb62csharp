@@ -44,7 +44,7 @@ namespace MetX.VB6ToCSharp.VB6
                     targetProperties.Add(targetProperty);
                 }
                 propertyIndex++;
-                targetProperty.ConvertParts(sourceProperty);
+                targetProperty.ConvertParts(sourceProperty, parentBlock);
             }
 
             return true;
@@ -834,19 +834,17 @@ namespace MetX.VB6ToCSharp.VB6
             return true;
         }
 
-        public static void GetPropertyLine(
-            string originalLine,
+        public static void GetPropertyLine(string originalLine,
             string nextLine,
             out string translatedLine,
             out string placeAtBottom,
-            IAmAProperty sourceProperty)
+            IAmAProperty sourceProperty, Module sourceModule)
         {
             var localSourceProperty = (Property)sourceProperty;
             placeAtBottom = string.Empty;
             var line = originalLine; //.Trim();
             translatedLine = line;
             
-
             if (translatedLine.Length > 0)
             {
                 if (translatedLine.Trim().StartsWith("'"))
@@ -995,20 +993,6 @@ namespace MetX.VB6ToCSharp.VB6
                         translatedLine += "();";
                 }
 
-                // Class_Initialize Class_Terminate
-                if(sourceProperty != null && translatedLine.IsNotEmpty())
-                {
-                    translatedLine =
-                        translatedLine.Replace("void Class_Initialize", sourceProperty.Name);
-                    translatedLine = translatedLine.Replace("public void Class_Terminate",
-                        "~" + sourceProperty.Name);
-                    translatedLine = translatedLine.Replace("private void Class_Terminate",
-                        "~" + sourceProperty.Name);
-                    translatedLine = translatedLine.Replace("protected void Class_Terminate",
-                        "~" + sourceProperty.Name);
-                    translatedLine = translatedLine.Replace("void Class_Terminate",
-                        "~" + sourceProperty.Name);
-                }
                 if (translatedLine.Contains("On Error Resume Next"))
                 {
                     placeAtBottom = @"
@@ -1023,7 +1007,7 @@ namespace MetX.VB6ToCSharp.VB6
             }
 
             if (translatedLine.IsNotEmpty())
-                translatedLine = translatedLine.Transform(nextLine);
+                translatedLine = translatedLine.Transform(sourceModule, nextLine);
         }
 
         public static string HandleWith(this string translatedLine)
@@ -1235,8 +1219,10 @@ namespace MetX.VB6ToCSharp.VB6
                     var nextLine = (i < sourceProcedure.LineList.Count - 1)
                         ? sourceProcedure.LineList[i+1]
                         : null;
-                    GetPropertyLine(originalLine, nextLine, out var convertedLine,
-                        out var placeAtBottom, null);
+                    GetPropertyLine(originalLine, nextLine, 
+                        out var convertedLine,
+                        out var placeAtBottom, null, sourceModule);
+
 
                     targetProcedure.LineList.Add(convertedLine);
                     if (placeAtBottom.IsNotEmpty())

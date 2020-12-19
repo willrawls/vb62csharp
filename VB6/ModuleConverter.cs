@@ -412,7 +412,6 @@ namespace MetX.VB6ToCSharp.VB6
                 return string.Empty;
 
             var result = new StringBuilder();
-            //var firstIndent = Tools.Indent(indentLevel);
 
             result.AppendLine();
             foreach (var property in TargetModule.PropertyList)
@@ -422,7 +421,7 @@ namespace MetX.VB6ToCSharp.VB6
 
                 result.AppendLine(
                     // firstIndent +
-                    Massage.AllLinesNow(property.Final)
+                    Massage.AllLinesNow(property.Final, SourceModule)
                 );
             }
 
@@ -545,7 +544,7 @@ namespace MetX.VB6ToCSharp.VB6
             // end namespace
             result.AppendLine("    }");
 
-            var code = Massage.BlanketReplaceNow(result.ToString());
+            var code = Massage.BlanketReplaceNow(result.ToString(), SourceModule.Name);
             return code;
         }
 
@@ -1036,15 +1035,11 @@ namespace MetX.VB6ToCSharp.VB6
         public bool ParseProcedures(StreamReader reader)
         {
             string sComments = null;
-
-            var iPosition = 0;
-            //bool bProcess = false;
-
-            var bEnum = false;
-            var bVariable = false;
-            var bProperty = false;
-            var bProcedure = false;
-            var bEnd = false;
+            var insideAnEnum = false;
+            var insideAVariable = false;
+            var insideAProperty = false;
+            var insideAProcedure = false;
+            var AtEndOfModule = false;
 
             Variable variable = null;
 
@@ -1058,20 +1053,20 @@ namespace MetX.VB6ToCSharp.VB6
             while (reader.Peek() > -1)
             {
                 var line = reader.ReadLine();
-                iPosition = 0;
+                var iPosition = 0;
                 if (line.IsEmpty())
                     continue;
 
-                //if (line.IsNotEmpty())
                 // check if next line is same command, join it together ?
-                while (line.Substring(line.Length - 1, 1) == "_") line += reader.ReadLine();
+                //while (line.Substring(line.Length - 1, 1) == "_") line += reader.ReadLine();
+                while (line.EndsWith("_"))
+                    line += reader.ReadLine();
 
                 // get first word in line
                 var word = GetWord(line, ref iPosition);
                 if (int.TryParse(word, out var tempResult))
                 {
                     line = line.TokensAfter().Trim();
-                    //line = line.Substring(tempResult.ToString().Length).Trim();
                     iPosition = 0;
                     word = GetWord(line, ref iPosition);
                 }
@@ -1098,12 +1093,6 @@ namespace MetX.VB6ToCSharp.VB6
                                          + Environment.NewLine;
                         break;
 
-                    // next can be declaration of variables
-
-                    //public mlParentID As Long
-                    //public mlOwnerType As ENUM_FORM_TYPE
-                    //public moAttachement As Attachement
-
                     case "Public":
                     case "Private":
                         // save it for later use
@@ -1123,7 +1112,7 @@ namespace MetX.VB6ToCSharp.VB6
                                 vb6Procedure.Comment = sComments;
                                 sComments = string.Empty;
                                 ParseProcedureName(vb6Procedure, line);
-                                bProcedure = true;
+                                insideAProcedure = true;
                                 break;
 
                             case "Enum":
@@ -1132,21 +1121,21 @@ namespace MetX.VB6ToCSharp.VB6
                                 // next word is enum name
                                 iPosition++;
                                 vb6EnumItems.Name = GetWord(line, ref iPosition);
-                                bEnum = true;
+                                insideAnEnum = true;
                                 break;
 
                             case "Property":
                                 vb6Property = new Property(TargetModule, sComments);
                                 sComments = string.Empty;
                                 ParsePropertyName(vb6Property, line);
-                                bProperty = true;
+                                insideAProperty = true;
                                 break;
 
                             default:
                                 // variable declaration
                                 variable = new Variable();
                                 ParseVariableDeclaration(variable, line);
-                                bVariable = true;
+                                insideAVariable = true;
                                 break;
                         }
 
@@ -1158,7 +1147,7 @@ namespace MetX.VB6ToCSharp.VB6
                         variable.Comment = sComments;
                         sComments = string.Empty;
                         ParseVariableDeclaration(variable, line);
-                        bVariable = true;
+                        insideAVariable = true;
                         break;
 
                     // functions or procedures
@@ -1167,11 +1156,11 @@ namespace MetX.VB6ToCSharp.VB6
                         break;
 
                     case "End":
-                        bEnd = true;
+                        AtEndOfModule = true;
                         break;
 
                     default:
-                        if (bEnum)
+                        if (insideAnEnum)
                         {
                             // first word is name, second =, third value if is preset
                             var vb6EnumItem = new EnumItem {Comment = sComments};
@@ -1181,7 +1170,7 @@ namespace MetX.VB6ToCSharp.VB6
                             vb6EnumItems.ItemList.Add(vb6EnumItem);
                         }
 
-                        if (bProperty)
+                        if (insideAProperty)
                         {
                             line = line.Trim();
                             if (vb6Property.Direction.ToLower() == "get"
@@ -1200,22 +1189,21 @@ namespace MetX.VB6ToCSharp.VB6
                                 vb6Property.Block.Children.Add(Quick.Line(vb6Property, line));
                         }
 
-                        if (bProcedure) vb6Procedure.LineList.Add(line);
+                        if (insideAProcedure) vb6Procedure.LineList.Add(line);
 
                         break;
                 }
 
                 // if something end
-                if (bEnd)
+                if (AtEndOfModule)
                 {
-                    //
-                    if (bEnum)
+                    if (insideAnEnum)
                     {
                         SourceModule.EnumList.Add(vb6EnumItems);
-                        bEnum = false;
+                        insideAnEnum = false;
                     }
 
-                    if (bProperty)
+                    if (insideAProperty)
                     {
                         /*
                         if (string.IsNullOrEmpty(vb6Property.Type))
@@ -1228,25 +1216,23 @@ namespace MetX.VB6ToCSharp.VB6
                         }
                         */
                         SourceModule.PropertyList.Add(vb6Property);
-                        bProperty = false;
+                        insideAProperty = false;
                     }
 
-                    if (bProcedure)
+                    if (insideAProcedure)
                     {
                         SourceModule.ProcedureList.Add(vb6Procedure);
-                        bProcedure = false;
+                        insideAProcedure = false;
                     }
 
-                    bEnd = false;
+                    AtEndOfModule = false;
                 }
                 else
                 {
-                    if (bVariable) SourceModule.VariableList.Add(variable);
+                    if (insideAVariable) SourceModule.VariableList.Add(variable);
                 }
-
-                bVariable = false;
+                insideAVariable = false;
             }
-
             return true;
         }
 

@@ -41,7 +41,7 @@ namespace MetX.VB6ToCSharp.CSharp
             return indentLevel;
         }
 
-        public void ConvertParts(IAmAProperty sourceProperty)
+        public void ConvertParts(IAmAProperty sourceProperty, Module sourceModule)
         {
             var localSourceProperty = (Property)sourceProperty;
             CSharpPropertyPart targetPart;
@@ -73,7 +73,7 @@ namespace MetX.VB6ToCSharp.CSharp
                     nextLine?.Line, 
                     out var translatedLine,
                     out var placeAtBottom, 
-                    localSourceProperty);
+                    localSourceProperty, sourceModule);
 
                 if (translatedLine.IsNotEmpty())
                     targetPart.Children.Add(new LineOfCode(this, translatedLine));

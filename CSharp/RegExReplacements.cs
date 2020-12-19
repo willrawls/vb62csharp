@@ -90,11 +90,30 @@ namespace MetX.VB6ToCSharp.CSharp
                 new Regex(@"(.+) As (.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
                 "$2 $1;"),
 
+            // ... x As y
+            new RegexReplace(
+                new Regex(@"(.+) As (.+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "$2 $1;"),
+
             // Do While x > y ---
             new RegexReplace(
                 new Regex(@"Do While (.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
                 "while($1)//SOB//"),
+
+            // Do Until x > y ---
+            new RegexReplace(
+                new Regex(@"Do Until (.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "while($1)//SOB// // 'Until'"),
             
+            // UBound(x) ---
+            new RegexReplace(
+                new Regex(@"UBound\$*\((.+)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "$1.Length"),
+            
+            // LBound(x) ---
+            new RegexReplace(
+                new Regex(@"LBound\$*\((.+)\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+                "0 /* $1.Length */"),
         };
 
         public static string Shuffle(string line)

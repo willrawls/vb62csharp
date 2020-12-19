@@ -1,4 +1,5 @@
 ﻿using System;
+using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
@@ -35,12 +36,25 @@ namespace MetX.VB6ToCSharp.Tests
         {
             ICodeLine parent = new EmptyParent(-1);
             var converter = new ModuleConverter(parent);
-            var code = converter.GenerateCode(InputFilePath);
+            //var code = converter.GenerateCode(InputFilePath);
+            
+            var code = codeForMustContain.IsEmpty() 
+                ? converter.GenerateCode(InputFilePath) 
+                : codeForMustContain;
+
+            if (codeForMustContain.IsEmpty())
+                codeForMustContain = code;
 
             var message = code.MustHave(textToFind);
-            Assert.IsTrue(message == string.Empty, $"\n==========\n{message}\n==========\n{code}");
-        }
+            if (message.IsNotEmpty())
+            {
+                code = Isolate(code, textToFind, 100);
+            }
 
+            Assert.IsTrue(message == string.Empty, $"{message}\n==========\n{code}");
+            //Console.WriteLine($"{code}");
+        }
+        
         [DataTestMethod]
         [DataRow("public unknown CurItem;")]
         [DataRow("public object CurItem;")]
@@ -68,12 +82,50 @@ namespace MetX.VB6ToCSharp.Tests
 ")]
         public void MustNotContain(string textToFind)
         {
+            //if (!textToFind.Contains("Class_"))
+            //    return;
+            
             ICodeLine parent = new EmptyParent(-1);
             var converter = new ModuleConverter(parent);
-            var code = converter.GenerateCode(InputFilePath);
+
+            var code = codeForMustNotContain.IsEmpty() 
+                ? converter.GenerateCode(InputFilePath) 
+                : codeForMustNotContain;
+
+            if (codeForMustNotContain.IsEmpty())
+                codeForMustNotContain = code;
 
             var message = code.MustNotHave(textToFind);
-            Assert.IsTrue(message == string.Empty, $"\n==========\n{message}\n==========\n{code}");
+            
+            var isolatedCode = code;
+            if (message.IsNotEmpty()) 
+                isolatedCode = Isolate(code, textToFind, 100);
+
+            Assert.IsTrue(message.IsEmpty(), $"{message}{isolatedCode}");
+            Console.WriteLine($"{code}");
         }
+
+        private string Isolate(string code, string textToFind, int beforeAndAfter)
+        {
+            var indexOfTextToFind =
+                code.IndexOf(textToFind, StringComparison.InvariantCultureIgnoreCase);
+
+            var startIndex = indexOfTextToFind - beforeAndAfter;
+            var endIndex = indexOfTextToFind + beforeAndAfter + textToFind.Length;
+
+            if (startIndex < 0)
+                startIndex = 0;
+            
+            if(endIndex > code.Length)
+                if (startIndex == 0)
+                    return code;
+                else
+                    return "... " + code.Substring(startIndex).Trim();
+
+            return "... " + code.Substring(startIndex, endIndex - startIndex).Trim() + " ...";
+        }
+
+        private static string codeForMustContain = null;
+        private static string codeForMustNotContain = null;
     }
 }

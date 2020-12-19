@@ -51,8 +51,8 @@ namespace MetX.VB6ToCSharp
             foreach (var fileSet in fileSets)
             foreach (var file in fileSet)
             {
-                // ModuleConverter.Convert(parent, file, OutputFolderPath);
-                new ModuleConverter(parent).ConvertFile(file, OutputFolderPath);
+                var moduleConverter = new ModuleConverter(parent);
+                moduleConverter.ConvertFile(file, OutputFolderPath);
             }
         }
     }
