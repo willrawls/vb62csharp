@@ -82,7 +82,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
         public static string PutABeforeBOnce(this string target, string a, string b)
         {
-            if (target.IsEmpty() || !target.Contains(a) || !target.Contains(b))
+            if (target.IsEmpty() || (!target.Contains(a) || !target.Contains(b)))
                 return target ?? "";
 
             if (string.Compare(
@@ -96,8 +96,8 @@ namespace MetX.VB6ToCSharp.CSharp
             var indexOfB = target.IndexOf(a, StringComparison.InvariantCultureIgnoreCase);
             var indexOfA = target.IndexOf(b, StringComparison.InvariantCultureIgnoreCase);
 
-            if (indexOfB < indexOfA)
-                return target;
+            //if (indexOfB < indexOfA)
+            //    return target;
 
             /*
             if (indexOfB > 0)
@@ -149,10 +149,7 @@ namespace MetX.VB6ToCSharp.CSharp
             switch (inArea)
             {
                 case CurrentlyInArea.Class:
-                    target = target.PutABeforeBOnce("static", "string");
-                    target = target.PutABeforeBOnce("static", "int");
-                    target = target.PutABeforeBOnce("static", "long");
-                    target = target.PutABeforeBOnce("static", "Collection");
+                    target = HandleTokenDefinitionOrder(target);
                     break;
                 case CurrentlyInArea.Procedure:
                     target = target.Replace("static", "").Deflate();
@@ -164,6 +161,15 @@ namespace MetX.VB6ToCSharp.CSharp
                     throw new ArgumentOutOfRangeException(nameof(inArea), inArea, null);
             }
 
+            return target;
+        }
+
+        public static string HandleTokenDefinitionOrder(this string target)
+        {
+            target = target.PutABeforeBOnce("static", "string");
+            target = target.PutABeforeBOnce("static", "int");
+            target = target.PutABeforeBOnce("static", "long");
+            target = target.PutABeforeBOnce("static", "Collection");
             return target;
         }
 
@@ -223,6 +229,26 @@ namespace MetX.VB6ToCSharp.CSharp
                     .Where(x => x.Trim().IsNotEmpty())
                     .Select(x => x)
             );
+        }
+
+        public static string Isolate(string code, string textToFind, int beforeAndAfter)
+        {
+            var indexOfTextToFind =
+                code.IndexOf(textToFind, StringComparison.InvariantCultureIgnoreCase);
+
+            var startIndex = indexOfTextToFind - beforeAndAfter;
+            var endIndex = indexOfTextToFind + beforeAndAfter + textToFind.Length;
+
+            if (startIndex < 0)
+                startIndex = 0;
+
+            if (endIndex > code.Length)
+                if (startIndex == 0)
+                    return code;
+                else
+                    return "... " + code.Substring(startIndex).Trim();
+
+            return "... " + code.Substring(startIndex, endIndex - startIndex).Trim() + " ...";
         }
     }
 }

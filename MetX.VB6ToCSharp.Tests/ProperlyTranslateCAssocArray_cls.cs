@@ -12,6 +12,9 @@ namespace MetX.VB6ToCSharp.Tests
     {
         private const string InputFilePath = "CAssocArray.cls";
 
+        private static string codeForMustContain;
+        private static string codeForMustNotContain;
+
         [DataTestMethod]
         [DataRow("public Dictionary<string,string> mCol;")]
         [DataRow("foreach(var CurItem in mCol) {")]
@@ -37,24 +40,21 @@ namespace MetX.VB6ToCSharp.Tests
             ICodeLine parent = new EmptyParent(-1);
             var converter = new ModuleConverter(parent);
             //var code = converter.GenerateCode(InputFilePath);
-            
-            var code = codeForMustContain.IsEmpty() 
-                ? converter.GenerateCode(InputFilePath) 
+
+            var code = codeForMustContain.IsEmpty()
+                ? converter.GenerateCode(InputFilePath)
                 : codeForMustContain;
 
             if (codeForMustContain.IsEmpty())
                 codeForMustContain = code;
 
             var message = code.MustHave(textToFind);
-            if (message.IsNotEmpty())
-            {
-                code = Isolate(code, textToFind, 100);
-            }
+            if (message.IsNotEmpty()) code = CSharp.Extensions.Isolate(code, textToFind, 100);
 
             Assert.IsTrue(message == string.Empty, $"{message}\n==========\n{code}");
             //Console.WriteLine($"{code}");
         }
-        
+
         [DataTestMethod]
         [DataRow("public unknown CurItem;")]
         [DataRow("public object CurItem;")]
@@ -75,7 +75,8 @@ namespace MetX.VB6ToCSharp.Tests
         [DataRow("(.Tag)")]
         [DataRow("        .Value.Substring")]
         [DataRow("static CurSubItem /*As*/ int;")]
-        [DataRow("(                                                                                        ")]
+        [DataRow(
+            "(                                                                                        ")]
         [DataRow(@"        };
 ")]
         [DataRow(@"        ;
@@ -84,48 +85,35 @@ namespace MetX.VB6ToCSharp.Tests
         {
             //if (!textToFind.Contains("Class_"))
             //    return;
-            
+
             ICodeLine parent = new EmptyParent(-1);
             var converter = new ModuleConverter(parent);
 
-            var code = codeForMustNotContain.IsEmpty() 
-                ? converter.GenerateCode(InputFilePath) 
+            var code = codeForMustNotContain.IsEmpty()
+                ? converter.GenerateCode(InputFilePath)
                 : codeForMustNotContain;
 
             if (codeForMustNotContain.IsEmpty())
                 codeForMustNotContain = code;
 
             var message = code.MustNotHave(textToFind);
-            
+
             var isolatedCode = code;
-            if (message.IsNotEmpty()) 
-                isolatedCode = Isolate(code, textToFind, 100);
+            if (message.IsNotEmpty())
+                isolatedCode = CSharp.Extensions.Isolate(code, textToFind, 100);
 
             Assert.IsTrue(message.IsEmpty(), $"{message}{isolatedCode}");
             Console.WriteLine($"{code}");
         }
 
-        private string Isolate(string code, string textToFind, int beforeAndAfter)
+        [DataTestMethod]
+        [DataRow("string static Fred;", "static", "string", "static string Fred;" )]
+        [DataRow("long static Fred;", "static", "long", "static long Fred;" )]
+        [DataRow(" int    static   Fred; ", "static", "int", " static    int   Fred; " )]
+        public void PutABeforeBOnce_Simple(string target, string a, string b, string expected)
         {
-            var indexOfTextToFind =
-                code.IndexOf(textToFind, StringComparison.InvariantCultureIgnoreCase);
-
-            var startIndex = indexOfTextToFind - beforeAndAfter;
-            var endIndex = indexOfTextToFind + beforeAndAfter + textToFind.Length;
-
-            if (startIndex < 0)
-                startIndex = 0;
-            
-            if(endIndex > code.Length)
-                if (startIndex == 0)
-                    return code;
-                else
-                    return "... " + code.Substring(startIndex).Trim();
-
-            return "... " + code.Substring(startIndex, endIndex - startIndex).Trim() + " ...";
+            var actual = CSharp.Extensions.PutABeforeBOnce(target, a, b);
+            Assert.AreEqual(expected, actual, $"{target} | {expected} | {actual}");
         }
-
-        private static string codeForMustContain = null;
-        private static string codeForMustNotContain = null;
     }
 }

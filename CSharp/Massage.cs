@@ -301,7 +301,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 .Replace("\n\n", "\n")
                 .Replace("\n\n", "\n")
                 .Replace("\n\n", "\n");
-
+            lineOfCode = lineOfCode.HandleTokenDefinitionOrder();
             return lineOfCode;
         }
 
