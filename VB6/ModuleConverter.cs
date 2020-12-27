@@ -103,6 +103,31 @@ namespace MetX.VB6ToCSharp.VB6
             return code.IsNotEmpty();
         }
 
+        public string GenerateCodeFragment(string code)
+        {
+            SourceModule = new Module(FirstParent)
+            {
+                Version = "1.0",
+                FileName = "codeFragment",
+                Type = "codeFragment", // "module",
+                Name = "codeFragment",
+            };
+            using(var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(code)))
+            using (var streamReader = new StreamReader(memoryStream))
+            {
+                if (!ParseProcedures(streamReader)) return string.Empty;
+
+                var convertedCode = ConvertProcedures();
+                if (convertedCode.IsEmpty())
+                    convertedCode = GenerateProperties();
+                
+                var translatedCode = Massage.BlanketReplaceNow(convertedCode, SourceModule.Name);
+                return translatedCode;
+            }
+
+            return "";
+        }
+
         public string GenerateCode(string inputFilename, string outputPath = null)
         {
             var version = string.Empty;
@@ -1039,7 +1064,7 @@ namespace MetX.VB6ToCSharp.VB6
             var insideAVariable = false;
             var insideAProperty = false;
             var insideAProcedure = false;
-            var AtEndOfModule = false;
+            var atEndOfModule = false;
 
             Variable variable = null;
 
@@ -1156,7 +1181,7 @@ namespace MetX.VB6ToCSharp.VB6
                         break;
 
                     case "End":
-                        AtEndOfModule = true;
+                        atEndOfModule = true;
                         break;
 
                     default:
@@ -1195,7 +1220,7 @@ namespace MetX.VB6ToCSharp.VB6
                 }
 
                 // if something end
-                if (AtEndOfModule)
+                if (atEndOfModule)
                 {
                     if (insideAnEnum)
                     {
@@ -1225,7 +1250,7 @@ namespace MetX.VB6ToCSharp.VB6
                         insideAProcedure = false;
                     }
 
-                    AtEndOfModule = false;
+                    atEndOfModule = false;
                 }
                 else
                 {

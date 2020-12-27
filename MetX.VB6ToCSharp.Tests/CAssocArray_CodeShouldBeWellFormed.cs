@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using MetX.Library;
 using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
@@ -62,6 +64,16 @@ namespace MetX.VB6ToCSharp.Tests
             Assert.IsTrue(message == string.Empty, $"\n==========\n{message}\n==========\n{code}");
 
             Console.WriteLine(code);
+        }
+
+        [TestMethod]
+        public void ByteForByteCorrectConversion_CAssocItem_cs()
+        {
+            ICodeLine parent = new EmptyParent(-1);
+            var converter = new ModuleConverter(parent);
+            var actual = converter.GenerateCode(InputFilePath);
+            var expected = File.ReadAllText($"{InputFilePath}.translated");
+            Assert.AreEqual(expected, actual);
         }
     }
 }

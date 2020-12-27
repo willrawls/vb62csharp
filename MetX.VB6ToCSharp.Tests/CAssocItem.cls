@@ -39,12 +39,12 @@ Public Key As String
 Private m_sValue As String
 
 Public Property Let Value(sNewValue As String)
-    m_sValue = sNewValue
-End Property
+        m_sValue = sNewValue
+    End Property
 
 Public Property Get Value() As String
-Attribute Value.VB_UserMemId = 0
-    Value = m_sValue
+    Attribute Value.VB_UserMemId = 0
+        Value = m_sValue
 End Property
 
 '

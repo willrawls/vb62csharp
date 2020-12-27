@@ -1,0 +1,36 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace MetX.SliceAndDice
+{
+    public class CAssocItem
+    {
+        public string Key;
+        public string m_sValue;
+
+        public string Value
+        {
+            get
+            {
+                return m_sValue;
+            }
+
+            set
+            {
+                m_sValue = value;
+            }
+
+        }
+
+        // 
+        //  Retrieves the Nth delimited token from the value.
+        //  If delimiter is ommited, then a space is assumed as the delimiter.
+        //  NOTE: sGetToken required for proper use
+        //
+        public string F(long Index, string sDelimiter = " ") As String
+        {
+            return sGetToken(Value, Index, sDelimiter);
+        }
+    }
+}
