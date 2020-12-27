@@ -103,8 +103,11 @@ namespace MetX.VB6ToCSharp.VB6
             return code.IsNotEmpty();
         }
 
-        public string GenerateCodeFragment(string code)
+        public string GenerateCodeFragment(string vb6Code)
         {
+            if (vb6Code.IsEmpty())
+                return "";
+            
             SourceModule = new Module(FirstParent)
             {
                 Version = "1.0",
@@ -112,11 +115,13 @@ namespace MetX.VB6ToCSharp.VB6
                 Type = "codeFragment", // "module",
                 Name = "codeFragment",
             };
-            using(var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(code)))
+            using(var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(vb6Code)))
             using (var streamReader = new StreamReader(memoryStream))
             {
-                if (!ParseProcedures(streamReader)) return string.Empty;
-
+                //if (!ParseProcedures(streamReader)) return string.Empty;
+                ParseProcedures(streamReader);
+                ConvertSource.MapClassProperties(SourceModule.PropertyList, TargetModule.PropertyList, TargetModule);
+                
                 var convertedCode = ConvertProcedures();
                 if (convertedCode.IsEmpty())
                     convertedCode = GenerateProperties();
@@ -1132,7 +1137,6 @@ namespace MetX.VB6ToCSharp.VB6
                             // functions or procedures
                             case "Sub":
                             case "Function":
-
                                 vb6Procedure = new Procedure();
                                 vb6Procedure.Comment = sComments;
                                 sComments = string.Empty;
@@ -1214,7 +1218,8 @@ namespace MetX.VB6ToCSharp.VB6
                                 vb6Property.Block.Children.Add(Quick.Line(vb6Property, line));
                         }
 
-                        if (insideAProcedure) vb6Procedure.LineList.Add(line);
+                        if (insideAProcedure) 
+                            vb6Procedure.LineList.Add(line);
 
                         break;
                 }
@@ -1230,16 +1235,6 @@ namespace MetX.VB6ToCSharp.VB6
 
                     if (insideAProperty)
                     {
-                        /*
-                        if (string.IsNullOrEmpty(vb6Property.Type))
-                        {
-                            var backingVariable = vb6Property.DetermineBackingVariable();
-                            if (TargetModule.VariableList.Contains(backingVariable))
-                            {
-                                vb6Property.Type = TargetModule.VariableList[backingVariable].Type;
-                            }
-                        }
-                        */
                         SourceModule.PropertyList.Add(vb6Property);
                         insideAProperty = false;
                     }

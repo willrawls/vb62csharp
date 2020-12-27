@@ -145,7 +145,7 @@ namespace MetX.VB6ToCSharp.CSharp
 
             var letSet = Set.Encountered ? Set : Let;
 
-            if (string.IsNullOrEmpty(Type))
+            if (Type.IsEmpty())
             {
                 var backingVariable = CSharpProperty.DetermineBackingVariable(this);
                 if (TargetModule.VariableList.Contains(backingVariable))

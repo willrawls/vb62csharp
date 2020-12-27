@@ -60,7 +60,7 @@
     <Compile Include="CheckConvertedCode.cs" />
     <Compile Include="ExtensionTests.cs" />
     <Compile Include="MassageTests.cs" />
-    <Compile Include="ModuleConverterTests.cs" />
+    <Compile Include="CodeFragmentTests.cs" />
     <Compile Include="ProperlyTranslateCAssocArray_cls.cs" />
     <Compile Include="OneLineComplexTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

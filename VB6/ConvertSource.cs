@@ -11,7 +11,7 @@ namespace MetX.VB6ToCSharp.VB6
 {
     public static class ConvertSource
     {
-        public static bool ClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties, Module parentBlock)
+        public static bool MapClassProperties(List<IAmAProperty> sourceProperties, List<IAmAProperty> targetProperties, Module parentBlock)
         {
             var propertyIndex = 0;
             foreach (var sourceProperty in sourceProperties)
@@ -33,6 +33,16 @@ namespace MetX.VB6ToCSharp.VB6
                         sourceProperty.Comment = null;
                     }
 
+                    if(sourceProperty.Type.IsEmpty())
+                    {
+                        var match = sourceProperties
+                            .FirstOrDefault(x => 
+                                x.Name == x.Name 
+                                && x.Type.IsNotEmpty());
+                        if (match != null)
+                            sourceProperty.Type = match.Type;
+                    }
+                    
                     var convertedType = Tools.VariableTypeConvert(sourceProperty.Type);
                     targetProperty = new CSharpProperty(parentBlock)
                     {
@@ -1188,7 +1198,7 @@ namespace MetX.VB6ToCSharp.VB6
             Variables(sourceModule.VariableList, targetModule.VariableList);
 
             // process properties
-            ClassProperties(sourceModule.PropertyList, targetModule.PropertyList, targetModule);
+            MapClassProperties(sourceModule.PropertyList, targetModule.PropertyList, targetModule);
 
             // process procedures
             Procedures(sourceModule, targetModule.ProcedureList);
