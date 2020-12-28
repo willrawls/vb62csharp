@@ -1,8 +1,4 @@
 ﻿using System.Linq;
-using MetX.Library;
-using MetX.VB6ToCSharp.Interface;
-using MetX.VB6ToCSharp.Structure;
-using MetX.VB6ToCSharp.VB6;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MetX.VB6ToCSharp.Tests
@@ -10,20 +6,36 @@ namespace MetX.VB6ToCSharp.Tests
     [TestClass]
     public class CodeFragmentTests
     {
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            Items = CodeFragmentTestItems.Load("FragmentTests");
+
+        }
+
+        public CodeFragmentTestItems Items { get; set; }
+
+        [TestMethod]
+        public void Test1()
+        {
+            Items[0].RunTest();
+        }
+        
         [TestMethod]
         public void ConvertProperty_Simple()
         {
-            var vb6Code = 
-@"Public Property Let Example(sNewValue As String)
+            var item = new CodeFragmentTestItem
+            {
+                VB6Code =
+                    @"Public Property Let Example(sNewValue As String)
     m_Example = sNewValue
 End Property
 
 Public Property Get Example() As String
 Attribute Example.VB_UserMemId = 0
     Example = m_Example
-End Property";
-            
-            var expectedCSharpCode = @"
+End Property",
+                ExpectedCSharpCode = @"
         public string Example
         {
             get
@@ -39,10 +51,12 @@ End Property";
         }
 
 
-";
-            TestCodeFragmentConversion(vb6Code, expectedCSharpCode);
+",
+            };
+            item.RunTest();
         }
         
+        /*
         public void TestCodeFragmentConversion(string vb6Code, string expectedCSharpCode)
         {
             ICodeLine parent = new EmptyParent(-1);
@@ -54,5 +68,6 @@ End Property";
             Assert.IsTrue(actual.IsNotEmpty());
             Assert.AreEqual(expectedCSharpCode, actual);
         }
+    */
     }
 }

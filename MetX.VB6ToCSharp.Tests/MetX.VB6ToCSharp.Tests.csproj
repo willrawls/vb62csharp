@@ -53,12 +53,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CAssocArray_CodeShouldBeWellFormed.cs" />
+    <Compile Include="CodeFragmentTestItem.cs" />
+    <Compile Include="CodeFragmentTestItems.cs" />
     <Compile Include="CodeLineRelatedTests.cs" />
     <Compile Include="CSharpPropertyPartTests.cs" />
     <Compile Include="CSharpPropertyTests.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="CheckConvertedCode.cs" />
     <Compile Include="ExtensionTests.cs" />
+    <None Include="FragmentTests\Test1.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="MassageTests.cs" />
     <Compile Include="CodeFragmentTests.cs" />
     <Compile Include="ProperlyTranslateCAssocArray_cls.cs" />
@@ -97,6 +102,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
