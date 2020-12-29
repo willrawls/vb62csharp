@@ -1,0 +1,29 @@
+﻿Public Property Get Xyz123() As String
+    If InStr(sT, KeyValueDelimiter) > 0 Then
+        sKey = sGetToken(sT, 1, KeyValueDelimiter)
+        sValue = sGetToken(sT, 2, KeyValueDelimiter)
+        Add sKey, sValue
+    Else
+        Add sT
+    End If
+    sAllKeyValues = sAfter(sAllKeyValues, 1, ItemDelimiter)
+End Property
+~~~~
+        public string Xyz123
+        {
+            get
+            {
+                if( sT.Contains(KeyValueDelimiter) > 0 )
+                {
+                    sKey = sGetToken(sT, 1, KeyValueDelimiter);
+                    sValue = sGetToken(sT, 2, KeyValueDelimiter);
+                    Add(sKey, sValue);
+                }
+                else
+                {
+                    Add(sT);
+                }
+                value = sAfter(value, 1, ItemDelimiter);
+            }
+        }
+~~~~

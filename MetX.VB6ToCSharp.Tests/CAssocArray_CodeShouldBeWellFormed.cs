@@ -72,7 +72,7 @@ namespace MetX.VB6ToCSharp.Tests
             ICodeLine parent = new EmptyParent(-1);
             var converter = new ModuleConverter(parent);
             var actual = converter.GenerateCode(InputFilePath);
-            var expected = File.ReadAllText($"{InputFilePath}.translated");
+            var expected = File.ReadAllText($"{InputFilePath}.expected");
             Assert.AreEqual(expected, actual);
         }
     }

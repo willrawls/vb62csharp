@@ -79,7 +79,6 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace(" & ", " + "),
                 new XReplace("Integer", "int"),
                 new XReplace(".[", "["),
-                //new XReplace(" As ", " /*As*/ "),
                 new XReplace("Is Null", "== null"),
                 new XReplace("Is null", "== null"),
                 new XReplace("is null", "== null"),
@@ -87,6 +86,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("Loop", "}"),
                 new XReplace("Class_Initialize", "CurrentModuleName"),
                 new XReplace("Class_Terminate", "~CurrentModuleName"),
+                new XReplace("Attribute ", "// Attribute "),
             };
 
         /// <summary>

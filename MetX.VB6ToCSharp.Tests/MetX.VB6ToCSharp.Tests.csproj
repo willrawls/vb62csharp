@@ -64,6 +64,15 @@
     <None Include="FragmentTests\ConvertProperty_Simple.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="FragmentTests\Add.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FragmentTests\IfElse.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FragmentTests\DoWhileIfElse.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="MassageTests.cs" />
     <Compile Include="CodeFragmentTests.cs" />
     <Compile Include="ProperlyTranslateCAssocArray_cls.cs" />
@@ -77,7 +86,7 @@
     <Compile Include="ScratchSpace.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CAssocItem.cls.translated">
+    <None Include="CAssocItem.cls.expected">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />

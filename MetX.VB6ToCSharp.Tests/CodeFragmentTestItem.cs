@@ -36,7 +36,7 @@ namespace MetX.VB6ToCSharp.Tests
             var actual = converter.GenerateCodeFragment(VB6Code);
             
             Assert.IsNotNull(actual);
-            Assert.IsTrue(actual.IsNotEmpty());
+            Assert.IsTrue(actual.IsNotEmpty(), "actual is empty (no code returned)");
             Assert.AreEqual(ExpectedCSharpCode, actual);
             Console.WriteLine(actual);
         }

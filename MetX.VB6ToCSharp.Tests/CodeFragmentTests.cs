@@ -10,7 +10,10 @@ namespace MetX.VB6ToCSharp.Tests
 
         [DataTestMethod]
         [DataRow("ConvertProperty_Simple")]
-        public void TestLoadedFromFile(string testName)
+        [DataRow("DoWhileIfElse")]
+        [DataRow("IfElse")]
+        [DataRow("Add")]
+        public void RunTestFromFile(string testName)
         {
             var test = new CodeFragmentTestItem(Path.Combine(_folderPath, testName + ".fragmenttest"));
             test.RunTest();

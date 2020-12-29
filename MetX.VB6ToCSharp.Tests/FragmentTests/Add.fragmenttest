@@ -1,0 +1,11 @@
+﻿Public Sub Xyz123()
+    Add sKey, sValue
+    Add sT
+End Sub
+~~~~
+public Xyz123()
+{
+    Add(sKey, sValue);
+    Add(sT);
+}
+~~~~

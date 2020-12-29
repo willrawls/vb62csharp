@@ -107,7 +107,7 @@ namespace MetX.VB6ToCSharp.VB6
         {
             if (vb6Code.IsEmpty())
                 return "";
-            
+
             SourceModule = new Module(FirstParent)
             {
                 Version = "1.0",
@@ -118,14 +118,18 @@ namespace MetX.VB6ToCSharp.VB6
             using(var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(vb6Code)))
             using (var streamReader = new StreamReader(memoryStream))
             {
-                //if (!ParseProcedures(streamReader)) return string.Empty;
                 ParseProcedures(streamReader);
-                ConvertSource.MapClassProperties(SourceModule.PropertyList, TargetModule.PropertyList, TargetModule);
+                
+                if(SourceModule.PropertyList.IsNotEmpty())
+                    ConvertSource.MapClassProperties(SourceModule.PropertyList, TargetModule.PropertyList, TargetModule);
+
+                if (SourceModule.ProcedureList.IsNotEmpty())
+                    ConvertSource.Procedures(SourceModule, TargetModule.ProcedureList);
                 
                 var convertedCode = ConvertProcedures();
                 if (convertedCode.IsEmpty())
                     convertedCode = GenerateProperties();
-                
+
                 var translatedCode = Massage.BlanketReplaceNow(convertedCode, SourceModule.Name);
                 return translatedCode;
             }

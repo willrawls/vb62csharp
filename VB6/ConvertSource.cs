@@ -934,7 +934,7 @@ namespace MetX.VB6ToCSharp.VB6
                 // If
                 if (translatedLine.Contains("If "))
                 {
-                    translatedLine = translatedLine.Replace("If ", "if ( ");
+                    translatedLine = translatedLine.Replace("If ", "if( ");
                 }
 
                 // Not
@@ -993,6 +993,8 @@ namespace MetX.VB6ToCSharp.VB6
                 {
                     translatedLine = translatedLine.Replace("New", "new");
                     translatedLine = translatedLine.Replace(" = ", " == ");
+                    translatedLine = translatedLine.Replace("If ", "if ( ");
+                    translatedLine = translatedLine.Replace("End If", "}");
                 }
 
                 // New
