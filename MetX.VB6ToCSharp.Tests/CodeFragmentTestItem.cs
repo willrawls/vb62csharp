@@ -16,12 +16,11 @@ namespace MetX.VB6ToCSharp.Tests
 
         public CodeFragmentTestItem(string filePath)
         {
-            var delimiterRaw = "~~~~~\r";
-            var delimiterActual = "~~~~~\n";
-            var contents = File.ReadAllText(filePath).Replace(delimiterRaw, delimiterActual);
+            var delimiter = "~~~~";
+            var contents = File.ReadAllText(filePath);
             
-            VB6Code = contents.FirstToken(delimiterActual);
-            ExpectedCSharpCode = contents.TokensAfterFirst(delimiterActual);
+            VB6Code = contents.TokenAt(1, delimiter);
+            ExpectedCSharpCode = contents.TokenAt(2, delimiter);
         }
 
         public CodeFragmentTestItem()

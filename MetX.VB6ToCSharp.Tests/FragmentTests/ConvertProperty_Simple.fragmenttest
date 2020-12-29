@@ -1,0 +1,25 @@
+﻿Public Property Let Xyz123(sNewValue As String)
+    m_Xyz123 = sNewValue
+End Property
+
+Public Property Get Xyz123() As String
+Attribute Xyz123.VB_UserMemId = 0
+    Xyz123 = m_Xyz123
+End Property
+~~~~
+        public string Xyz123
+        {
+            get
+            {
+                return m_Xyz123;
+            }
+
+            set
+            {
+                m_Xyz123 = value;
+            }
+
+        }
+
+
+~~~~
