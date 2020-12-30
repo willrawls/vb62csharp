@@ -1,0 +1,13 @@
+﻿using MetX.VB6ToCSharp.Tests;
+
+Public Sub Xyz123()
+    Set Item = mCol(sIndexKey)
+    Set Item = Add(sIndexKey)
+End Sub
+~~~~
+public Xyz123()
+{
+    Item = mCol(sIndexKey);
+    Item = Add(sIndexKey);
+}
+~~~~

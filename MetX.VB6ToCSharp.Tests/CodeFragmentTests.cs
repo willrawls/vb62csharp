@@ -14,6 +14,8 @@ namespace MetX.VB6ToCSharp.Tests
         [DataRow("IfElse")]
         [DataRow("Add")]
         [DataRow("ForEachWith1")]
+        [DataRow("With.Tag")]
+        [DataRow("ItemEqualsAdd")]
         public void RunTestFromFile(string testName)
         {
             var test = new CodeFragmentTestItem(

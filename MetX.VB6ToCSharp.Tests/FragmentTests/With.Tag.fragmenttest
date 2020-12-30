@@ -1,0 +1,16 @@
+﻿Public Sub Xyz123()
+    With CurNode
+        If Len(.Tag) = 0 Then
+            .Tag = "Fred"
+        End If
+    End With
+End Sub
+~~~~
+public Xyz123()
+{
+    if( Len(CurNode.Tag) == 0 )
+    {
+        CurrNode.Tag = "Fred";
+    }
+}
+~~~~
