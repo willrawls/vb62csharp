@@ -231,7 +231,7 @@ namespace MetX.VB6ToCSharp.CSharp
             );
         }
 
-        public static string Isolate(string code, string textToFind, int beforeAndAfter)
+        public static string Isolate(this string code, string textToFind, int beforeAndAfter)
         {
             var indexOfTextToFind =
                 code.IndexOf(textToFind, StringComparison.InvariantCultureIgnoreCase);
@@ -246,9 +246,9 @@ namespace MetX.VB6ToCSharp.CSharp
                 if (startIndex == 0)
                     return code;
                 else
-                    return "... " + code.Substring(startIndex).Trim();
+                    return startIndex + "... " + code.Substring(startIndex).Trim();
 
-            return "... " + code.Substring(startIndex, endIndex - startIndex).Trim() + " ...";
+            return startIndex + "... " + code.Substring(startIndex, endIndex - startIndex).Trim() + " ..." + endIndex;
         }
     }
 }

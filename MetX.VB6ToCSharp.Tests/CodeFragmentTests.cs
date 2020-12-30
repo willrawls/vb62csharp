@@ -13,9 +13,11 @@ namespace MetX.VB6ToCSharp.Tests
         [DataRow("DoWhileIfElse")]
         [DataRow("IfElse")]
         [DataRow("Add")]
+        [DataRow("ForEachWith1")]
         public void RunTestFromFile(string testName)
         {
-            var test = new CodeFragmentTestItem(Path.Combine(_folderPath, testName + ".fragmenttest"));
+            var test = new CodeFragmentTestItem(
+                Path.Combine(_folderPath, testName + ".fragmenttest"));
             test.RunTest();
         }
         

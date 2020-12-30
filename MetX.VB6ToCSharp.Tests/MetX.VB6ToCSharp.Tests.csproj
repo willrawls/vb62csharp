@@ -61,6 +61,9 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="CheckConvertedCode.cs" />
     <Compile Include="ExtensionTests.cs" />
+    <None Include="FragmentTests\ForEachWith1.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="FragmentTests\ConvertProperty_Simple.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -1,5 +1,6 @@
 ﻿using System;
 using MetX.Library;
+using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
@@ -49,10 +50,9 @@ namespace MetX.VB6ToCSharp.Tests
                 codeForMustContain = code;
 
             var message = code.MustHave(textToFind);
-            if (message.IsNotEmpty()) code = CSharp.Extensions.Isolate(code, textToFind, 100);
 
-            Assert.IsTrue(message == string.Empty, $"{message}\n==========\n{code}");
-            //Console.WriteLine($"{code}");
+            Assert.IsTrue(message.IsEmpty(), $"{message}{code}");
+            Console.WriteLine(code);
         }
 
         [DataTestMethod]

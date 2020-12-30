@@ -1,0 +1,16 @@
+﻿Public Sub Xyz123()
+    For Each CurItem In mCol
+        With CurItem
+             sAllKeyValues = sAllKeyValues + .Key + KeyValueDelimiter + .Value + ItemDelimiter
+        End With
+    Next CurItem
+End Sub
+~~~~
+public Xyz123()
+{
+    foreach(var CurItem in mCol) 
+    {
+        sAllKeyValues += CurItem.Key + KeyValueDelimiter + CurItem.Value + ItemDelimiter;
+    } // CurItem
+}
+~~~~

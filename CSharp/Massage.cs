@@ -84,6 +84,8 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("is null", "== null"),
                 new XReplace("Loop;", "}"),
                 new XReplace("Loop", "}"),
+                new XReplace("void Class_Initialize", "CurrentModuleName"),
+                new XReplace("void Class_Terminate", "~CurrentModuleName"),
                 new XReplace("Class_Initialize", "CurrentModuleName"),
                 new XReplace("Class_Terminate", "~CurrentModuleName"),
                 new XReplace("Attribute ", "// Attribute "),
