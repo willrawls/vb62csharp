@@ -1,0 +1,12 @@
+﻿Public Sub Xyz123()
+    Static sAllKeyValues As String
+    sAllKeyValues = "Fred"
+End Sub
+~~~~
+private static string sAllKeyValues;
+
+public Xyz123()
+{
+    sAllKeyValues = "Fred"
+}
+~~~~

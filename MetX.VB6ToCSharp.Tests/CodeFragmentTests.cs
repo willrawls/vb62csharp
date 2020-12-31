@@ -9,13 +9,18 @@ namespace MetX.VB6ToCSharp.Tests
         private string _folderPath = "./FragmentTests";
 
         [DataTestMethod]
+        [DataRow("Add")]
         [DataRow("ConvertProperty_Simple")]
         [DataRow("DoWhileIfElse")]
-        [DataRow("IfElse")]
-        [DataRow("Add")]
+        [DataRow("ForEach2")]
         [DataRow("ForEachWith1")]
-        [DataRow("With.Tag")]
+        [DataRow("IfElse")]
         [DataRow("ItemEqualsAdd")]
+        [DataRow("OnErrorResume")]
+        [DataRow("StaticSubVariable")]
+        [DataRow("SubCall")]
+        [DataRow("VariableDeclarations")]
+        [DataRow("With.Tag")]
         public void RunTestFromFile(string testName)
         {
             var test = new CodeFragmentTestItem(

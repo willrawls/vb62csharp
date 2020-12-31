@@ -1,0 +1,30 @@
+﻿Public Sub Xyz123()
+On Error GoTo EH_CAssocArray_Item
+       Set Item = mCol(sIndexKey)
+ 
+EH_CAssocArray_Item_Continue:
+       Exit Property
+ 
+EH_CAssocArray_Item:
+       Set Item = Add(sIndexKey)
+       Err.Clear
+       Resume EH_CAssocArray_Item_Continue
+End Sub
+~~~~
+public Xyz123()
+{
+    try
+    {
+        Item = mCol(sIndexKey);
+    }
+    catch
+    {
+        Item = Add(sIndexKey);
+        // Err.Clear
+    }
+    finally 
+    {
+        return;
+    }
+}
+~~~~

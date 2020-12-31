@@ -61,6 +61,21 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="CheckConvertedCode.cs" />
     <Compile Include="ExtensionTests.cs" />
+    <None Include="FragmentTests\VariableDeclarations.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FragmentTests\SubCall.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FragmentTests\OnErrorResume.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FragmentTests\ForEach2.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FragmentTests\StaticSubVariable.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="FragmentTests\With.Tag.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -79,7 +94,9 @@
     <None Include="FragmentTests\DoWhileIfElse.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="FragmentTests\ItemEqualsAdd.fragmenttest" />
+    <None Include="FragmentTests\ItemEqualsAdd.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="MassageTests.cs" />
     <Compile Include="CodeFragmentTests.cs" />
     <Compile Include="ProperlyTranslateCAssocArray_cls.cs" />

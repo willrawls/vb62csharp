@@ -1,0 +1,13 @@
+﻿Public Sub Xyz123()
+    Dim TokenCount As Long
+    Dim CurToken As Long
+    Dim sCurToken As String
+End Sub
+~~~~
+public Xyz123()
+{
+    long TokenCount;
+    long CurToken;
+    string sCurToken;
+}
+~~~~

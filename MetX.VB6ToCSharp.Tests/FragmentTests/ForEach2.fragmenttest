@@ -1,0 +1,14 @@
+﻿Public Sub Xyz123()
+    For Each CurNode In tvwX.Nodes
+        CallSomething CurNode
+    Next CurNode
+End Sub
+~~~~
+public Xyz123()
+{
+    foreach(var CurNode in tvwX.Nodes)  
+    {
+        CallSomething(CurNode);
+    }
+}
+~~~~
