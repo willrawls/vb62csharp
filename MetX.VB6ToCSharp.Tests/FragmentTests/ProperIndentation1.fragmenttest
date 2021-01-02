@@ -1,0 +1,9 @@
+﻿Public Sub Xyz123()
+	sAllKeyValues = sAllKeyValues + Key + KeyValueDelimiter + Value + ItemDelimiter
+End Sub
+~~~~
+public Xyz123()
+{
+	sAllKeyValues +=  Key + KeyValueDelimiter + Value + ItemDelimiter;
+}
+~~~~

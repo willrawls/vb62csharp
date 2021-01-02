@@ -1253,7 +1253,8 @@ namespace MetX.VB6ToCSharp.VB6
                 }
                 else
                 {
-                    if (insideAVariable) SourceModule.VariableList.Add(variable);
+                    if (insideAVariable) 
+                        SourceModule.VariableList.Add(variable);
                 }
                 insideAVariable = false;
             }

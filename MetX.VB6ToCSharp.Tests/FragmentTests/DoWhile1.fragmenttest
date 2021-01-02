@@ -1,0 +1,14 @@
+﻿Public Sub Xyz123()
+    Do While Len(X) > 0
+        X = Y(X, 1, Z)
+    Loop 
+End Sub
+~~~~
+        public void Xyz123()
+        {
+            while(Len(X) > 0) 
+            {
+                X = Y(X, 1, Z);
+            }
+        }
+~~~~

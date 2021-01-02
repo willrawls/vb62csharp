@@ -74,7 +74,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 new XReplace("Long ", "long "),
                 new XReplace("Clear ", "this.Clear()"),
                 new XReplace("()()", "()"),
-                new XReplace("Add(", "Add( "),
+                //new XReplace("Add(", "Add( "),
                 new XReplace("Next ", "} // "),
                 new XReplace(" & ", " + "),
                 new XReplace("Integer", "int"),
@@ -266,9 +266,11 @@ namespace MetX.VB6ToCSharp.CSharp
             {
                 var iterations = 0;
                 while (++iterations < 100 && lineOfCode.ToLower().Contains(entry.X.ToLower()))
+                {
                     lineOfCode = lineOfCode
                         .Replace(entry.X, entry.Y)
                         .Replace("CurrentModuleName", currentModuleName);
+                }
             }
 
             return lineOfCode;

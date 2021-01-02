@@ -61,6 +61,12 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="CheckConvertedCode.cs" />
     <Compile Include="ExtensionTests.cs" />
+    <None Include="FragmentTests\DoWhile1.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="FragmentTests\ProperIndentation1.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="FragmentTests\VariableDeclarations.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -76,6 +82,7 @@
     <None Include="FragmentTests\StaticSubVariable.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="FragmentTests\TemplateSub.fragmenttest" />
     <None Include="FragmentTests\With.Tag.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

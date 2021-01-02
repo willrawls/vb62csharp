@@ -3,7 +3,7 @@
     Add sT
 End Sub
 ~~~~
-public Xyz123()
+public void Xyz123()
 {
     Add(sKey, sValue);
     Add(sT);
