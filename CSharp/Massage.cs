@@ -306,6 +306,7 @@ namespace MetX.VB6ToCSharp.CSharp
                 .Replace("\n\n", "\n")
                 .Replace("\n\n", "\n");
             lineOfCode = lineOfCode.HandleTokenDefinitionOrder();
+
             return lineOfCode;
         }
 
@@ -319,7 +320,8 @@ namespace MetX.VB6ToCSharp.CSharp
             if (line.IsEmpty())
                 return string.Empty;
 
-            if (line.Trim().EndsWith(";"))
+            if (line.Trim().EndsWith(";")
+                || line.Trim().EndsWith("}"))
                 return line;
 
             if (LineContainsAnyOfTheseThenShouldHaveASemiColon
@@ -426,7 +428,8 @@ namespace MetX.VB6ToCSharp.CSharp
 
             translatedLine = CleanupTranslatedLineOfCode(translatedLine);
             translatedLine = DetermineIfLineGetsASemicolon(translatedLine, nextLine);
-
+            translatedLine = BlanketReplaceNow(translatedLine, sourceModule.Name);
+            
             if (translatedLine.Trim() == ";")
                 translatedLine = string.Empty;
 
