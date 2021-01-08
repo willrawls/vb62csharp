@@ -1,0 +1,20 @@
+﻿Public Function Xyz123() As String
+    If X > Y Then
+        Z = A
+    Else
+        Z = A + B
+    End If
+End Function
+~~~~
+public string Xyz123()
+{
+    if( X > Y )
+    {
+        Z = A;
+    }
+    else
+    {
+        Z = A + B;
+    }
+}
+~~~~

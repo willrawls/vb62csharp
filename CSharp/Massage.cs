@@ -428,9 +428,10 @@ namespace MetX.VB6ToCSharp.CSharp
 
             translatedLine = CleanupTranslatedLineOfCode(translatedLine);
             translatedLine = DetermineIfLineGetsASemicolon(translatedLine, nextLine);
-            translatedLine = BlanketReplaceNow(translatedLine, sourceModule.Name);
+            //translatedLine = BlanketReplaceNow(translatedLine, sourceModule.Name);
             
-            if (translatedLine.Trim() == ";")
+            if (translatedLine.Trim() == ";"
+                || translatedLine.Trim() == ";;")
                 translatedLine = string.Empty;
 
             return translatedLine;

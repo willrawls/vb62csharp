@@ -7,6 +7,10 @@ namespace MetX.VB6ToCSharp.Structure
 {
     public class Block : AbstractBlock
     {
+        public Block() : this(new EmptyParent())
+        {
+        }
+        
         public Block(ICodeLine parent, string line = null)
             : base(parent, line)
         {

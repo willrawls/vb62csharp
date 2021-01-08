@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MetX.VB6ToCSharp.CSharp;
+using MetX.VB6ToCSharp.Structure;
 
 namespace MetX.VB6ToCSharp.VB6
 {
@@ -32,37 +33,51 @@ namespace MetX.VB6ToCSharp.VB6
 
         public string GenerateCode()
         {
-            var result = new StringBuilder();
-
+            //var result = new StringBuilder();
+            var block = new Block();
+            
             // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
-            result.Append(Indentation + Scope + " ");
+            //result.Append(Indentation + Scope + " ");
+            block.Line = Scope + " ";
             switch (Type)
             {
                 case ProcedureType.ProcedureSub:
-                    result.Append("void");
+                    block.Line += "void ";
+                    //result.Append("void");
                     break;
 
                 case ProcedureType.ProcedureFunction:
-                    result.Append(ReturnType);
+                    block.Line += ReturnType + " ";
+                    //result.Append(ReturnType);
                     break;
 
                 case ProcedureType.ProcedureEvent:
-                    result.Append("void");
+                    block.Line += "void ";
+                    //result.Append("void");
                     break;
             }
 
             // name
-            result.Append(" " + Name);
+            //result.Append(" " + Name);
+            block.Line += Name;
+            
             // parameters
             if (ParameterList.Count == 0)
             {
-                result.AppendLine("()");
+                block.Line += "()";
+                //result.AppendLine("()");
             }
 
             // start body
-            result.AppendLine(Indentation + "{");
-
+            //result.AppendLine(Indentation + "{");
+            
             foreach (var line in LineList.Select(l => l.Trim()))
+                block.Children.AddLine(block.Parent, line);
+
+            foreach (var line in BottomLineList.Select(l => l.Trim()))
+                block.Children.AddLine(block.Parent, line);
+
+/*
                 if (line.Length > 0)
                     result.AppendLine($"{SecondIndentation}{line};");
                 else
@@ -73,10 +88,11 @@ namespace MetX.VB6ToCSharp.VB6
                     result.AppendLine($"{SecondIndentation}{line};");
                 else
                     result.AppendLine();
-
+ */
             // end procedure
-            result.AppendLine(Indentation + "}");
-            return result.ToString();
+            //result.AppendLine(Indentation + "}");
+            //return result.ToString();
+            return block.GenerateCode();
         }
 
         public override void ResetIndent(int indentLevel)

@@ -64,6 +64,9 @@
     <None Include="FragmentTests\DoWhile1.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="FragmentTests\IfElse2.fragmenttest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="FragmentTests\ProperIndentation1.fragmenttest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

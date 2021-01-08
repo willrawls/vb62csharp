@@ -15,7 +15,8 @@ namespace MetX.VB6ToCSharp.Tests
         [DataRow("DoWhileIfElse")]
         [DataRow("ForEach2")]
         [DataRow("ForEachWith1")]
-        [DataRow("IfElse")]
+        [DataRow("IfElse1")]
+        [DataRow("IfElse2")]
         [DataRow("ItemEqualsAdd")]
         [DataRow("OnErrorResume")]
         [DataRow("ProperIndentation1")]
@@ -31,7 +32,7 @@ namespace MetX.VB6ToCSharp.Tests
         [TestMethod]
         public void RunJustOneTestFromFile()
         {
-            RunCodeFragmentTest("DoWhile1");
+            RunCodeFragmentTest("IfElse2");
         }
 
         private void RunCodeFragmentTest(string testName)
