@@ -143,13 +143,13 @@ namespace MetX.VB6ToCSharp.CSharp
             return !mustHaves.All(target.Contains);
         }
 
-        public static string[] Trimmed(this string[] target)
+        public static IList<string> Trimmed(this IList<string> target)
         {
             if (target.IsEmpty())
                 return target;
 
             var result = target.MakeACopy();
-            for (var i = 0; i < target.Length; i++)
+            for (var i = 0; i < target.Count; i++)
                 if (target[i].IsNotEmpty())
                     target[i] = target[i].Trim();
             return target;
@@ -177,7 +177,15 @@ namespace MetX.VB6ToCSharp.CSharp
             }
             else
             {
-                codeInsideOutermostBraces = target.Substring(before.Length + 1, target.Length - before.Length - after.Length - 2);
+                var targetLength = target.Length - before.Length - after.Length - 2;
+                if (targetLength > 0)
+                {
+                    codeInsideOutermostBraces = target.Substring(before.Length + 1, targetLength);
+                }
+                else
+                {
+                    codeInsideOutermostBraces = "";
+                }
             }
             
             var block = new Block(parent);
@@ -320,18 +328,23 @@ namespace MetX.VB6ToCSharp.CSharp
             if (line.IsEmpty())
                 return string.Empty;
 
-            if (line.Trim().EndsWith(";")
-                || line.Trim().EndsWith("}"))
+            var scrubbedLine = line.Replace("\r", "").Replace("\n", "").Trim();
+            
+            if (scrubbedLine.EndsWith(";")
+                || scrubbedLine.EndsWith("{")
+                || scrubbedLine.EndsWith("}"))
                 return line;
 
             if (LineContainsAnyOfTheseThenShouldHaveASemiColon
-                    .Any(x => line.Contains(x)) == false
+                    .Any(x => scrubbedLine.Contains(x)) == false
                 && LineDoesNotContainAnyOfThese.Any(x =>
-                    line.Contains(x) == false && !line.EndsWith(":")))
+                    scrubbedLine.Contains(x) == false 
+                    && !scrubbedLine.EndsWith(":")))
+            {
                 if (nextLine.IsEmpty() || !nextLine.Contains("{"))
                     return line + ";";
-
-            if (line.Trim() == ";")
+            }
+            if (scrubbedLine == ";")
                 line = "";
             return line;
         }

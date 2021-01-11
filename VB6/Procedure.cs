@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MetX.Library;
 using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Structure;
 
@@ -33,65 +34,59 @@ namespace MetX.VB6ToCSharp.VB6
 
         public string GenerateCode()
         {
-            //var result = new StringBuilder();
-            var block = new Block();
-            
-            // public void WriteResX ( List<string> mImageList, string OutPath, string ModuleName )
-            //result.Append(Indentation + Scope + " ");
-            block.Line = Scope + " ";
+            var block = new Block
+            {
+                Line = Scope + " "
+            };
             switch (Type)
             {
                 case ProcedureType.ProcedureSub:
                     block.Line += "void ";
-                    //result.Append("void");
                     break;
 
                 case ProcedureType.ProcedureFunction:
                     block.Line += ReturnType + " ";
-                    //result.Append(ReturnType);
                     break;
 
                 case ProcedureType.ProcedureEvent:
                     block.Line += "void ";
-                    //result.Append("void");
                     break;
             }
 
-            // name
-            //result.Append(" " + Name);
             block.Line += Name;
             
-            // parameters
             if (ParameterList.Count == 0)
             {
                 block.Line += "()";
-                //result.AppendLine("()");
+            }
+            else
+            {
+                var firstParameter = true;
+                foreach (var parameter in ParameterList)
+                {
+                    if (firstParameter)
+                    {
+                        firstParameter = false;
+                    }
+                    else
+                    {
+                        block.Line += ",";
+                    }
+                    block.Line += parameter.Type + " " + parameter.Name + " ";
+                    if (parameter.IsOptional)
+                        block.Line += "= " + parameter.OptionalValue;
+                }
             }
 
-            // start body
-            //result.AppendLine(Indentation + "{");
-            
             foreach (var line in LineList.Select(l => l.Trim()))
-                block.Children.AddLine(block.Parent, line);
+            {
+                block.Children.AddLines(block.Parent, line.Lines().Trimmed());
+            }
 
             foreach (var line in BottomLineList.Select(l => l.Trim()))
-                block.Children.AddLine(block.Parent, line);
-
-/*
-                if (line.Length > 0)
-                    result.AppendLine($"{SecondIndentation}{line};");
-                else
-                    result.AppendLine();
-
-            foreach (var line in BottomLineList.Select(l => l.Trim()))
-                if (line.Length > 0)
-                    result.AppendLine($"{SecondIndentation}{line};");
-                else
-                    result.AppendLine();
- */
-            // end procedure
-            //result.AppendLine(Indentation + "}");
-            //return result.ToString();
+            {
+                block.Children.AddLines(block.Parent, line.Lines().Trimmed());
+            }
             return block.GenerateCode();
         }
 

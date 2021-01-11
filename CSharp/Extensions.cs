@@ -12,24 +12,33 @@ namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Extensions
     {
+        public static IList<string> Lines2(this string target, StringSplitOptions options = StringSplitOptions.None)
+        {
+            if (string.IsNullOrEmpty(target)) return new[] { string.Empty };
+            return target
+                .Replace("\r", string.Empty)
+                .Split(new[] { "\n" }, options);
+        }
+
+        
         public static CodeBetweenBraces CodeBetweenBraces(this string target)
         {
             return CSharp.CodeBetweenBraces.Factory(target);
         }
 
-        public static string[] RemoveEmpty(this string[] target)
+        public static IList<string> RemoveEmpty(this IList<string> target)
         {
             if (target.IsEmpty())
                 return new string[] { };
 
-            var strings = target.AsList().Where(l => l.Trim().IsNotEmpty()).ToArray();
+            var strings = target.Where(l => l.Trim().IsNotEmpty()).ToArray();
             return strings;
         }
 
-        public static string[] MakeACopy(this IList<string> target)
+        public static IList<string> MakeACopy(this IList<string> target)
         {
             if (target.IsEmpty())
-                return new string[]{};
+                return new string[] { };
             
             var result = new string[target.Count];
 

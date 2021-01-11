@@ -1236,11 +1236,20 @@ namespace MetX.VB6ToCSharp.VB6
                         out var placeAtBottom, null, sourceModule);
 
 
-                    targetProcedure.LineList.Add(convertedLine);
+                    targetProcedure.LineList.AddRange(convertedLine
+                        .Lines2()
+                        .Where(l => l
+                            .IsNotEmpty())
+                        .Select(l => l
+                            .Trim()));
+                    
                     if (placeAtBottom.IsNotEmpty())
                         targetProcedure.BottomLineList.Add(placeAtBottom);
                 }
 
+                var rawCode = string.Join("\n", targetProcedure.LineList);
+                var x = rawCode.AsBlock(new EmptyParent(), true);
+                
                 Massage.DetermineWhichLinesGetASemicolon(targetProcedure.LineList);
                 Massage.DetermineWhichLinesGetASemicolon(targetProcedure.BottomLineList);
 

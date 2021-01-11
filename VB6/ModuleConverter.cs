@@ -962,7 +962,7 @@ namespace MetX.VB6ToCSharp.VB6
             {
                 var parameter = new Parameter
                 {
-                    Optional = part.StartsWith("Optional")
+                    IsOptional = part.StartsWith("Optional")
                 };
 
                 var words = part.Replace("Optional", "").Trim();
@@ -1062,7 +1062,10 @@ namespace MetX.VB6ToCSharp.VB6
                 word = GetWord(line, ref position);
                 // function return type
                 position++;
-                procedure.ReturnType = GetWord(line, ref position);
+                var @as = GetWord(line, ref position);
+                procedure.ReturnType = @as == "As" 
+                    ? line.LastToken("As").Trim() 
+                    : GetWord(line, ref position);
             }
         }
 
