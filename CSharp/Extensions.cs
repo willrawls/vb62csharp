@@ -4,15 +4,15 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using MetX.Library;
-using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
+// ReSharper disable UnusedMember.Global
 
 namespace MetX.VB6ToCSharp.CSharp
 {
     public static class Extensions
     {
-        public static IList<string> Lines2(this string target, StringSplitOptions options = StringSplitOptions.None)
+        public static IEnumerable<string> Lines2(this string target, StringSplitOptions options = StringSplitOptions.None)
         {
             if (string.IsNullOrEmpty(target)) return new[] { string.Empty };
             return target
@@ -100,8 +100,6 @@ namespace MetX.VB6ToCSharp.CSharp
                 CultureInfo.CurrentCulture, CompareOptions.IgnoreCase ) == 0)
                 return a + b;
 
-            var result = "";
-
             var indexOfB = target.IndexOf(a, StringComparison.InvariantCultureIgnoreCase);
             var indexOfA = target.IndexOf(b, StringComparison.InvariantCultureIgnoreCase);
 
@@ -137,7 +135,7 @@ namespace MetX.VB6ToCSharp.CSharp
             
             var segment5 = target.Substring(segment1.Length + segment2.Length + segment3.Length + segment4.Length);
 
-            result = $"{segment1}{segment4}{segment3}{segment2}{segment5}";
+            var result = $"{segment1}{segment4}{segment3}{segment2}{segment5}";
             /*
             if (result.Length < indexOfA)
                 result += target.Substring(result.Length, indexOfA - indexOfB + b.Length);

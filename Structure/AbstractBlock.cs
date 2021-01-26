@@ -1,6 +1,4 @@
-﻿using System;
-using System.CodeDom;
-using MetX.Library;
+﻿using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 
 namespace MetX.VB6ToCSharp.Structure

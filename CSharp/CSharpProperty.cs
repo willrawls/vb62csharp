@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using MetX.Library;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MetX.VB6ToCSharp.CSharp

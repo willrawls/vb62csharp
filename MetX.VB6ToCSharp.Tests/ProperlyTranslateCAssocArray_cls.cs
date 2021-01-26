@@ -1,6 +1,5 @@
 ﻿using System;
 using MetX.Library;
-using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 using MetX.VB6ToCSharp.VB6;

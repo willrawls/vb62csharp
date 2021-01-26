@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using MetX.Library;
 using MetX.VB6ToCSharp.CSharp;

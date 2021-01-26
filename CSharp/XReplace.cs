@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
 namespace MetX.VB6ToCSharp.CSharp
 {
     public class XReplace     // Four way replacement

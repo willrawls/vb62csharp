@@ -1,4 +1,3 @@
-using MetX.VB6ToCSharp.CSharp;
 using MetX.VB6ToCSharp.VB6;
 
 namespace MetX.VB6ToCSharp.Interface

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MetX.VB6ToCSharp.Structure;
+﻿using MetX.VB6ToCSharp.Structure;
 
 namespace MetX.VB6ToCSharp.Interface
 {

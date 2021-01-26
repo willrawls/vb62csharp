@@ -1,4 +1,3 @@
-using System;
 using MetX.VB6ToCSharp.Interface;
 using MetX.VB6ToCSharp.Structure;
 

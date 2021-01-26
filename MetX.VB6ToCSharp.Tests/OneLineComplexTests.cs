@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using MetX.VB6ToCSharp.CSharp;
+﻿using MetX.VB6ToCSharp.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MetX.VB6ToCSharp.Tests
